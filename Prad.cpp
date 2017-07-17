@@ -19,6 +19,10 @@
 
 #include <typeinfo> //For inspecting the type of a variable
 
+// Look at
+// http://kluge.in-chemnitz.de/opensource/spline/
+// for spline interpolation
+
 #include "json.hpp"
 using namespace std; //saves having to prepend std:: onto common functions
 
@@ -39,16 +43,18 @@ map<string,string>datatype_abbrevs={
 	{"cx_power",             "prc"},
 	{"ionisation_potential", "ecd"} //N.b. ionisation_potential is not a rate-coefficient, but most of the methods are transferable
 };
-const string user_file="user_input.json";
-const string input_file="sd1d-case-05.json";
-const string json_database_path="json_database/json_data";
-const string impurity_symbol="C";
 
 json retrieveFromJSON(string path_to_file){
-	ifstream i(path_to_file);
-	json j;
-	i >> j;
-	return j;
+	// Reads a .json file given at path_to_file
+	// Uses the json module at https://github.com/nlohmann/json/
+	// This relies upon the "json.hpp" header which must be included in the same folder as the source
+	
+	// Open a file-stream at path_to_file
+	ifstream json_file(path_to_file);
+	// Initialise a json file object at j_object
+	json j_object;
+	json_file >> j_object;
+	return j_object;
 };
 
 class ImpuritySpecies{
@@ -58,9 +64,15 @@ class ImpuritySpecies{
 		// # requires fortran code be isolated from main operation)
 	public:
 		// For constructor and member function declarations
-		ImpuritySpecies(string symbol);
+		ImpuritySpecies(string symbol, string user_file);
 		void addJSONFiles();
 		void makeRateCoefficients();
+		string get_symbol();
+		string get_name();
+		int get_year();
+		bool get_has_charge_exchange();
+		int get_atomic_number();
+		map<string,string> get_adas_files_dict();
 
 	private:
 		// Data fields
@@ -72,13 +84,23 @@ class ImpuritySpecies{
 		map<string,string> adas_files_dict;
 		// map<string,RateCoefficient> rate_coefficients;
 	};
-	ImpuritySpecies::ImpuritySpecies(string symbol){
+	ImpuritySpecies::ImpuritySpecies(string symbol, string user_file){
 		cout << "Constructing ImpuritySpecies object for " << symbol << "\n";
-		symbol="";
-		name="";
-		year=0;
-		has_charge_exchange=true;
-		atomic_number=0;
+		symbol              = symbol;
+
+		json j_object = retrieveFromJSON(user_file);
+
+		auto check_symbol_in_file = j_object.find("c");
+		if ((check_symbol_in_file != j_object.end())){
+			cout << "printing true\n";
+		} else {
+			cout << "printing false\n";
+		};
+
+		name                = j_object[symbol]["name"];
+		year                = j_object[symbol]["year"];
+		has_charge_exchange = j_object[symbol]["has_charge_exchange"];
+		atomic_number       = j_object[symbol]["atomic_number"];
 		// adas_files_dict={};
 	};
 	void ImpuritySpecies::addJSONFiles(){
@@ -90,6 +112,25 @@ class ImpuritySpecies{
 		// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
 		// # Generates a dictionary of RateCoefficient objects as .rate_coefficients
 	};
+	// Accessor functions
+		string ImpuritySpecies::get_symbol(){
+			return symbol;
+		};
+		string ImpuritySpecies::get_name(){
+			return name;
+		};
+		int ImpuritySpecies::get_year(){
+			return year;
+		};
+		bool ImpuritySpecies::get_has_charge_exchange(){
+			return has_charge_exchange;
+		};
+		int ImpuritySpecies::get_atomic_number(){
+			return atomic_number;
+		};
+		map<string,string> ImpuritySpecies::get_adas_files_dict(){
+			return adas_files_dict;
+		};
 
 class RateCoefficient{
 	// # For storing the RateCoefficients encoded in an OpenADAS data file
@@ -162,70 +203,39 @@ class SD1DData{
 
 
 int main(){
+	const string user_file="user_input.json";
+	const string input_file="sd1d-case-05.json";
+	const string json_database_path="json_database/json_data";
+	const string impurity_symbol="c";
 
-	cout<<"Hello world\n";
+	// make an ImpuritySpecies object 'impurity' from the user_input.json file and the impurity_symbol variable
+	ImpuritySpecies impurity(impurity_symbol, user_file);
 
-	ImpuritySpecies impurity("D");
-
-	json j;
-
-	// j = retrieveFromJSON(input_file);
-	j = retrieveFromJSON(user_file);
-
-	// cout << setw(4) << j << endl;
-
-	// for (json::iterator it = j.begin(); it != j.end(); ++it) {
-	//   cout << *it << '\n';
-	// }
-
-	// create a JSON object
-	// json j_object = {{"one", 1}, {"two", 2}};
-
-	// // call find
-	// auto it_two = j_object.find("two");
-	// auto it_three = j_object.find("tree");
-	// // print values
-	// std::cout << std::boolalpha;
-	// std::cout << "\"two\" was found: " << (it_two != j_object.end()) << '\n';
-	// std::cout << "value at key \"two\": " << *it_two << '\n';
-	// std::cout << "\"three\" was found: " << (it_three != j_object.end()) << '\n';
-
-	// auto it_carbon = j.find("d");
-	// // print values
-	// std::cout << std::boolalpha;
-	// std::cout << "\"carbon\" was found: " << (it_carbon != j.end()) << '\n';
-	// std::cout << "value at key \"c\": " << *it_carbon << '\n';
+	json j_object = retrieveFromJSON(user_file);
 
 	cout << boolalpha; //Sets output as true or false instead of 1 or 0
-	auto it_two = j.find("two");
-	cout << "\"two\" was found: " << (it_two != j.end()) << '\n';
+	auto it_two = j_object.find("two");
+	cout << "\"two\" was found: " << (it_two != j_object.end()) << '\n';
 
-	auto it_three = j.find("three");
-	cout << "\"three\" was found: " << (it_three != j.end()) << '\n';
+	auto it_three = j_object.find("three");
+	cout << "\"three\" was found: " << (it_three != j_object.end()) << '\n';
 
-	auto it_c = j.find("c");
-	cout << "\"c\" was found: " << (it_c != j.end()) << '\n';
+	cout << "\"c\" was found: " << (it_c != j_object.end()) << '\n';
 
-	auto it_new = j.find("new");
-	cout << "\"new\" was found: " << (it_new != j.end()) << '\n';
+	auto it_new = j_object.find("new");
+	cout << "\"new\" was found: " << (it_new != j_object.end()) << '\n';
 
-	if ((it_c != j.end())){
+	
+
+	if ((it_new != j_object.end())){
 		cout << "printing true\n";
 	} else {
 		cout << "printing false\n";
 	};
 
-	if ((it_new != j.end())){
-		cout << "printing true\n";
-	} else {
-		cout << "printing false\n";
-	};
-
-
-
-	cout << "The atomic_number of c is " << j["c"]["atomic_number"] << "\n";
+	cout << "The atomic_number of c is " << j_object["c"]["atomic_number"] << "\n";
+	cout << "The atomic_number of c is " << impurity.get_year()+ << "\n";
 	// std::cout << "value at key \"c\": " << *it_carbon << '\n';
-
 
 	cout<<datatype_abbrevs["cx_power"]<<"\n";
 
