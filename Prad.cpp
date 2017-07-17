@@ -16,6 +16,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+
+#include <typeinfo> //For inspecting the type of a variable
+
 #include "json.hpp"
 using namespace std; //saves having to prepend std:: onto common functions
 
@@ -36,6 +39,7 @@ map<string,string>datatype_abbrevs={
 	{"cx_power",             "prc"},
 	{"ionisation_potential", "ecd"} //N.b. ionisation_potential is not a rate-coefficient, but most of the methods are transferable
 };
+const string user_file="user_input.json";
 const string input_file="sd1d-case-05.json";
 const string json_database_path="json_database/json_data";
 const string impurity_symbol="C";
@@ -165,13 +169,62 @@ int main(){
 
 	json j;
 
-	j = retrieveFromJSON(input_file);
+	// j = retrieveFromJSON(input_file);
+	j = retrieveFromJSON(user_file);
+
+	// cout << setw(4) << j << endl;
+
+	// for (json::iterator it = j.begin(); it != j.end(); ++it) {
+	//   cout << *it << '\n';
+	// }
+
+	// create a JSON object
+	// json j_object = {{"one", 1}, {"two", 2}};
+
+	// // call find
+	// auto it_two = j_object.find("two");
+	// auto it_three = j_object.find("tree");
+	// // print values
+	// std::cout << std::boolalpha;
+	// std::cout << "\"two\" was found: " << (it_two != j_object.end()) << '\n';
+	// std::cout << "value at key \"two\": " << *it_two << '\n';
+	// std::cout << "\"three\" was found: " << (it_three != j_object.end()) << '\n';
+
+	// auto it_carbon = j.find("d");
+	// // print values
+	// std::cout << std::boolalpha;
+	// std::cout << "\"carbon\" was found: " << (it_carbon != j.end()) << '\n';
+	// std::cout << "value at key \"c\": " << *it_carbon << '\n';
+
+	cout << boolalpha; //Sets output as true or false instead of 1 or 0
+	auto it_two = j.find("two");
+	cout << "\"two\" was found: " << (it_two != j.end()) << '\n';
+
+	auto it_three = j.find("three");
+	cout << "\"three\" was found: " << (it_three != j.end()) << '\n';
+
+	auto it_c = j.find("c");
+	cout << "\"c\" was found: " << (it_c != j.end()) << '\n';
+
+	auto it_new = j.find("new");
+	cout << "\"new\" was found: " << (it_new != j.end()) << '\n';
+
+	if ((it_c != j.end())){
+		cout << "printing true\n";
+	} else {
+		cout << "printing false\n";
+	};
+
+	if ((it_new != j.end())){
+		cout << "printing true\n";
+	} else {
+		cout << "printing false\n";
+	};
 
 
-	std::cout << std::setw(4) << j << std::endl;
-	// cout << j["name"] << "\n";
 
-	// cout<<a<<"\n";
+	cout << "The atomic_number of c is " << j["c"]["atomic_number"] << "\n";
+	// std::cout << "value at key \"c\": " << *it_carbon << '\n';
 
 
 	cout<<datatype_abbrevs["cx_power"]<<"\n";
