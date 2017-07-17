@@ -15,11 +15,15 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <fstream>
 #include "json.hpp"
 using namespace std; //saves having to prepend std:: onto common functions
 
 // for convenience
 using json = nlohmann::json;
+
+// How to use auto keyword: http://www.acodersjourney.com/2016/02/c-11-auto/
+// (with some good code examples)
 
 // N.b. perform all plotting routines as Python post-processing
 
@@ -36,8 +40,12 @@ const string input_file="sd1d-case-05.json";
 const string json_database_path="json_database/json_data";
 const string impurity_symbol="C";
 
-void retrieveFromJSON(
-	);
+json retrieveFromJSON(string path_to_file){
+	ifstream i(path_to_file);
+	json j;
+	i >> j;
+	return j;
+};
 
 class ImpuritySpecies{
 		// # For storing OpenADAS data related to a particular impurity species
@@ -144,15 +152,41 @@ class SD1DData{
 	void SD1DData::selectSingleTime(float t){
 	};
 
+	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
+	// computeRadiatedPower(impurity, experiment, iz_stage_distribution)
+
+
 
 int main(){
 
 	cout<<"Hello world\n";
 
-	ImpuritySpecies("D");
+	ImpuritySpecies impurity("D");
+
+	json j;
+
+	j = retrieveFromJSON(input_file);
+
+
+	std::cout << std::setw(4) << j << std::endl;
+	// cout << j["name"] << "\n";
+
+	// cout<<a<<"\n";
 
 
 	cout<<datatype_abbrevs["cx_power"]<<"\n";
+
+	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
+	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
+
+	// # Compute radiated power
+	// # Returns total_power, stage_integrated_power (sum over all ionisation stages), and
+	// # radiated_power (resolved into different ionisation stages, with 'total' giving sum over
+	// # all physics_processes)
+	// # 	stage_integrated_power and radiated_power are dictionaries with physics_process keys and
+	// # 	data_length shape for stage_integrated_power and [Z, data_length] shape for radiated_power
+	// # 	total_power is an array of shape data_length
+	// computeRadiatedPower(impurity, experiment, iz_stage_distribution)
 }
 
 
