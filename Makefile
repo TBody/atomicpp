@@ -4,7 +4,8 @@ compiler     = g++
 atomicpp     = atomicpp
 warn_flags   = -Og -Wall
 run_flags    = -O3
-flags        = $(warn_flags) -std=c++11
+# flags        = $(warn_flags) -std=c++11
+flags        = -Og -std=c++11
 
 objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/SD1DData.o 
 

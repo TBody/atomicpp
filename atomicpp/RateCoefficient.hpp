@@ -33,7 +33,12 @@
 			void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
 			vector<double> call1D(int k, double Te, double ne);
 			friend ostream& operator<<(ostream& os, const RateCoefficient& RC); //Define the __str__ return to cout
-			// person& operator=(const person& that)
+			int get_atomic_number();
+			string get_element();
+			string get_adf11_file();
+			vector<vector< vector<double> > > get_log_coeff();
+			vector<double> get_log_temperature();
+			vector<double> get_log_density();
 		private:
 			int atomic_number;
 			string element;

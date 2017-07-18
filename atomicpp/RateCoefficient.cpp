@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include "json.hpp"
+
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
 using namespace std; //saves having to prepend std:: onto common functions
@@ -55,9 +56,6 @@ ostream& operator<<(ostream& os, const RateCoefficient& RC)
     os << "RateCoefficient object from " << RC.adf11_file << endl;
     return os;  
 }  
-int RateCoefficient::get_atomic_number(){
-	return atomic_number;
-}
 void RateCoefficient::compute_interpolating_splines(){
 	// # Generate the interpolation functions for log_coeff
 		
@@ -108,4 +106,22 @@ vector<double> RateCoefficient::call1D(int k, double Te, double ne){
 	// coeffs = np.power(10,log_coeff)
 
 	// return coeffs
+};
+int RateCoefficient::get_atomic_number(){
+	return atomic_number;
+};
+string RateCoefficient::get_element(){
+	return element;
+};
+string RateCoefficient::get_adf11_file(){
+	return adf11_file;
+};
+vector<vector< vector<double> > > RateCoefficient::get_log_coeff(){
+	return log_coeff;
+};
+vector<double> RateCoefficient::get_log_temperature(){
+	return log_temperature;
+};
+vector<double> RateCoefficient::get_log_density(){
+	return log_density;
 };

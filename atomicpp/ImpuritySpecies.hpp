@@ -9,6 +9,8 @@
 	#include <map>
 	#include <string>
 	#include "RateCoefficient.hpp"
+
+	#include <memory>
 	
 	using namespace std;
 
@@ -37,7 +39,7 @@
 		bool has_charge_exchange;
 		int atomic_number;
 		map<string,string> adas_files_dict;
-		map<string,RateCoefficient> rate_coefficients;
+		map<string,shared_ptr<RateCoefficient> > rate_coefficients;
 	};
 
 #endif

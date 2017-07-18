@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept> //For error-throwing
+#include <memory> //For smart pointers
 
 #include "json.hpp"
 using json = nlohmann::json;
@@ -55,18 +56,25 @@ void ImpuritySpecies::makeRateCoefficients(){
 	// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
 	// # Generates a dictionary of RateCoefficient objects as .rate_coefficients
 
+	// See http://umich.edu/~eecs381/handouts/C++11_smart_ptrs.pdf for information on smart pointers (memory-managed)
+
 	for (auto& kv : get_adas_files_dict()) {
 		string physics_process = kv.first;
 		string filename = kv.second;
 
 	}
-
 	string physics_process = "ionisation";
 	string filename = adas_files_dict[physics_process];
-	RateCoefficient rc(filename);
-	// rate_coefficients[physics_process] = rc;
+	shared_ptr<RateCoefficient> rc(new RateCoefficient(filename));
+	rate_coefficients[physics_process] = rc;
 
-	
+	cout << rc->get_adf11_file() << endl;
+	cout << rate_coefficients[physics_process]->get_adf11_file() << endl;
+	cout<< "yes" << endl;
+	// RateCoefficient rc(filename);
+	// // rate_coefficients[physics_process] = rc;
+
+
 
 
 
