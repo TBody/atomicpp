@@ -16,7 +16,7 @@ using json = nlohmann::json;
 
 using namespace std;
 
-ImpuritySpecies::ImpuritySpecies(string symbol_key_supplied, string user_file){
+ImpuritySpecies::ImpuritySpecies(const string& symbol_key_supplied, const string& user_file){
 	// cout << "Constructing ImpuritySpecies object for " << symbol_key_supplied << "\n";
 	symbol              = symbol_key_supplied;
 
@@ -35,7 +35,7 @@ ImpuritySpecies::ImpuritySpecies(string symbol_key_supplied, string user_file){
 
 	// adas_files_dict={};
 };
-void ImpuritySpecies::addJSONFiles(string physics_process, string filetype_code, string json_database_path){
+void ImpuritySpecies::addJSONFiles(const string& physics_process, const string& filetype_code, const string& json_database_path){
 	// # 1. Make the filename string expected for the json adas file
 	// # 2. Check that this file exists in the JSON_database_path/json_data directory
 	// # 3. Add this file to the atomic data .adas_files_dict attribute

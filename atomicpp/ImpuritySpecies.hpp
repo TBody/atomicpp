@@ -19,8 +19,8 @@
 		// # requires fortran code be isolated from main operation)
 	public:
 		// For constructor and member function declarations
-		ImpuritySpecies(string symbol, string user_file);
-		void addJSONFiles(string physics_process, string filetype_code, string json_database_path);
+		ImpuritySpecies(const string& symbol, const string& user_file);
+		void addJSONFiles(const string& physics_process, const string& filetype_code, const string& json_database_path);
 		void makeRateCoefficients();
 		string get_symbol();
 		string get_name();

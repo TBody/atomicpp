@@ -14,7 +14,7 @@
 		// # For storing the data output from SD1D. To create the required JSON run the function
 		// # data_dict_export.py in an I/O (case) folder in SD1D.
 		public:
-			SD1DData(string input_file);
+			SD1DData(const string& input_file);
 			void setImpurityFraction(float impurity_fraction);
 			void setImpurityDensity(float impurity_density);
 			void selectSingleTime(float t);

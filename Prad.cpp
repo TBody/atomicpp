@@ -69,11 +69,10 @@ int main(){
 	vector<string> cx_processes{"ccd","prc"};
 	string physics_process;
 	string filetype_code;
-	bool code_is_cx;
 	for (auto& kv : datatype_abbrevs) {
 		physics_process = kv.first;
 		filetype_code = kv.second;
-		code_is_cx = find(begin(cx_processes), end(cx_processes), filetype_code) != end(cx_processes);
+		bool code_is_cx = find(begin(cx_processes), end(cx_processes), filetype_code) != end(cx_processes);
 		// See if the datatype code is in the list of cx_processes
 		if (impurity.get_has_charge_exchange() or not(code_is_cx)){
 		    impurity.addJSONFiles(physics_process, filetype_code, json_database_path);
