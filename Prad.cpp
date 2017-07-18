@@ -79,12 +79,10 @@ int main(){
 		};
 	}
 
+	// Print get_adas_files_dict to check copy
 	// for (auto& kv : impurity.get_adas_files_dict()) {
 	// 	cout << kv.first << ": " << kv.second << "\n";
 	// }
-
-	// cout << impurity.get_adas_files_dict() << "\n";
-
 
 	// # Use the .adas_file_dict files to generate RateCoefficient objects for each process
 	// # Uses the same keys as .adas_file_dict

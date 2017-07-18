@@ -8,6 +8,7 @@ using namespace std; //saves having to prepend std:: onto common functions
 // for convenience
 
 json retrieveFromJSON(string path_to_file){
+	// Do not pass path_to_file by reference - results in error!
 	// Reads a .json file given at path_to_file
 	// Uses the json module at https://github.com/nlohmann/json/
 	// This relies upon the "json.hpp" header which must be included in the same folder as the source

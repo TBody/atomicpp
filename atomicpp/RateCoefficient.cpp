@@ -20,12 +20,6 @@ RateCoefficient::RateCoefficient(const string& filename){
 	element         = data_dict["element"];
 	adf11_file      = filename;
 
-	// auto log_coeff = data_dict["log_coeff"];
-	// cout << typeid(log_coeff).name() << endl;
-
-	// cout << "passed" << "\n";
-	// cout << data_dict["log_coeff"];
-
 	vector<vector< vector<double> > > log_coeff = data_dict["log_coeff"];
 	vector<double> log_temperature = data_dict["log_temperature"];
 	vector<double> log_density = data_dict["log_density"];
@@ -39,7 +33,7 @@ RateCoefficient::RateCoefficient(const string& filename){
 	//     cout << N << endl;
 	//   }
 	
-	// cout << "Coeffs" << endl;
+	// cout << "Coeffs - check first index" << endl;
 	// cout << log_coeff[0][0][0] << endl;
 
 
@@ -56,6 +50,14 @@ RateCoefficient::RateCoefficient(const string& filename){
 
 	// self._compute_interpolating_splines()
 };
+ostream& operator<<(ostream& os, const RateCoefficient& RC)
+{  
+    os << "RateCoefficient object from " << RC.adf11_file << endl;
+    return os;  
+}  
+int RateCoefficient::get_atomic_number(){
+	return atomic_number;
+}
 void RateCoefficient::compute_interpolating_splines(){
 	// # Generate the interpolation functions for log_coeff
 		
