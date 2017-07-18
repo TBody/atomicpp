@@ -11,6 +11,7 @@
 	// for convenience
 
 	json retrieveFromJSON(string path_to_file);
+	bool test_file_exists (const string& name);
 	// Reads a .json file given at path_to_file
 	// Uses the json module at https://github.com/nlohmann/json/
 	// This relies upon the "json.hpp" header which must be included in the same folder as the source

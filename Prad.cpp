@@ -56,16 +56,34 @@ int main(){
 	const string user_file="user_input.json";
 	const string input_file="sd1d-case-05.json";
 	const string json_database_path="json_database/json_data";
-	const string impurity_symbol="c"; //Must be lower-case! Haven't yet written .tolower into the code
+	string impurity_symbol="c";
+
+	impurity_symbol[0] = tolower(impurity_symbol[0]);
 
 	// make an ImpuritySpecies object 'impurity' from the user_input.json file and the impurity_symbol variable
 	ImpuritySpecies impurity(impurity_symbol, user_file);
 
-	// cout << "The atomic_number of c is " << j_object["c"]["atomic_number"] << "\n";
-	cout << "The atomic_number of c is " << impurity.get_year()+ 1<< "\n";
-	// std::cout << "value at key \"c\": " << *it_carbon << '\n';
+	// # Add the JSON files associated with this impurity to its .adas_files_dict attribute
+	// # where the key is the (extended) process name, which maps to a filename (string)
+	// # <<TODO>> Check that these files exist in the JSON_database_path/json_data/ directory
+	vector<string> cx_processes{"ccd","prc"};
+	string physics_process;
+	string filetype_code;
+	bool code_is_cx;
+	for (auto& kv : datatype_abbrevs) {
+		physics_process = kv.first;
+		filetype_code = kv.second;
+		code_is_cx = find(begin(cx_processes), end(cx_processes), filetype_code) != end(cx_processes);
+		// See if the datatype code is in the list of cx_processes
+		if (impurity.get_has_charge_exchange() or not(code_is_cx)){
+		    impurity.addJSONFiles(physics_process, filetype_code, json_database_path);
+		};
+	}
 
-	cout<<datatype_abbrevs["cx_power"]<<"\n";
+
+	// # Use the .adas_file_dict files to generate RateCoefficient objects for each process
+	// # Uses the same keys as .adas_file_dict
+	impurity.makeRateCoefficients(json_database_path);
 
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
 	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)

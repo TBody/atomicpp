@@ -19,3 +19,11 @@ json retrieveFromJSON(string path_to_file){
 	json_file >> j_object;
 	return j_object;
 };
+bool test_file_exists (const string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }   
+};

@@ -8,6 +8,7 @@
 
 	#include <map>
 	#include <string>
+	#include "RateCoefficient.hpp"
 	
 	using namespace std;
 
@@ -19,8 +20,8 @@
 	public:
 		// For constructor and member function declarations
 		ImpuritySpecies(string symbol, string user_file);
-		void addJSONFiles();
-		void makeRateCoefficients();
+		void addJSONFiles(string physics_process, string filetype_code, string json_database_path);
+		void makeRateCoefficients(string json_database_path);
 		string get_symbol();
 		string get_name();
 		int get_year();
@@ -36,7 +37,7 @@
 		bool has_charge_exchange;
 		int atomic_number;
 		map<string,string> adas_files_dict;
-		// map<string,RateCoefficient> rate_coefficients;
+		map<string,RateCoefficient> rate_coefficients;
 	};
 
 #endif

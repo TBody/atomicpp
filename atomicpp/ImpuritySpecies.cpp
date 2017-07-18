@@ -12,36 +12,54 @@
 using json = nlohmann::json;
 #include "ImpuritySpecies.hpp"
 #include "sharedFunctions.hpp"
+#include "RateCoefficient.hpp"
 
 using namespace std;
 
-ImpuritySpecies::ImpuritySpecies(string symbol, string user_file){
-	cout << "Constructing ImpuritySpecies object for " << symbol << "\n";
-	symbol              = symbol;
+ImpuritySpecies::ImpuritySpecies(string symbol_key_supplied, string user_file){
+	// cout << "Constructing ImpuritySpecies object for " << symbol_key_supplied << "\n";
+	symbol              = symbol_key_supplied;
 
 	json j_object = retrieveFromJSON(user_file);
 
-	auto check_symbol_in_file = j_object.find(symbol);
+	auto check_symbol_in_file = j_object.find(symbol_key_supplied);
 	if ((check_symbol_in_file != j_object.end())){
-		name                = j_object[symbol]["name"];
-		year                = j_object[symbol]["year"];
-		has_charge_exchange = j_object[symbol]["has_charge_exchange"];
-		atomic_number       = j_object[symbol]["atomic_number"];
+		name                = j_object[symbol_key_supplied]["name"];
+		year                = j_object[symbol_key_supplied]["year"];
+		has_charge_exchange = j_object[symbol_key_supplied]["has_charge_exchange"];
+		atomic_number       = j_object[symbol_key_supplied]["atomic_number"];
 	} else {
-		cout << "Error: "<< symbol << " not found in " << user_file << "\n";
-		throw std::invalid_argument( "Key not found in user input file" );
+		cout << "Error: "<< symbol_key_supplied << " not found in " << user_file << "\n";
+		throw invalid_argument( "Key not found in user input file" );
 	};
 
 	// adas_files_dict={};
 };
-void ImpuritySpecies::addJSONFiles(){
+void ImpuritySpecies::addJSONFiles(string physics_process, string filetype_code, string json_database_path){
 	// # 1. Make the filename string expected for the json adas file
 	// # 2. Check that this file exists in the JSON_database_path/json_data directory
 	// # 3. Add this file to the atomic data .adas_files_dict attribute
+	string filename;
+	string year_to_string = to_string(year);
+
+	filename = filetype_code + year_to_string.substr(2,4) + "_" + symbol;
+
+	cout << json_database_path + "/" + filename + "\n";
+	
+	cout << boolalpha;
+	cout << "File found: " << test_file_exists(json_database_path + "/" + filename) << "\n";
+
+	adas_files_dict[physics_process] = filename;
 };
-void ImpuritySpecies::makeRateCoefficients(){
+void ImpuritySpecies::makeRateCoefficients(string json_database_path){
 	// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
 	// # Generates a dictionary of RateCoefficient objects as .rate_coefficients
+	
+	cout << "makeRateCoefficients called \n";
+
+	// for physics_process, filename in self.adas_files_dict.items():
+	// 	full_path = '{}/json_data/{}'.format(JSON_database_path,filename)
+	// 	self.rate_coefficients[physics_process] = RateCoefficient(full_path)
 };
 // Accessor functions
 	string ImpuritySpecies::get_symbol(){
