@@ -21,7 +21,7 @@ class RateCoefficient(object):
 	#     splines             : list of scipy.interpolate.fitpack2.RectBivariateSpline
 	#         The list has length Z and is interpolations of log_coeff.
 	
-	def __init__(self,impurity,filename):
+	def __init__(self,filename):
 		# Create an instance of RateCoefficient by reading an OpenADAS JSON file
 		from atomic1D import sharedFunctions
 

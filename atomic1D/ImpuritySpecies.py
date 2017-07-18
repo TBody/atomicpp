@@ -83,4 +83,4 @@ class ImpuritySpecies(object):
 
 		for physics_process, filename in self.adas_files_dict.items():
 			full_path = '{}/json_data/{}'.format(JSON_database_path,filename)
-			self.rate_coefficients[physics_process] = RateCoefficient(self,full_path)
+			self.rate_coefficients[physics_process] = RateCoefficient(full_path)
