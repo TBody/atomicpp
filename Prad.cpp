@@ -80,10 +80,16 @@ int main(){
 		};
 	}
 
+	// for (auto& kv : impurity.get_adas_files_dict()) {
+	// 	cout << kv.first << ": " << kv.second << "\n";
+	// }
+
+	// cout << impurity.get_adas_files_dict() << "\n";
+
 
 	// # Use the .adas_file_dict files to generate RateCoefficient objects for each process
 	// # Uses the same keys as .adas_file_dict
-	impurity.makeRateCoefficients(json_database_path);
+	impurity.makeRateCoefficients();
 
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
 	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
@@ -92,7 +98,8 @@ int main(){
 	// # Returns total_power, stage_integrated_power (sum over all ionisation stages), and
 	// # radiated_power (resolved into different ionisation stages, with 'total' giving sum over
 	// # all physics_processes)
-	// # 	stage_integrated_power and radiated_power are dictionaries with physics_process keys and
+	// # 	stage_integrated_power and radiated_power are
+	//  dictionaries with physics_process keys and
 	// # 	data_length shape for stage_integrated_power and [Z, data_length] shape for radiated_power
 	// # 	total_power is an array of shape data_length
 	// computeRadiatedPower(impurity, experiment, iz_stage_distribution)

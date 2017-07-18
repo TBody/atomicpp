@@ -21,7 +21,7 @@
 		// For constructor and member function declarations
 		ImpuritySpecies(string symbol, string user_file);
 		void addJSONFiles(string physics_process, string filetype_code, string json_database_path);
-		void makeRateCoefficients(string json_database_path);
+		void makeRateCoefficients();
 		string get_symbol();
 		string get_name();
 		int get_year();

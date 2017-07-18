@@ -29,16 +29,16 @@
 		// #     splines             : list of scipy.interpolate.fitpack2.RectBivariateSpline
 		// #         The list has length Z and is interpolations of log_coeff.
 		public:
-			RateCoefficient(string filename);
+			RateCoefficient(const string& filename);
 			void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
 			vector<double> call1D(int k, double Te, double ne);
 		private:
 			int atomic_number;
 			string element;
 			string adf11_file;
-			// double log_temperature [x] [y]; //Need to set x, y. Dynamic sizing of arrays? Size is set from JSON
-			// double log_density [x] [y]; //
-			// double log_coeff [x] [y]; //
+			vector<vector< vector<double> > > log_coeff;
+			vector<double> log_temperature;
+			vector<double> log_density;
 			// splines (interpolation functions on 2D grid which can be called to return value)
 			// see https://en.wikipedia.org/wiki/List_of_numerical_libraries#C.2B.2B for C++ math libraries
 		};

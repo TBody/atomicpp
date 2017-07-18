@@ -42,20 +42,27 @@ void ImpuritySpecies::addJSONFiles(string physics_process, string filetype_code,
 	string filename;
 	string year_to_string = to_string(year);
 
-	filename = filetype_code + year_to_string.substr(2,4) + "_" + symbol;
+	filename = json_database_path + "/" + filetype_code + year_to_string.substr(2,4) + "_" + symbol + ".json";
 
-	cout << json_database_path + "/" + filename + "\n";
+	// cout << filename + "\n";
 	
-	cout << boolalpha;
-	cout << "File found: " << test_file_exists(json_database_path + "/" + filename) << "\n";
+	// cout << boolalpha;
+	// cout << "File found: " << test_file_exists(filename) << "\n";
 
 	adas_files_dict[physics_process] = filename;
 };
-void ImpuritySpecies::makeRateCoefficients(string json_database_path){
+void ImpuritySpecies::makeRateCoefficients(){
 	// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
 	// # Generates a dictionary of RateCoefficient objects as .rate_coefficients
 	
 	cout << "makeRateCoefficients called \n";
+
+	string filename;
+	filename = adas_files_dict["ionisation"];
+	cout << filename << "\n";
+
+	RateCoefficient r(filename);
+
 
 	// for physics_process, filename in self.adas_files_dict.items():
 	// 	full_path = '{}/json_data/{}'.format(JSON_database_path,filename)

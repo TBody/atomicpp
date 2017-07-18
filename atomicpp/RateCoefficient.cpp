@@ -3,16 +3,44 @@
 #include <fstream>
 #include "json.hpp"
 #include "RateCoefficient.hpp"
+#include "sharedFunctions.hpp"
 using namespace std; //saves having to prepend std:: onto common functions
+
+#include <typeinfo>
 
 // for convenience
 using json = nlohmann::json;
 
-RateCoefficient::RateCoefficient(string filename){
+RateCoefficient::RateCoefficient(const string& filename){
 	// # Create an instance of RateCoefficient by reading an OpenADAS JSON file
 	
+	json data_dict = retrieveFromJSON(filename);
 
+	atomic_number   = data_dict["charge"];
+	element         = data_dict["element"];
+	adf11_file      = filename;
 
+	// auto log_coeff = data_dict["log_coeff"];
+	// cout << typeid(log_coeff).name() << endl;
+
+	// cout << "passed" << "\n";
+	// cout << data_dict["log_coeff"];
+
+	vector<vector< vector<double> > > log_coeff = data_dict["log_coeff"];
+	vector<double> log_temperature = data_dict["log_temperature"];
+	vector<double> log_density = data_dict["log_density"];
+
+	// cout << "Temperature" << endl;
+	// for (auto &T : log_temperature){
+	//     cout << T << endl;
+	//   }
+	// cout << "Density" << endl;
+	// for (auto &N : log_density){
+	//     cout << N << endl;
+	//   }
+	
+	// cout << "Coeffs" << endl;
+	// cout << log_coeff[0][0][0] << endl;
 
 
 	// from atomic1D import sharedFunctions
