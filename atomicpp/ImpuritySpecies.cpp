@@ -91,3 +91,12 @@ void ImpuritySpecies::makeRateCoefficients(){
 	map<string,string> ImpuritySpecies::get_adas_files_dict(){
 		return adas_files_dict;
 	};
+	map<string,shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
+		return rate_coefficients;
+	};
+	shared_ptr<RateCoefficient> ImpuritySpecies::get_rate_coefficient(const string& key){
+		return rate_coefficients[key];
+	};
+
+
+

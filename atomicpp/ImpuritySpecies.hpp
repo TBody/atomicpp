@@ -30,7 +30,8 @@
 		bool get_has_charge_exchange();
 		int get_atomic_number();
 		map<string,string> get_adas_files_dict();
-
+		map<string,shared_ptr<RateCoefficient> > get_rate_coefficients();
+		shared_ptr<RateCoefficient> get_rate_coefficient(const string& key);
 	private:
 		// Data fields
 		string symbol;

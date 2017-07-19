@@ -17,6 +17,8 @@
 #include <vector>
 #include <fstream>
 
+#include <memory>
+
 #include "atomicpp/ImpuritySpecies.hpp"
 #include "atomicpp/RateCoefficient.hpp"
 #include "atomicpp/SD1DData.hpp"
@@ -50,7 +52,44 @@ map<string,string>datatype_abbrevs={
 // iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
 // computeRadiatedPower(impurity, experiment, iz_stage_distribution)
 
+vector<vector<double> > calculateCollRadEquilibrium(ImpuritySpecies& impurity, SD1DData& experiment){
+	vector<vector<double> > iz_stage_distribution;
 
+	int Z = impurity.get_atomic_number();
+
+	int data_length = experiment.get_temperature().size();
+	assert(data_length == experiment.get_density().size());
+
+	// Perform this calculation for each charge state
+	// vector<double> k_state_density(data_length);
+	// k_state_density[0] = 1;
+
+	// for(int k=0; k<Z; ++k){
+	// }
+	
+	vector<double> temperature = experiment.get_temperature();
+	vector<double> density = experiment.get_density();
+	vector<double> coeffs(data_length);
+	
+	int k = 1;
+	shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+	iz_rate_coefficient->call1D(k, temperature, density, coeffs);
+	cout << coeffs[0] << endl;
+	// iz_rate_coefficient->call1D(k, temperature, density);
+	// .call1D(k, experiment.get_temperature(), experiment.get_density());
+	// recc_coeffs = impurity.get_rate_coefficient("recombination").call1D(k, experiment.get_temperature(), experiment.get_density());
+
+
+
+
+	// // Define and initialize a vector with 2D array
+	// vector<vector<double>> iz_stage_distribution = {
+	// 	vector<double>(begin(arr[0]), end(arr[0])),
+	// 	vector<double>(begin(arr[1]), end(arr[1]))
+	// };
+
+	return iz_stage_distribution;
+}
 
 int main(){
 	const string user_file="user_input.json";
@@ -89,15 +128,15 @@ int main(){
 	impurity.makeRateCoefficients();
 
 	// # Process the input_file to extract
-	// # 	density(t,s) 					= electron density (in m^-3)
-	// # 	temperature(t,s)				= electron/ion temperature (in eV)
-	// # 	neutral_fraction(t,s)			= neutral density/electron density (no units)
-	// # where t is time index, s is 1D distance index
+	// # 	density(s) 					= electron density (in m^-3)
+	// # 	temperature(s)				= electron/ion temperature (in eV)
+	// # 	neutral_fraction(s)			= neutral density/electron density (no units)
+	// # where s is 1D distance index. Time is already contracted (using final time-step)
 	// Second argument is impurity fraction
 	SD1DData experiment(input_file, 1e-2);
 
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
-	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
+	vector<vector<double> > iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment);
 
 	// # Compute radiated power
 	// # Returns total_power, stage_integrated_power (sum over all ionisation stages), and

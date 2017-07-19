@@ -33,30 +33,51 @@ SD1DData::SD1DData(const string& input_file, double impurity_fraction_input){
 	// double impurity_fraction;
 	// vector<double> impurity_density;
 	
-	vector<double> shaped_Ne;
-	vector<double> shaped_Nn;
-	vector<double> shaped_P;
-	vector<double> shaped_T;
-
 	// Extract the 'y' dimensions, at the final time index
 	// Dimensions are [t, x, y, z]
 	//                [0, 1, 2, 3]
 	int final_time_index = extract_Ne.size() - 1;
-	for(int i=0; i<extract_Ne[0][0].size(); ++i){
-  		shaped_Ne.push_back(extract_Ne[final_time_index][0][i][0]);
-  		shaped_Nn.push_back(extract_Nn[final_time_index][0][i][0]);
-  		shaped_P.push_back(extract_P[final_time_index][0][i][0]);
+	int data_length = extract_Ne[0][0].size();
+	
+	vector<double> shaped_Ne(data_length);
+	vector<double> shaped_Nn(data_length);
+	vector<double> shaped_P(data_length);
+	vector<double> shaped_T(data_length);
+
+	for(int i=0; i< data_length; ++i){
+  		shaped_Ne[i] = extract_Ne[final_time_index][0][i][0];
+  		shaped_Nn[i] = extract_Nn[final_time_index][0][i][0];
+  		shaped_P[i] = extract_P[final_time_index][0][i][0];
 		// # P = 2*Ne*Te => Te = P/(2*Ne)
-  		shaped_T.push_back(shaped_P[i]/(2*shaped_Ne[i]));
+  		shaped_T[i] = shaped_P[i]/(2*shaped_Ne[i]);
 	}
 	// Verified list copy was identical for Ne
+	// N.b. the loops above and below are essentially identical 
+	// ways of assigning elements into a vector. However, since the 
+	// vectors below are defined at classdef their length is not
+	// initialised, so using push_back method instead.
 	
-	for(int i=0; i<extract_Ne[0][0].size(); ++i){
+	for(int i=0; i<data_length; ++i){
   		density.push_back(Nnorm * shaped_Ne[i]);
   		temperature.push_back(Tnorm * shaped_T[i]);
   		neutral_fraction.push_back(shaped_Nn[i]/shaped_Ne[i]);
   		impurity_density.push_back(impurity_fraction * density[i]);
 	}
 
-
 };
+vector<double> SD1DData::get_temperature(){
+	return temperature;
+};
+vector<double> SD1DData::get_density(){
+	return density;
+};
+vector<double> SD1DData::get_neutral_fraction(){
+	return neutral_fraction;
+};
+double SD1DData::get_impurity_fraction(){
+	return impurity_fraction;
+};
+vector<double> SD1DData::get_impurity_density(){
+	return impurity_density;
+};
+
