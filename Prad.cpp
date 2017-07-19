@@ -49,9 +49,6 @@ map<string,string>datatype_abbrevs={
 	{"ionisation_potential", "ecd"} //N.b. ionisation_potential is not a rate-coefficient, but most of the methods are transferable
 };
 
-// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
-// computeRadiatedPower(impurity, experiment, iz_stage_distribution)
-
 vector<vector<double> > calculateCollRadEquilibrium(ImpuritySpecies& impurity, SD1DData& experiment){
 	vector<vector<double> > iz_stage_distribution;
 
@@ -73,6 +70,8 @@ vector<vector<double> > calculateCollRadEquilibrium(ImpuritySpecies& impurity, S
 	// Take log10, pipelining?
 	vector<double> log10_temperature(data_length);
 	vector<double> log10_density(data_length);
+	vector<double> log10_iz_coeffs(data_length);
+	vector<double> log10_rec_coeffs(data_length);
 	vector<double> log10_coeffs(data_length);
 	for(int i=0; i<data_length; ++i){
 		// Could split loops for contiguous access -- loop overheard versus unit march
@@ -86,11 +85,12 @@ vector<vector<double> > calculateCollRadEquilibrium(ImpuritySpecies& impurity, S
 	int k = 1;
 	shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
 	// Call1D. k & data_length are const int, temperature and density are const vector<double>&, coeff is vector<double>
-	iz_rate_coefficient->call1D(k, data_length, log10_temperature, log10_density, log10_coeffs);
-	cout << log10_coeffs[0] << endl;
-	// iz_rate_coefficient->call1D(k, temperature, density);
-	// .call1D(k, experiment.get_temperature(), experiment.get_density());
-	// recc_coeffs = impurity.get_rate_coefficient("recombination").call1D(k, experiment.get_temperature(), experiment.get_density());
+	iz_rate_coefficient->call1D(k, data_length, log10_temperature, log10_density, log10_iz_coeffs);
+	shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+	rec_rate_coefficient->call1D(k, data_length, log10_temperature, log10_density, log10_rec_coeffs);
+	for(int s=0; s<data_length; ++s){
+
+	}
 
 
 

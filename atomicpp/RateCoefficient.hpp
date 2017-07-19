@@ -32,6 +32,7 @@
 			RateCoefficient(const string& filename);
 			// void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
 			// vector<double> call1D(const int k, const vector<double>& Te, const vector<double>& ne);
+			double call0D(const int k, const double log10_Te, const double log10_ne);
 			void call1D(const int k, const int data_length, const vector<double>& log10_Te, const vector<double>& log10_ne, vector<double>& log10_coeffs);
 			friend ostream& operator<<(ostream& os, const RateCoefficient& RC); //Define the __str__ return to cout
 			int get_atomic_number();
