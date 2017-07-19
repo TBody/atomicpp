@@ -61,53 +61,12 @@ void ImpuritySpecies::makeRateCoefficients(){
 	for (auto& kv : get_adas_files_dict()) {
 		string physics_process = kv.first;
 		string filename = kv.second;
-
+		shared_ptr<RateCoefficient> RC(new RateCoefficient(filename));
+		rate_coefficients[physics_process] = RC;
 	}
-	string physics_process = "ionisation";
-	string filename = adas_files_dict[physics_process];
-	shared_ptr<RateCoefficient> rc(new RateCoefficient(filename));
-	rate_coefficients[physics_process] = rc;
 
-	cout << rc->get_adf11_file() << endl;
-	cout << rate_coefficients[physics_process]->get_adf11_file() << endl;
-	cout<< "yes" << endl;
-	// RateCoefficient rc(filename);
-	// // rate_coefficients[physics_process] = rc;
-
-
-
-
-
-
-
-
-
-
-
-
-	// for (auto& kv : get_adas_files_dict()) {
-	// 	string physics_process = kv.first;
-	// 	string filename = kv.second;
-	// 	// cout << physics_process << ": " << filename << "\n";
-	// 	// RateCoefficient rc(filename);
-	// 	// cout << rc << endl;
-	// 	// RateCoefficient rate_coefficients[physics_process](filename);
-		
-	// 	// map_["key"] = *RateCoefficient(filename);
-
-	// 	// rate_coefficients.insert(make_pair<string,RateCoefficient*>(physics_process,RateCoefficient(filename)));
-	// 	// [physics_process](filename);
-	// }
-	// cout << rc.get_atomic_number() << endl;
-	// std::map<std::string, RateCoefficient*> map_;
-	// map_.insert(make_pair("key string", new RateCoefficient(filename)));
-	// cout << map_["key string"].get_atomic_number() << endl;
-	
-	// string filename = adas_files_dict["ionisation"];
-	// cout << filename << "\n";
-
-	// RateCoefficient r(filename);
-
+	// Testing that pointer behaves as expected
+	// cout << rate_coefficients["ionisation"]->get_adf11_file() << endl;
 
 	// for physics_process, filename in self.adas_files_dict.items():
 	// 	full_path = '{}/json_data/{}'.format(JSON_database_path,filename)

@@ -21,9 +21,16 @@ RateCoefficient::RateCoefficient(const string& filename){
 	element         = data_dict["element"];
 	adf11_file      = filename;
 
-	vector<vector< vector<double> > > log_coeff = data_dict["log_coeff"];
-	vector<double> log_temperature = data_dict["log_temperature"];
-	vector<double> log_density = data_dict["log_density"];
+	vector<vector< vector<double> > > extract_log_coeff = data_dict["log_coeff"];
+	vector<double> extract_log_temperature = data_dict["log_temperature"];
+	vector<double> extract_log_density = data_dict["log_density"];
+	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
+	// The second copies the value to the corresponding RateCoefficient attribute
+	log_coeff = extract_log_coeff;
+	log_temperature = extract_log_temperature;
+	log_density = extract_log_density;
+
+	// compute_interpolating_splines();
 
 	// cout << "Temperature" << endl;
 	// for (auto &T : log_temperature){
@@ -56,20 +63,19 @@ ostream& operator<<(ostream& os, const RateCoefficient& RC)
     os << "RateCoefficient object from " << RC.adf11_file << endl;
     return os;  
 }  
-void RateCoefficient::compute_interpolating_splines(){
-	// # Generate the interpolation functions for log_coeff
+// void RateCoefficient::compute_interpolating_splines(){
+// 	// # Generate the interpolation functions for log_coeff
 		
+// 	cout << "called" << endl;
 
+// 	// self.splines = []
+// 	// for k in range(self.atomic_number):
+// 	// 	x = self.log_temperature
+// 	// 	y = self.log_density
+// 	// 	z = self.log_coeff[k]
+// 	// 	self.splines.append(RectBivariateSpline(x, y, z))
 
-
-	// self.splines = []
-	// for k in range(self.atomic_number):
-	// 	x = self.log_temperature
-	// 	y = self.log_density
-	// 	z = self.log_coeff[k]
-	// 	self.splines.append(RectBivariateSpline(x, y, z))
-
-}; //Could consider fixing length, since it will always be the same shape
+// }; //Could consider fixing length, since it will always be the same shape
 vector<double> RateCoefficient::call1D(int k, double Te, double ne){
 	// """Evaluate the ionisation/recombination coefficients of
 	// 	k'th atomic state at a given temperature and density.

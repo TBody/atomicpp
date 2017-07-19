@@ -30,7 +30,7 @@
 		// #         The list has length Z and is interpolations of log_coeff.
 		public:
 			RateCoefficient(const string& filename);
-			void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
+			// void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
 			vector<double> call1D(int k, double Te, double ne);
 			friend ostream& operator<<(ostream& os, const RateCoefficient& RC); //Define the __str__ return to cout
 			int get_atomic_number();

@@ -88,6 +88,14 @@ int main(){
 	// # Uses the same keys as .adas_file_dict
 	impurity.makeRateCoefficients();
 
+	// # Process the input_file to extract
+	// # 	density(t,s) 					= electron density (in m^-3)
+	// # 	temperature(t,s)				= electron/ion temperature (in eV)
+	// # 	neutral_fraction(t,s)			= neutral density/electron density (no units)
+	// # where t is time index, s is 1D distance index
+	// Second argument is impurity fraction
+	SD1DData experiment(input_file, 1e-2);
+
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
 	// iz_stage_distribution = calculateCollRadEquilibrium(impurity, experiment)
 
