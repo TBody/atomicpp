@@ -1,10 +1,5 @@
 #ifndef IMPURITYSPECIES_H //Preprocessor directives to prevent multiple definitions
 #define IMPURITYSPECIES_H
-  // 1. Classes
-  // 2. Constants
-  // 3. Non-member functions
-  // 4. Global variables
-
 
 	#include <map>
 	#include <string>
@@ -20,8 +15,24 @@
 		// # all of the F77 importing is done in the seperate <<make json_update>> code since BOUT++ protocol
 		// # requires fortran code be isolated from main operation)
 	public:
-		// For constructor and member function declarations
-		ImpuritySpecies(const string& symbol, const string& user_file);
+		/**
+		 * @brief ImpuritySpecies Constructor
+		 * @details Uses the "impurity_user_input" file to set hard-coded impurity
+		 * 			parameters corresponding to the impurity represented by the symbol
+		 * 			Determines the OpenADAS file-dependancies and adds them to .adas_data_dict
+		 * 			Makes RateCoefficient objects corresponding to the files and adds smart
+		 * 			pointers for them to .rate_coefficients
+		 * 
+		 * @param impurity_symbol_supplied typically should be of length 1 (i.e. "c" for carbon, "n" for nitrogen)
+		 */
+		ImpuritySpecies(string& impurity_symbol_supplied);
+		/**
+		 * @brief Determines the OpenADAS file-dependancies and adds them to .adas_data_dict
+		 * 
+		 * @param physics_process a string corresponding to a physics process
+		 * @param filetype_code the code used by OpenADAS to represent this process
+		 * @param json_database_path relative or absolute path to where the json data files from OpenADAS are located
+		 */
 		void addJSONFiles(const string& physics_process, const string& filetype_code, const string& json_database_path);
 		void makeRateCoefficients();
 		string get_symbol();
@@ -42,5 +53,7 @@
 		map<string,string> adas_files_dict;
 		map<string,shared_ptr<RateCoefficient> > rate_coefficients;
 	};
+	string get_json_database_path();
+	string get_impurity_user_input();
 
 #endif

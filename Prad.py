@@ -320,7 +320,7 @@ if __name__ == '__main__':
 
 	# Process command line arguments to set the path to the input file (from SD1D)
 	# and the JSON database (from make json_update)
-	[input_file, JSON_database_path, impurity] = sharedFunctions.processCommandLineArguments()
+	[expt_results_json, JSON_database_path, impurity] = sharedFunctions.processCommandLineArguments()
 	
 	# Add the JSON files associated with this impurity to its .adas_files_dict attribute
 	# where the key is the (extended) process name, which maps to a filename (string)
@@ -338,12 +338,12 @@ if __name__ == '__main__':
 	# function will return a 3D plot of the data used, and also the interpolation generated.
 	# impurity.rate_coefficients['ionisation'].compare_interp_with_plot(1)
 
-	# Process the input_file to extract
+	# Process the expt_results_json to extract
 	# 	density(t,s) 					= electron density (in m^-3)
 	# 	temperature(t,s)				= electron/ion temperature (in eV)
 	# 	neutral_fraction(t,s)			= neutral density/electron density (no units)
 	# where t is time index, s is 1D distance index
-	experiment = SD1DData(input_file)
+	experiment = SD1DData(expt_results_json)
 	
 	t = experiment.data_shape[0]
 	# Extract data for a single time-step

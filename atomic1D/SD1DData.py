@@ -3,19 +3,19 @@ class SD1DData(object):
 	# For storing the data output from SD1D. To create the required JSON run the function
 	# data_dict_export.py in an I/O (case) folder in SD1D.
 	# 
-	def __init__(self,input_file):
+	def __init__(self,expt_results_json):
 		# process a input JSON file to extract Te(s,t), ne(s,t), ne/nn (s,t)
 		# n.b. s refers to the upstream distance from the strike-point
 		#      t is time (will need to add normalisation factor <<TODO>> to convert to real-time)
 		# 
-		# input:    input_file -> JSON file from SD1D run
+		# input:    expt_results_json -> JSON file from SD1D run
 		# return:   Te, ne, neutral_fraction (from data)
 		#           impurity_fraction (fixed fraction impurity density, set programmatically)
 
-		# input_file can be either relative or absolute path to JSON file
+		# expt_results_json can be either relative or absolute path to JSON file
 		from atomic1D import sharedFunctions
 
-		data_dict = sharedFunctions.retrieveFromJSON(input_file)
+		data_dict = sharedFunctions.retrieveFromJSON(expt_results_json)
 
 		# Retrieve (normalised values)
 		Ne = data_dict['Ne']

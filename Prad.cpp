@@ -40,17 +40,6 @@ using json = nlohmann::json;
 
 // N.b. perform all plotting routines as Python post-processing
 
-// Shared variables
-map<string,string>datatype_abbrevs={
-	{"ionisation",           "scd"},
-	{"recombination",        "acd"},
-	{"cx_recc",              "ccd"},
-	{"continuum_power",      "prb"},
-	{"line_power",           "plt"},
-	{"cx_power",             "prc"},
-	{"ionisation_potential", "ecd"} //N.b. ionisation_potential is not a rate-coefficient, but most of the methods are transferable
-};
-
 vector<double> calculateCollRadEquilibriumOD(ImpuritySpecies& impurity, SD1DData& experiment){
 	// Returns the relative abundance across ionisation stages (assumes collisional radiation equilibrium)
 	// 
@@ -167,55 +156,26 @@ double computeRadiatedPower(ImpuritySpecies& impurity, SD1DData& experiment, vec
 }
 
 int main(){
-	const string user_file="user_input.json";
-	const string input_file="sd1d-case-05.json";
+	const string expt_results_json="sd1d-case-05.json";
 	const string json_database_path="json_database/json_data";
 	string impurity_symbol="c";
 
-	impurity_symbol[0] = tolower(impurity_symbol[0]);
+	ImpuritySpecies impurity(impurity_symbol);
 
-	// make an ImpuritySpecies object 'impurity' from the user_input.json file and the impurity_symbol variable
-	ImpuritySpecies impurity(impurity_symbol, user_file);
-
-	// # Add the JSON files associated with this impurity to its .adas_files_dict attribute
-	// # where the key is the (extended) process name, which maps to a filename (string)
-	// # <<TODO>> Check that these files exist in the JSON_database_path/json_data/ directory
-	vector<string> cx_processes{"ccd","prc"};
-	string physics_process;
-	string filetype_code;
-	for (auto& kv : datatype_abbrevs) {
-		physics_process = kv.first;
-		filetype_code = kv.second;
-		bool code_is_cx = find(begin(cx_processes), end(cx_processes), filetype_code) != end(cx_processes);
-		// See if the datatype code is in the list of cx_processes
-		if (impurity.get_has_charge_exchange() or not(code_is_cx)){
-		    impurity.addJSONFiles(physics_process, filetype_code, json_database_path);
-		};
-	}
-
-	// Print get_adas_files_dict to check copy
-	// for (auto& kv : impurity.get_adas_files_dict()) {
-	// 	cout << kv.first << ": " << kv.second << "\n";
-	// }
-
-	// # Use the .adas_file_dict files to generate RateCoefficient objects for each process
-	// # Uses the same keys as .adas_file_dict
-	impurity.makeRateCoefficients();
-
-	// # Process the input_file to extract
+	// # Process the expt_results_json to extract
 	// # 	density(s) 					= electron density (in m^-3)
 	// # 	temperature(s)				= electron/ion temperature (in eV)
 	// # 	neutral_fraction(s)			= neutral density/electron density (no units)
 	// # where s is 1D distance index. Time is already contracted (using final time-step)
 	// Second argument is impurity fraction
-	SD1DData experiment(input_file, 1e-2);
+	SD1DData experiment(expt_results_json, 1e-2);
 
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
 	vector<double> iz_stage_distribution = calculateCollRadEquilibriumOD(impurity, experiment);
 
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		cout <<"k: "<< k <<" val: " << iz_stage_distribution[k] << endl;
-	}
+	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	// 	cout <<"k: "<< k <<" val: " << iz_stage_distribution[k] << endl;
+	// }
 
 	// # Compute radiated power
 	// # Returns total_power, stage_integrated_power (sum over all ionisation stages), and
