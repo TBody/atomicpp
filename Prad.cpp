@@ -67,14 +67,27 @@ vector<vector<double> > calculateCollRadEquilibrium(ImpuritySpecies& impurity, S
 	// for(int k=0; k<Z; ++k){
 	// }
 	
+	// Load from experiment for contiguous access?
 	vector<double> temperature = experiment.get_temperature();
 	vector<double> density = experiment.get_density();
-	vector<double> coeffs(data_length);
+	// Take log10, pipelining?
+	vector<double> log10_temperature(data_length);
+	vector<double> log10_density(data_length);
+	vector<double> log10_coeffs(data_length);
+	for(int i=0; i<data_length; ++i){
+		// Could split loops for contiguous access -- loop overheard versus unit march
+		log10_temperature[i] = log10(temperature[i]);
+		log10_density[i] = log10(density[i]);
+	}
+	// Should this be i<data_length or <= data_length? temperature[data_length] is off the end of the array (uncomment below to see)
+	// cout << temperature[data_length-1] << endl;
+	// cout << log10_temperature[data_length-1] << endl;
 	
 	int k = 1;
 	shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
-	iz_rate_coefficient->call1D(k, temperature, density, coeffs);
-	cout << coeffs[0] << endl;
+	// Call1D. k & data_length are const int, temperature and density are const vector<double>&, coeff is vector<double>
+	iz_rate_coefficient->call1D(k, data_length, log10_temperature, log10_density, log10_coeffs);
+	cout << log10_coeffs[0] << endl;
 	// iz_rate_coefficient->call1D(k, temperature, density);
 	// .call1D(k, experiment.get_temperature(), experiment.get_density());
 	// recc_coeffs = impurity.get_rate_coefficient("recombination").call1D(k, experiment.get_temperature(), experiment.get_density());
