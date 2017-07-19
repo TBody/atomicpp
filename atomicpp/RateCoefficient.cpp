@@ -2,6 +2,7 @@
 #include <vector>
 #include <fstream>
 #include "json.hpp"
+#include <stdexcept> //For error-throwing
 
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
@@ -36,76 +37,8 @@ ostream& operator<<(ostream& os, const RateCoefficient& RC){
     os << "RateCoefficient object from " << RC.adf11_file << endl;
     return os;  
 }
-void RateCoefficient::call1D(const int k, const int data_length, const vector<double>& log10_Te, const vector<double>& log10_ne, vector<double>& log10_coeffs){
-	// """Evaluate the ionisation/recombination coefficients of
-	// 	k'th atomic state at a given temperature and density.
-	// 	Args:
-	// 		k  (int): Ionising or recombined ion stage,
-	// 			between 0 and k=Z-1, where Z is atomic number.
-	// 		Te (array_like): Temperature in [eV].
-	// 		ne (array_like): Density in [m-3].
-	// 	Returns:
-	// 		c (array_like): Rate coefficent in [m3/s].
+double RateCoefficient::call0D(const int k, const double eval_Te, const double eval_Ne){
 
-	// Iterate along the Te and ne values inputted.
-	// Assume that s is the location point, Te(s) and ne(s) are temp and density values
-	// as you move along the field line
-	
-	// Perform a basic interpolation based on linear distance
-	for(int s=0; s<data_length; ++s){
-		// values to search for
-		double log10_Te_search = log10_Te[s];
-		double log10_ne_search = log10_ne[s];
-		// Look through the log_temperature and log_density attributes of RateCoefficient to find nearest (strictly lower)
-		// Subtract 1 from answer to account for indexing from 0
-		int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), log10_Te_search) - log_temperature.begin() - 1;
-		int low_ne = lower_bound(log_density.begin(), log_density.end(), log10_ne_search) - log_density.begin() - 1;
-
-		// log10_coeffs[s] = log_coeff[k][low_Te][low_ne];
-
-		int high_Te = low_Te + 1;
-		int high_ne = low_ne + 1;
-		double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-		double ne_norm = 1/(log_density[high_ne] - log_density[low_ne]); //Spacing between grid points
-
-		double x = (log10_Te_search - log_temperature[low_Te])*Te_norm;
-		double y = (log10_ne_search - log_density[low_ne])*ne_norm;
-		
-		// // Construct the simple interpolation grid
-		// // Find weightings based on linear distance
-		// // w01 ------ w11    ne -> y
-		// //  | \     / |      |
-		// //  |  w(x,y) |    --/--Te -> x
-		// //  | /     \ |      |
-		// // w00 ------ w10  
-
-		log10_coeffs[s] =
-		(log_coeff[k][low_Te][low_ne]*(1-y) + log_coeff[k][low_Te][high_ne]*y)*(1-x)
-		+(log_coeff[k][high_Te][low_ne]*(1-y) + log_coeff[k][high_Te][high_ne]*y)*x;
-		
-		// Print inspection
-		// cout << endl;
-		// cout << "00 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[low_ne] << " value: " << log_coeff[k][low_Te][low_ne] << endl;
-		// cout << "10 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[low_ne] << " value: " << log_coeff[k][high_Te][low_ne] << endl;
-		// cout << "01 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][low_Te][high_ne] << endl;
-		// cout << "11 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][high_Te][high_ne] << endl;
-		// cout << "xy - log Te: " << log10_Te_search << " log ne: " << log10_ne_search << " value: " << log10_coeffs[s] << endl;
-		// cout << "x: " << x << " y: " << y << endl;
-		// cout << endl;
-	}
-
-	// # Need to convert both temp and density to log-scale
-	// log_temperature = np.log10(Te)
-	// log_density = np.log10(ne)
-
-	// # Find the logarithm of the rate-coefficient
-	// log_coeff = self.splines[k](log_temperature, log_density, grid=False)
-	// # Raise (piecewise) to the power 10 to return in m3/s
-	// coeffs = np.power(10,log_coeff)
-
-	// return coeffs
-};
-double RateCoefficient::call0D(const int k, const double log10_Te, const double log10_ne){
 	// """Evaluate the ionisation/recombination coefficients of
 	// 	k'th atomic state at a given temperature and density.
 	// 	Args:
@@ -117,22 +50,32 @@ double RateCoefficient::call0D(const int k, const double log10_Te, const double 
 	// 		c (double): Rate coefficent in [m3/s].
 	
 	// Perform a basic interpolation based on linear distance
-	
 	// values to search for
-	// double log10_Te;
-	// double log10_ne;
+	double eval_log10_Te = log10(eval_Te);
+	double eval_log10_Ne = log10(eval_Ne);
 	// Look through the log_temperature and log_density attributes of RateCoefficient to find nearest (strictly lower)
 	// Subtract 1 from answer to account for indexing from 0
-	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), log10_Te) - log_temperature.begin() - 1;
-	int low_ne = lower_bound(log_density.begin(), log_density.end(), log10_ne) - log_density.begin() - 1;
+	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
+	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
+
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((low_Te == log_temperature.size()-1) or (low_Te == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
+	};
+	if ((low_Ne == log_density.size()-1) or (low_Ne == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
+	};
 
 	int high_Te = low_Te + 1;
-	int high_ne = low_ne + 1;
-	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-	double ne_norm = 1/(log_density[high_ne] - log_density[low_ne]); //Spacing between grid points
+	int high_ne = low_Ne + 1;
 
-	double x = (log10_Te - log_temperature[low_Te])*Te_norm;
-	double y = (log10_ne - log_density[low_ne])*ne_norm;
+	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
+	double ne_norm = 1/(log_density[high_ne] - log_density[low_Ne]); //Spacing between grid points
+
+	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
+	double y = (eval_log10_Ne - log_density[low_Ne])*ne_norm;
 	
 	// // Construct the simple interpolation grid
 	// // Find weightings based on linear distance
@@ -142,32 +85,21 @@ double RateCoefficient::call0D(const int k, const double log10_Te, const double 
 	// //  | /     \ |      |
 	// // w00 ------ w10  
 
-	double log10_coeff =
-	(log_coeff[k][low_Te][low_ne]*(1-y) + log_coeff[k][low_Te][high_ne]*y)*(1-x)
-	+(log_coeff[k][high_Te][low_ne]*(1-y) + log_coeff[k][high_Te][high_ne]*y)*x;
-	
-	// Print inspection
+	double eval_log10_coeff =
+	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_ne]*y)*(1-x)
+	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_ne]*y)*x;
+	double eval_coeff = pow(10,eval_log10_coeff);
+	// // Print inspection
 	// cout << endl;
-	// cout << "00 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[low_ne] << " value: " << log_coeff[k][low_Te][low_ne] << endl;
-	// cout << "10 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[low_ne] << " value: " << log_coeff[k][high_Te][low_ne] << endl;
+	// cout << "00 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[low_Ne] << " value: " << log_coeff[k][low_Te][low_Ne] << endl;
+	// cout << "10 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[low_Ne] << " value: " << log_coeff[k][high_Te][low_Ne] << endl;
 	// cout << "01 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][low_Te][high_ne] << endl;
 	// cout << "11 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][high_Te][high_ne] << endl;
-	// cout << "xy - log Te: " << log10_Te << " log ne: " << log10_ne << " value: " << log10_coeff << endl;
+	// cout << "xy - log Te: " << eval_log10_Te << " log ne: " << eval_log10_Ne << " value: " << eval_log10_coeff << endl;
 	// cout << "x: " << x << " y: " << y << endl;
 	// cout << endl;
 	
-	return log10_coeff;
-
-	// # Need to convert both temp and density to log-scale
-	// log_temperature = np.log10(Te)
-	// log_density = np.log10(ne)
-
-	// # Find the logarithm of the rate-coefficient
-	// log_coeff = self.splines[k](log_temperature, log_density, grid=False)
-	// # Raise (piecewise) to the power 10 to return in m3/s
-	// coeffs = np.power(10,log_coeff)
-
-	// return coeffs
+	return eval_coeff;
 };
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;
