@@ -40,7 +40,8 @@ using json = nlohmann::json;
 
 // N.b. perform all plotting routines as Python post-processing
 
-vector<double> calculateCollRadEquilibriumOD(ImpuritySpecies& impurity, SD1DData& experiment){
+double computeRadiatedPower(ImpuritySpecies& impurity, SD1DData& experiment){
+// vector<double> calculateCollRadEquilibriumOD(ImpuritySpecies& impurity, SD1DData& experiment){
 	// Returns the relative abundance across ionisation stages (assumes collisional radiation equilibrium)
 	// 
 	int constant_position_index = 0;
@@ -83,12 +84,12 @@ vector<double> calculateCollRadEquilibriumOD(ImpuritySpecies& impurity, SD1DData
 		iz_stage_distribution[k] = iz_stage_distribution[k] / sum_iz;
 	}
 
-	return iz_stage_distribution;
-}
-double computeRadiatedPower(ImpuritySpecies& impurity, SD1DData& experiment, vector<double>& iz_stage_distribution){
-	int constant_position_index = 0;
+	// return iz_stage_distribution;
+// }
+// double computeRadiatedPower(ImpuritySpecies& impurity, SD1DData& experiment, vector<double>& iz_stage_distribution){
+	// int constant_position_index = 0;
 
-	int Z = impurity.get_atomic_number();
+	// int Z = impurity.get_atomic_number();
 	double neutral_fraction = 1e-2;
 	set<string> radiative_processes = {"line_power","continuum_power"};
 	if (impurity.get_has_charge_exchange()){
@@ -97,8 +98,8 @@ double computeRadiatedPower(ImpuritySpecies& impurity, SD1DData& experiment, vec
 
 
 	// Do for a single point since this is what BOUT wants
-	double expt_log_temperature = log10(experiment.get_temperature()[0]);
-	double expt_log_density = log10(experiment.get_density()[0]);
+	// double expt_log_temperature = log10(experiment.get_temperature()[0]);
+	// double expt_log_density = log10(experiment.get_density()[0]);
 
 	double total_power = 0;
 
@@ -171,7 +172,7 @@ int main(){
 	SD1DData experiment(expt_results_json, 1e-2);
 
 	// # Calculate the distribution across ionisation stages, assuming collisional-radiative equilibrium
-	vector<double> iz_stage_distribution = calculateCollRadEquilibriumOD(impurity, experiment);
+	// vector<double> iz_stage_distribution = calculateCollRadEquilibriumOD(impurity, experiment);
 
 	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
 	// 	cout <<"k: "<< k <<" val: " << iz_stage_distribution[k] << endl;
@@ -185,7 +186,7 @@ int main(){
 	//  dictionaries with physics_process keys and
 	// # 	data_length shape for stage_integrated_power and [Z, data_length] shape for radiated_power
 	// # 	total_power is an array of shape data_length
-	double total_power = computeRadiatedPower(impurity, experiment, iz_stage_distribution);
+	double total_power = computeRadiatedPower(impurity, experiment);
 
 	cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<endl;
 }
