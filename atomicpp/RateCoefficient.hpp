@@ -26,12 +26,9 @@
 		// #     log_temperature     : np.array of log10 of temperature values
 		// #     log_density         : np.array of log10 of density values
 		// #     log_coeff           : a 3D np.array with shape (Z, temp, dens)
-		// #     splines             : list of scipy.interpolate.fitpack2.RectBivariateSpline
 		// #         The list has length Z and is interpolations of log_coeff.
 		public:
 			RateCoefficient(const string& filename);
-			// void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
-			// vector<double> call1D(const int k, const vector<double>& Te, const vector<double>& ne);
 			double call0D(const int k, const double log10_Te, const double log10_ne);
 			void call1D(const int k, const int data_length, const vector<double>& log10_Te, const vector<double>& log10_ne, vector<double>& log10_coeffs);
 			friend ostream& operator<<(ostream& os, const RateCoefficient& RC); //Define the __str__ return to cout
@@ -48,7 +45,5 @@
 			vector<vector< vector<double> > > log_coeff;
 			vector<double> log_temperature;
 			vector<double> log_density;
-			// splines (interpolation functions on 2D grid which can be called to return value)
-			// see https://en.wikipedia.org/wiki/List_of_numerical_libraries#C.2B.2B for C++ math libraries
 		};
 #endif
