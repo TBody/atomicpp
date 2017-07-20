@@ -132,6 +132,78 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 	return total_power;
 }
 
+vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
+	//Identical to main code -- used to train time-dependent solver
+
+	int Z = impurity.get_atomic_number();
+	vector<double> iz_stage_distribution(Z+1);
+
+	// Set GS density equal to 1 (arbitrary)
+	iz_stage_distribution[0] = 1;
+	double sum_iz = 1;
+
+	// Loop over 0, 1, ..., Z-1
+	// Each charge state is set in terms of the density of the previous
+	for(int k=0; k<Z; ++k){
+		// Ionisation
+		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
+		shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// Evaluate the RateCoefficient at the point
+		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
+
+		// Recombination
+		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
+		shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// Evaluate the RateCoefficient at the point
+		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
+
+		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th sets the equilibrium densities
+		// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
+		// ionisation from the bare nucleus, and no recombination onto the neutral (ignoring anion formation) the 'k'
+		// value of ionisation coeffs is shifted down  by one relative to the recombination coeffs - therefore this
+		// evaluation actually gives the balance
+
+		iz_stage_distribution[k+1] = iz_stage_distribution[k] * (k_iz_evaluated/k_rec_evaluated);
+		sum_iz += iz_stage_distribution[k+1];
+	}
+
+	// # Normalise such that the sum over all ionisation stages is '1' at all points
+	for(int k=0; k<=Z; ++k){
+		iz_stage_distribution[k] = iz_stage_distribution[k] / sum_iz;
+	}
+	return iz_stage_distribution;
+}
+
+vector<double> computeStateVectorDerivs(ImpuritySpecies& impurity, vector<double>& state_vector){
+	cout << "State vector in" << endl;
+	cout << "Te: " << state_vector[0] << endl;
+	cout << "Ne: " << state_vector[1] << endl;
+	cout << "Nn: " << state_vector[2] << endl;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		int state_vector_index = k + 3;
+		cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
+	}
+
+	// Start with perfectly steady-state
+	vector<double> dydt(state_vector.size());
+	for(int i=0; i<state_vector.size(); ++i){
+		dydt[i] = 0;
+	}
+	// Can replace this with derivative calculation
+
+
+	cout << "\nRate-of-change of state vector out" << endl;
+	cout << "dTe/dt: " << dydt[0] << endl;
+	cout << "dNe/dt: " << dydt[1] << endl;
+	cout << "dNn/dt: " << dydt[2] << endl;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		int dydt_index = k + 3;
+		cout << "dNz^" << k << "/dt: " << dydt[dydt_index] << endl;
+	}
+
+	return dydt;
+}
+
 int main(){
 	const string expt_results_json="sd1d-case-05.json";
 	string impurity_symbol="c";
@@ -160,6 +232,25 @@ int main(){
 	double total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
 
 	cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<endl;
+
+	// Time dependant solver code
+	// Repeat the iz-stage-distribution calculation to create the Nik (charged-resolved impurity) density vector
+	vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Ni, Nn);
+	vector<double> Nik(impurity.get_atomic_number()+1);
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		Nik[k] = Ni * iz_stage_distribution[k];
+		// cout << "k = " << k << ", fraction = " << iz_stage_distribution[k] << ", Nz^" << k << ": " << Nik[k] << endl;
+	}
+
+	// Create the 'state vector' for the differential equation
+	vector<double> state_vector = {Te, Ne, Nn};
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		state_vector.push_back(Nik[k]);
+	}
+	cout << "state_vector with elements (Te, Ne, Nn, Nz^0, Nz^1, ..., Nz^k) initialised" << endl;
+	cout << "state_vector length: " << state_vector.size() << ", monitoring " << impurity.get_atomic_number() + 1 << " charge states of " << impurity.get_name() << " (including g.s.)" << endl;
+
+	vector<double> dydt = computeStateVectorDerivs(impurity, state_vector);
 }
 
 
