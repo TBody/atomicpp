@@ -14,25 +14,34 @@
 		// # Intended to be called from the .makeRateCoefficients method of an ImpuritySpecies object
 		// #
 		// # Closely based on the cfe316/atomic/atomic_data.py/RateCoefficient class
-		// #
-		// # Interpolation tables for the rate of some physical process.
-		// # Contains one 2D spline interpolator for each charge state of an element,
-		// # per  process like 'ionisation', 'recombination'.
 
 		// # Attributes:
 		// #     atomic_number (int) : The element's Z.
 		// #     element (str)       : Short element name like 'c'
 		// #     adf11_file (str)    : The /full/filename it came from (link to .json, not .dat)
-		// #     log_temperature     : np.array of log10 of temperature values
-		// #     log_density         : np.array of log10 of density values
-		// #     log_coeff           : a 3D np.array with shape (Z, temp, dens)
-		// #     splines             : list of scipy.interpolate.fitpack2.RectBivariateSpline
+		// #     log_temperature     : vector<double> of log10 of temperature values for building interpolation grid
+		// #     log_density         : vector<double> of log10 of density values for building interpolation grid
+		// #     log_coeff           : nested 3D vector<double> with shape (Z, temp, dens)
 		// #         The list has length Z and is interpolations of log_coeff.
 		public:
+			/**
+			 * @brief RateCoefficient constructor
+			 * 
+			 * @param filename JSON file from OpenADAS which supplies the rate coefficient data
+			 */
 			RateCoefficient(const string& filename);
-			// void compute_interpolating_splines(); //Could consider fixing length, since it will always be the same shape
-			// vector<double> call1D(const int k, const vector<double>& Te, const vector<double>& ne);
-			void call1D(const int k, const int data_length, const vector<double>& log10_Te, const vector<double>& log10_ne, vector<double>& log10_coeffs);
+			/**
+			 * @brief Returns the rate coefficient for a (scalar) Te and Ne supplied
+			 * @details Performs a simple bivariate (multilinear) interpolation to return the rate coefficient
+			 * at the supplied Te and Ne values. N.b. will throw a runtime_error if the supplied Te or Ne
+			 * value are not on the interpolating grid (otherwise you'll get a seg fault)
+			 * 
+			 * @param k The charge state index process (actually k+=1 for charged-target processes, but we don't implement this here)
+			 * @param eval_Te electron temperature (Te) at a point (in eV)
+			 * @param eval_Ne electron density (Ne) at a point (in m^-3)
+			 * @return eval_coeff evaluated rate coefficient in m^3/s
+			 */
+			double call0D(const int k, const double eval_Te, const double eval_Ne);
 			friend ostream& operator<<(ostream& os, const RateCoefficient& RC); //Define the __str__ return to cout
 			int get_atomic_number();
 			string get_element();
@@ -47,7 +56,5 @@
 			vector<vector< vector<double> > > log_coeff;
 			vector<double> log_temperature;
 			vector<double> log_density;
-			// splines (interpolation functions on 2D grid which can be called to return value)
-			// see https://en.wikipedia.org/wiki/List_of_numerical_libraries#C.2B.2B for C++ math libraries
 		};
 #endif

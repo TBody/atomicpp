@@ -10,9 +10,9 @@ using namespace std; //saves having to prepend std:: onto common functions
 // for convenience
 using json = nlohmann::json;
 
-SD1DData::SD1DData(const string& input_file, double impurity_fraction_input){
+SD1DData::SD1DData(const string& expt_results_json, double impurity_fraction_input){
 
-	json data_dict = retrieveFromJSON(input_file);
+	json data_dict = retrieveFromJSON(expt_results_json);
 
 	impurity_fraction = impurity_fraction_input;
 

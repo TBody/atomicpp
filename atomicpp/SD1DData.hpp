@@ -14,7 +14,7 @@
 		// # For storing the data output from SD1D. To create the required JSON run the function
 		// # data_dict_export.py in an I/O (case) folder in SD1D.
 		public:
-			SD1DData(const string& input_file, double impurity_fraction);
+			SD1DData(const string& expt_results_json, double impurity_fraction);
 			vector<double> get_temperature();
 			vector<double> get_density();
 			vector<double> get_neutral_fraction();
