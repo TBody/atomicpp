@@ -274,7 +274,7 @@ int main(){
 	// N.b. This is only for training the data
 	SD1DData experiment(expt_results_json, 1e-2);
 
-	int constant_position_index = 199;
+	int constant_position_index = 10;
 
 	double Te = experiment.get_temperature()[constant_position_index];
 	double Ne = experiment.get_density()[constant_position_index];
@@ -315,6 +315,15 @@ int main(){
 	}
 	cout << "dNe/dt: " << dNe << endl;
 	cout << "dNn/dt: " << dNn << endl;
+
+
+	// Comparison to Post PSI
+	Ne = 1e18;
+	Te = 6;
+	Nn = 0;
+	total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
+	cout << "Comparison to PSI paper:" << total_power << "W/m3" << endl;
+	cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << endl;
 }
 
 
