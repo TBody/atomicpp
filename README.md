@@ -9,12 +9,12 @@ This code translates the [atomic1D] code into C++ so that it may be easily integ
 
 This program is built using a `Makefile` which controls compilation and linking of the required source files. The core development code is supplied in the main project directory as `Prad.cpp`, while the `atomicpp` folder contains contains the required header (`.hpp`) and corresponding source (`.cpp`) files which provide broadly applicable functions for storing and processing OpenADAS data. To run the `Prad.cpp` code requires
 
-#### System requirements  
+### System requirements
 
 * A C++ compiler which supports C++11 standard.
 * `gmake` to run the `Makefile`.
 
-#### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
+### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
 
 * The `atomicpp` module folder containing
     - `ImpuritySpecies` (`.cpp` and `.hpp`): for storing the data of a specified plasma impurity.
