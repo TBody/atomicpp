@@ -1,21 +1,20 @@
-#atomic++
----
-## Acknowledgments
+# atomic++
+## Acknowledgments  
 
 The majority of this code is based on the [_atomic1D_](https://github.com/TBody/atomic1D), which is in turn based on the excellent OpenADAS analysis tool provided at [_cfe316/atomic_](https://github.com/cfe316/atomic). The _atomic1D_ code translated the _atomic_ code into Python3 and used OpenADAS JSON reads rather than directly interfacing with the Fortran helper functions. The code to generate these OpenADAS JSON files is provided as [_OpenADAS\_to\_JSON_](https://github.com/TBody/OpenADAS_to_JSON).
 
-## Purpose of this code
+## Purpose of this code  
 
 This code translates the [atomic1D] code into C++ so that it may be easily integrated into the BOUT++ [_SD1D_](https://github.com/boutproject/SD1D) project. It provides a subset of the functionality of the [atomic1D] code, and therefore it is recommended that [_atomic1D_](https://github.com/TBody/atomic1D) is used in preference to this code for standalone analysis.
 
 This program is built using a `Makefile` which controls compilation and linking of the required source files. The core development code is supplied in the main project directory as `Prad.cpp`, while the `atomicpp` folder contains contains the required header (`.hpp`) and corresponding source (`.cpp`) files which provide broadly applicable functions for storing and processing OpenADAS data. To run the `Prad.cpp` code requires
 
-####System requirements
+#### System requirements  
 
 * A C++ compiler which supports C++11 standard.
 * `gmake` to run the `Makefile`.
 
-####In the same file as the main program source (`Prad.cpp`) at time of compilation;
+#### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
 
 * The `atomicpp` module folder containing
     - `ImpuritySpecies` (`.cpp` and `.hpp`): for storing the data of a specified plasma impurity.
@@ -26,14 +25,14 @@ This program is built using a `Makefile` which controls compilation and linking 
 * `impurity_user_input.json` (same directory as `Prad.cpp`): a plain-text file for providing hard-coded data relating to the impurity (such as year for OpenADAS data, etc). To modify, see the [JSON project](http://www.json.org) for nomenclature and follow the same style as the template.
 * `sd1d-case-*.json` (same directory as `Prad.cpp`): a json file created by `atomic1D/reference/data_dict_export.py`, for use with `SD1DData` for training the program (not needed if integrating into SD1D).
 
-###Understanding the code
+### Understanding the code  
 Effort was made to ensure reasonably comprehensive code-commenting in the source -- however, this README will not describe the code function. Instead, see the README for `atomic1D` (which has almost identical functionality) since this will be more thoroughly commented.
 
-####Running `Prad.cpp` from terminal
+#### Running `Prad.cpp` from terminal  
 
 To run the main power calculation code change to the directory containing `Prad.cpp` (and `Makefile`). In a terminal window type `make`. The makefile will compile the object code (`*.o`) for the module and for the main source (`Prad.o`), link the executables and then execute `./Prad` to run the executable. Compilation options can be controlled via the `flags` make variable in `Makefile`.
 
-####Integrating the power function into SD1D
+#### Integrating the power function into SD1D  
 To compute the total radiated power from a particular plasma impurity at a single location and single time the required code is
 ```cpp
 
@@ -69,8 +68,8 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 }
 ```
 
-####Integrating the time-dependent into SD1D
-*Still under development. *
+#### Integrating the time-dependent into SD1D  
+*Still under development.*
 ```cpp
 /**
  * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
