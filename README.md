@@ -35,6 +35,9 @@ Effort was made to ensure reasonably comprehensive code-commenting in the source
 To run the main power calculation code change to the directory containing `Prad.cpp` (and `Makefile`). In a terminal window type `make`. The makefile will compile the object code (`*.o`) for the module and for the main source (`Prad.o`), link the executables and then execute `./Prad` to run the executable. Compilation options can be controlled via the `flags` make variable in `Makefile`.
 
 #### Integrating the power function into SD1D  
+
+*N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
+
 To compute the total radiated power from a particular plasma impurity at a single location and single time the required code is
 ```cpp
 
