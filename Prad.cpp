@@ -30,6 +30,20 @@ using namespace std; //saves having to prepend std:: onto common functions
 // for convenience
 using json = nlohmann::json;
 
+/**
+ * @brief Calculate the total radiated power assuming collisional-radiative equilibrium
+ * @details  Assumes collisional-radiative equilibrium (i.e. infinite impurity retention time,
+ * no charge-exchange recombination) to provide a simple method for calculating the ionisation stage distribution
+ * for the impurity. This is then used to calculate the power due to each considered physics process (line power,
+ * continuum power and charge-exchange power) for each ionisation stage. The total power (in W/m^3) is returned.
+ * 
+ * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
+ * @param Te electron temperature in eV
+ * @param Ne electron density in m^-3
+ * @param Ni impurity density in m^-3, summed over all ionisation stages
+ * @param Nn neutral density in m^-3
+ * @return Total power in W/m^3
+ */
 double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
 	// Calculates the relative distribution across ionisation stages of the impurity by assuming collisional-radiative
 	// equilbrium. This is then used to calculate the density within each state, allowing the total power at a point
@@ -174,31 +188,71 @@ vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double T
 	return iz_stage_distribution;
 }
 
-vector<double> computeStateVectorDerivs(ImpuritySpecies& impurity, vector<double>& state_vector){
-	cout << "State vector in" << endl;
-	cout << "Te: " << state_vector[0] << endl;
-	cout << "Ne: " << state_vector[1] << endl;
-	cout << "Nn: " << state_vector[2] << endl;
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int state_vector_index = k + 3;
-		cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
-	}
+/**
+ * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
+ * @details Still under development
+ * 
+ * * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
+ * @param Te electron temperature in eV
+ * @param Ne electron density in m^-3
+ * @param Nn neutral density in m^-3
+ * @param Nik impurity density in m^-3, vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * return dydt;
+ * //where the derivative vector may be unpacked as
+ *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
+ *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
+ *   vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
+ *   	int dydt_index = k + 2;
+ *   	dNik[k] = dydt[dydt_index];
+ *   }
+ *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ */
+vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const vector<double>& Nik){
+	// cout << "State vector in" << endl;
+	// cout << "Te: " << state_vector[0] << endl;
+	// cout << "Ne: " << state_vector[1] << endl;
+	// cout << "Nn: " << state_vector[2] << endl;
+	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	// 	int state_vector_index = k + 3;
+	// 	cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
+	// }
 
-	// Start with perfectly steady-state
-	vector<double> dydt(state_vector.size());
-	for(int i=0; i<state_vector.size(); ++i){
-		dydt[i] = 0;
+	vector<double> dydt(Nik.size()+4);
+	
+	// Start with perfectly steady-state (dydt = 0 for all elements)
+	for(int i=0; i<dydt.size(); ++i){
+		dydt[i] = 1;
 	}
 	// Can replace this with derivative calculation
+	int Z = impurity.get_atomic_number();
+	// Derivatives of the charge states
+	for(int k=0; k<=Z; ++k){
+		
+		if (k==0){
+			cout << "Nz^" << k << ": " << Nik[k] << endl;
+		} else if (k == Z){
+			cout << "Nz^" << k << ": " << Nik[k] << endl;
+		} else {
+			cout << "Nz^" << k << ": " << Nik[k] << endl;
+		};
 
 
-	cout << "\nRate-of-change of state vector out" << endl;
-	cout << "dTe/dt: " << dydt[0] << endl;
-	cout << "dNe/dt: " << dydt[1] << endl;
-	cout << "dNn/dt: " << dydt[2] << endl;
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int dydt_index = k + 3;
-		cout << "dNz^" << k << "/dt: " << dydt[dydt_index] << endl;
+		// // Ionisation
+		// // Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
+		// shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// // Evaluate the RateCoefficient at the point
+		// double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
+
+		// // Recombination
+		// // Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
+		// shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// // Evaluate the RateCoefficient at the point
+		// double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
+		// dydt[i] = 
+
+		// cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
 	}
 
 	return dydt;
@@ -242,15 +296,25 @@ int main(){
 		// cout << "k = " << k << ", fraction = " << iz_stage_distribution[k] << ", Nz^" << k << ": " << Nik[k] << endl;
 	}
 
-	// Create the 'state vector' for the differential equation
-	vector<double> state_vector = {Te, Ne, Nn};
+	vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik);
+	double Pcool = dydt[0];
+	double Prad  = dydt[1];
+	vector<double> dNik(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		state_vector.push_back(Nik[k]);
+		int dydt_index = k + 2;
+		dNik[k] = dydt[dydt_index];
 	}
-	cout << "state_vector with elements (Te, Ne, Nn, Nz^0, Nz^1, ..., Nz^k) initialised" << endl;
-	cout << "state_vector length: " << state_vector.size() << ", monitoring " << impurity.get_atomic_number() + 1 << " charge states of " << impurity.get_name() << " (including g.s.)" << endl;
+	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
+	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
 
-	vector<double> dydt = computeStateVectorDerivs(impurity, state_vector);
+	cout << "\nRate-of-change" << endl;
+	cout << "Pcool: " << Pcool << endl;
+	cout << "Prad: "  << Prad << endl;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		cout << "dNz^" << k << "/dt: " << dNik[k] << endl;
+	}
+	cout << "dNe/dt: " << dNe << endl;
+	cout << "dNn/dt: " << dNn << endl;
 }
 
 
