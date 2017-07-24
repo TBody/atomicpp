@@ -318,12 +318,12 @@ int main(){
 
 
 	// Comparison to Post PSI
-	Ne = 1e18;
-	Te = 6;
-	Nn = 0;
-	total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
-	cout << "Comparison to PSI paper:" << total_power << "W/m3" << endl;
-	cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << endl;
+	// Ne = 1e18;
+	// Te = 6;
+	// Nn = 0;
+	// total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
+	// cout << "Comparison to PSI paper:" << total_power << "W/m3" << endl;
+	// cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << endl;
 }
 
 
