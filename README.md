@@ -1,5 +1,5 @@
 # atomic++
-## Acknowledgments  
+## Acknowledgments
 
 The majority of this code is based on the [_atomic1D_](https://github.com/TBody/atomic1D), which is in turn based on the excellent OpenADAS analysis tool provided at [_cfe316/atomic_](https://github.com/cfe316/atomic). The _atomic1D_ code translated the _atomic_ code into Python3 and used OpenADAS JSON reads rather than directly interfacing with the Fortran helper functions. The code to generate these OpenADAS JSON files is provided as [_OpenADAS\_to\_JSON_](https://github.com/TBody/OpenADAS_to_JSON).
 
@@ -9,12 +9,12 @@ This code translates the [atomic1D] code into C++ so that it may be easily integ
 
 This program is built using a `Makefile` which controls compilation and linking of the required source files. The core development code is supplied in the main project directory as `Prad.cpp`, while the `atomicpp` folder contains contains the required header (`.hpp`) and corresponding source (`.cpp`) files which provide broadly applicable functions for storing and processing OpenADAS data. To run the `Prad.cpp` code requires
 
-### System requirements
+#### System requirements  
 
 * A C++ compiler which supports C++11 standard.
 * `gmake` to run the `Makefile`.
 
-### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
+#### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
 
 * The `atomicpp` module folder containing
     - `ImpuritySpecies` (`.cpp` and `.hpp`): for storing the data of a specified plasma impurity.
@@ -27,6 +27,8 @@ This program is built using a `Makefile` which controls compilation and linking 
 
 ### Understanding the code  
 Effort was made to ensure reasonably comprehensive code-commenting in the source -- however, this README will not describe the code function. Instead, see the README for `atomic1D` (which has almost identical functionality) since this will be more thoroughly commented.
+
+## Program execution  
 
 #### Running `Prad.cpp` from terminal  
 
