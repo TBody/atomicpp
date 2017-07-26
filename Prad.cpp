@@ -10,7 +10,7 @@
 //
 
 // Include declarations
-#include <iostream>
+#include <ostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -25,10 +25,8 @@
 #include "atomicpp/SD1DData.hpp"
 
 #include "atomicpp/json.hpp"
-using namespace std; //saves having to prepend std:: onto common functions
-
-// for convenience
 using json = nlohmann::json;
+
 
 /**
  * @brief Calculate the total radiated power assuming collisional-radiative equilibrium
@@ -48,31 +46,31 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 	// Calculates the relative distribution across ionisation stages of the impurity by assuming collisional-radiative
 	// equilbrium. This is then used to calculate the density within each state, allowing the total power at a point
 	// to be evaluated
-	cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Ni = " << Ni << ", Nn = " << Nn << endl;
+	// std::cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Ni = " << Ni << ", Nn = " << Nn << std::endl;
 
 	int Z = impurity.get_atomic_number();
-	vector<double> iz_stage_distribution(Z+1);
+	std::vector<double> iz_stage_distribution(Z+1);
 
-	// Set GS density equal to 1 (arbitrary)
+	// std::set GS density equal to 1 (arbitrary)
 	iz_stage_distribution[0] = 1;
 	double sum_iz = 1;
 
 	// Loop over 0, 1, ..., Z-1
-	// Each charge state is set in terms of the density of the previous
+	// Each charge state is std::set in terms of the density of the previous
 	for(int k=0; k<Z; ++k){
 		// Ionisation
-		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
 		// Evaluate the RateCoefficient at the point
 		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
 
 		// Recombination
-		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
 		// Evaluate the RateCoefficient at the point
 		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
 
-		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th sets the equilibrium densities
+		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
 		// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
 		// ionisation from the bare nucleus, and no recombination onto the neutral (ignoring anion formation) the 'k'
 		// value of ionisation coeffs is shifted down  by one relative to the recombination coeffs - therefore this
@@ -87,7 +85,7 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 		iz_stage_distribution[k] = iz_stage_distribution[k] / sum_iz;
 	}
 
-	set<string> radiative_processes = {"line_power","continuum_power"};
+	std::set<std::string> radiative_processes = {"line_power","continuum_power"};
 	if (impurity.get_has_charge_exchange()){
 		radiative_processes.insert("cx_power");
 	}
@@ -96,9 +94,9 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 
 	for(int k=0; k< Z; ++k){
 		double k_power = 0;
-		for(set<string>::iterator iter = radiative_processes.begin();iter != radiative_processes.end();++iter){
+		for(std::set<std::string>::iterator iter = radiative_processes.begin();iter != radiative_processes.end();++iter){
 				
-			shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
+			std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
 			double k_evaluated = rate_coefficient->call0D(k, Te, Ne);
 
 			double scale;
@@ -129,49 +127,49 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 				double Nz_charge_state = Ni * iz_stage_distribution[target_charge_state];
 				scale = Nn * Nz_charge_state;
 			} else {
-				throw invalid_argument( "radiative_process not recognised (in computeRadiatedPower)" );
+				throw std::invalid_argument( "radiative_process not recognised (in computeRadiatedPower)" );
 			}
 		double power = scale * k_evaluated;
 		// N.b. These won't quite give the power from the kth charge state. Instead they give the
 		// power from the kth element on the rate coefficient, which may be kth or (k+1)th charge state
-		// cout << "Power due to "<< *iter << " from k="<<k<<" is "<<power<<" [W/m3]"<<endl;
+		// std::cout << "Power due to "<< *iter << " from k="<<k<<" is "<<power<<" [W/m3]"<<std::endl;
 		k_power += power;
 		}
 		// N.b. These won't quite give the power from the kth charge state. Instead they give the
 		// power from the kth element on the rate coefficient, which may be kth or (k+1)th charge state
-		// cout << "Total power from all procs. from k="<<k<<" is "<<k_power<<" [W/m3]\n"<<endl;
+		// std::cout << "Total power from all procs. from k="<<k<<" is "<<k_power<<" [W/m3]\n"<<std::endl;
 		total_power += k_power;
 	}
 
 	return total_power;
 }
 
-vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
+std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
 	//Identical to main code -- used to train time-dependent solver
 
 	int Z = impurity.get_atomic_number();
-	vector<double> iz_stage_distribution(Z+1);
+	std::vector<double> iz_stage_distribution(Z+1);
 
-	// Set GS density equal to 1 (arbitrary)
+	// std::set GS density equal to 1 (arbitrary)
 	iz_stage_distribution[0] = 1;
 	double sum_iz = 1;
 
 	// Loop over 0, 1, ..., Z-1
-	// Each charge state is set in terms of the density of the previous
+	// Each charge state is std::set in terms of the density of the previous
 	for(int k=0; k<Z; ++k){
 		// Ionisation
-		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
 		// Evaluate the RateCoefficient at the point
 		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
 
 		// Recombination
-		// Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
 		// Evaluate the RateCoefficient at the point
 		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
 
-		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th sets the equilibrium densities
+		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
 		// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
 		// ionisation from the bare nucleus, and no recombination onto the neutral (ignoring anion formation) the 'k'
 		// value of ionisation coeffs is shifted down  by one relative to the recombination coeffs - therefore this
@@ -196,12 +194,12 @@ vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double T
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
  * @param Nn neutral density in m^-3
- * @param Nik impurity density in m^-3, vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
  * return dydt;
- * //where the derivative vector may be unpacked as
+ * //where the derivative std::vector may be unpacked as
  *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
  *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
  *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
  *   	int dydt_index = k + 2;
  *   	dNik[k] = dydt[dydt_index];
@@ -209,17 +207,17 @@ vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double T
  *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
-vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const vector<double>& Nik){
-	// cout << "State vector in" << endl;
-	// cout << "Te: " << state_vector[0] << endl;
-	// cout << "Ne: " << state_vector[1] << endl;
-	// cout << "Nn: " << state_vector[2] << endl;
+std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
+	// std::cout << "State std::vector in" << std::endl;
+	// std::cout << "Te: " << state_std::vector[0] << std::endl;
+	// std::cout << "Ne: " << state_std::vector[1] << std::endl;
+	// std::cout << "Nn: " << state_std::vector[2] << std::endl;
 	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	// 	int state_vector_index = k + 3;
-	// 	cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
+	// 	int state_std::vector_index = k + 3;
+	// 	std::cout << "Nz^" << k << ": " << state_std::vector[state_std::vector_index] << std::endl;
 	// }
 
-	vector<double> dydt(Nik.size()+4);
+	std::vector<double> dydt(Nik.size()+4);
 	
 	// Start with perfectly steady-state (dydt = 0 for all elements)
 	for(int i=0; i<dydt.size(); ++i){
@@ -231,36 +229,36 @@ vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const d
 	for(int k=0; k<=Z; ++k){
 		
 		if (k==0){
-			cout << "Nz^" << k << ": " << Nik[k] << endl;
+			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
 		} else if (k == Z){
-			cout << "Nz^" << k << ": " << Nik[k] << endl;
+			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
 		} else {
-			cout << "Nz^" << k << ": " << Nik[k] << endl;
+			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
 		};
 
 
 		// // Ionisation
-		// // Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		// shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// // Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		// std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
 		// // Evaluate the RateCoefficient at the point
 		// double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
 
 		// // Recombination
-		// // Get the RateCoefficient from the rate_coefficient map (atrribute of impurity)
-		// shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// // Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		// std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
 		// // Evaluate the RateCoefficient at the point
 		// double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
 		// dydt[i] = 
 
-		// cout << "Nz^" << k << ": " << state_vector[state_vector_index] << endl;
+		// std::cout << "Nz^" << k << ": " << state_std::vector[state_std::vector_index] << std::endl;
 	}
 
 	return dydt;
 }
 
 int main(){
-	const string expt_results_json="sd1d-case-05.json";
-	string impurity_symbol="c";
+	const std::string expt_results_json="sd1d-case-05.json";
+	std::string impurity_symbol="c";
 
 	ImpuritySpecies impurity(impurity_symbol);
 
@@ -285,21 +283,21 @@ int main(){
 	// BOUT++/SD1D form for compute radiated power
 	double total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
 
-	cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<endl;
+	// std::cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<std::endl;
 
 	// Time dependant solver code
-	// Repeat the iz-stage-distribution calculation to create the Nik (charged-resolved impurity) density vector
-	vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Ni, Nn);
-	vector<double> Nik(impurity.get_atomic_number()+1);
+	// Repeat the iz-stage-distribution calculation to create the Nik (charged-resolved impurity) density std::vector
+	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Ni, Nn);
+	std::vector<double> Nik(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		Nik[k] = Ni * iz_stage_distribution[k];
-		// cout << "k = " << k << ", fraction = " << iz_stage_distribution[k] << ", Nz^" << k << ": " << Nik[k] << endl;
+		// std::cout << "k = " << k << ", fraction = " << iz_stage_distribution[k] << ", Nz^" << k << ": " << Nik[k] << std::endl;
 	}
 
-	vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik);
+	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik);
 	double Pcool = dydt[0];
 	double Prad  = dydt[1];
-	vector<double> dNik(impurity.get_atomic_number()+1);
+	std::vector<double> dNik(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		int dydt_index = k + 2;
 		dNik[k] = dydt[dydt_index];
@@ -307,14 +305,14 @@ int main(){
 	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
 	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
 
-	cout << "\nRate-of-change" << endl;
-	cout << "Pcool: " << Pcool << endl;
-	cout << "Prad: "  << Prad << endl;
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		cout << "dNz^" << k << "/dt: " << dNik[k] << endl;
-	}
-	cout << "dNe/dt: " << dNe << endl;
-	cout << "dNn/dt: " << dNn << endl;
+	// std::cout << "\nRate-of-change" << std::endl;
+	// std::cout << "Pcool: " << Pcool << std::endl;
+	// std::cout << "Prad: "  << Prad << std::endl;
+	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	// 	std::cout << "dNz^" << k << "/dt: " << dNik[k] << std::endl;
+	// }
+	// std::cout << "dNe/dt: " << dNe << std::endl;
+	// std::cout << "dNn/dt: " << dNn << std::endl;
 
 
 	// Comparison to Post PSI
@@ -322,8 +320,10 @@ int main(){
 	// Te = 6;
 	// Nn = 0;
 	// total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
-	// cout << "Comparison to PSI paper:" << total_power << "W/m3" << endl;
-	// cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << endl;
+	// std::cout << "Comparison to PSI paper:" << total_power << "W/m3" << std::endl;
+	// std::cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << std::endl;
+
+	std::cout << "Running" << std::endl;
 }
 
 
