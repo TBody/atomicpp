@@ -13,7 +13,7 @@ using json = nlohmann::json;
 
 RateCoefficient::RateCoefficient(const std::string& filename){
 	// # Create an instance of RateCoefficient by reading an OpenADAS JSON file
-	
+
 	json data_dict = retrieveFromJSON(filename);
 
 	atomic_number   = data_dict["charge"];
@@ -30,9 +30,20 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	log_density = extract_log_density;
 
 };
-std::ostream& operator<<(std::ostream& os, const RateCoefficient& RC){  
+RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
+	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
+
+	atomic_number   = source_rc->get_atomic_number();
+	element         = source_rc->get_element();
+	adf11_file      = source_rc->get_adf11_file();
+
+	log_temperature = source_rc->get_log_temperature();
+	log_density = source_rc->get_log_density();
+
+};
+std::ostream& operator<<(std::ostream& os, const RateCoefficient& RC){
     os << "RateCoefficient object from " << RC.adf11_file << std::endl;
-    return os;  
+    return os;
 }
 double RateCoefficient::call0D(const int k, const double eval_Te, const double eval_Ne){
 
@@ -45,7 +56,7 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	// 		ne (double): Density in [m-3].
 	// 	Returns:
 	// 		c (double): Rate coefficent in [m3/s].
-	
+
 	// Perform a basic interpolation based on linear distance
 	// values to search for
 	double eval_log10_Te = log10(eval_Te);
@@ -73,14 +84,14 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 
 	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
 	double y = (eval_log10_Ne - log_density[low_Ne])*ne_norm;
-	
+
 	// // Construct the simple interpolation grid
 	// // Find weightings based on linear distance
 	// // w01 ------ w11    ne -> y
 	// //  | \     / |      |
 	// //  |  w(x,y) |    --/--Te -> x
 	// //  | /     \ |      |
-	// // w00 ------ w10  
+	// // w00 ------ w10
 
 	double eval_log10_coeff =
 	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_ne]*y)*(1-x)
@@ -95,7 +106,7 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	// std::cout << "xy - log Te: " << eval_log10_Te << " log ne: " << eval_log10_Ne << " value: " << eval_log10_coeff << std::endl;
 	// std::cout << "x: " << x << " y: " << y << std::endl;
 	// std::cout << std::endl;
-	
+
 	return eval_coeff;
 };
 int RateCoefficient::get_atomic_number(){

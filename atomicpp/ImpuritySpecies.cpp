@@ -130,6 +130,9 @@ void ImpuritySpecies::makeRateCoefficients(){
 	std::map<std::string,std::shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
 		return rate_coefficients;
 	};
+	void ImpuritySpecies::add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value){
+		rate_coefficients[key] = value;
+	};
 	std::shared_ptr<RateCoefficient> ImpuritySpecies::get_rate_coefficient(const std::string& key){
 		return rate_coefficients[key];
 	};

@@ -255,6 +255,39 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 
 	return dydt;
 }
+/**
+ * @brief Check that shared interpolation (for speed) can be used
+ * @details Checks that the log_temperature and log_density attributes of the 
+ * RateCoefficients in the impurity.rate_coefficient map are identical. Also
+ * adds a "blank" RateCoefficient object that doesn't have any coefficients - 
+ * hopefully throws an error if you try to do something incorrectly.
+ * 
+ * @param impurity An ImpuritySpecies object
+ */
+void initialiseSharedInterpolation(ImpuritySpecies& impurity){
+	// Make a blank RateCoefficient object by calling the RateCoefficient constructor on another RateCoefficient object
+	//   (Choose ionisation as source since this is one of the processes always included in the model)
+	//   (Might consider pushing this into seperate method and constructor, but this works for now)
+	// Create a smart pointer 'RC' that points to this object
+	std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(impurity.get_rate_coefficients()["ionisation"]));
+	// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
+	// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
+	impurity.add_to_rate_coefficients("blank", blank_RC);
+
+	for (auto& kv : impurity.get_rate_coefficients()) {
+		std::string physics_process = kv.first;
+		std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
+		// Seems to implicitly compare based on a small tolerance -- works for now
+		if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
+			std::cout << "\n log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			throw std::runtime_error("non-shared interpolation method not written - contact developer.");
+		}
+		if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
+			std::cout << "\n log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			throw std::runtime_error("non-shared interpolation method not written - contact developer.");
+		}
+	}
+}
 
 int main(){
 	const std::string expt_results_json="sd1d-case-05.json";
@@ -293,6 +326,8 @@ int main(){
 		Nik[k] = Ni * iz_stage_distribution[k];
 		// std::cout << "k = " << k << ", fraction = " << iz_stage_distribution[k] << ", Nz^" << k << ": " << Nik[k] << std::endl;
 	}
+
+	initialiseSharedInterpolation(impurity);
 
 	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik);
 	double Pcool = dydt[0];

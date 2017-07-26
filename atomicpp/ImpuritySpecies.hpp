@@ -49,6 +49,13 @@
 		std::map<std::string,std::string> get_adas_files_dict();
 		std::map<std::string,std::shared_ptr<RateCoefficient> > get_rate_coefficients();
 		/**
+		 * @brief Adds the key, value pair to the rate_coefficients map attribute
+		 * 
+		 * @param key, an std::string to access the value from the map
+		 * @param value, a smart pointer to a RateCoefficient object
+		 */
+		void add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value);
+		/**
 		 * @brief Accesses the value of the rate_coefficient std::map corresponding
 		 * to the supplied std::string key
 		 * 

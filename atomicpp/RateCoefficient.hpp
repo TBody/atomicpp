@@ -28,6 +28,13 @@
 			 */
 			RateCoefficient(const std::string& filename);
 			/**
+			 * @brief blank RateCoefficient constructor
+			 * @details Copies all characteristics except log_coeff
+			 * 
+			 * @param source_rc a smart pointer to a sample RateCoefficent object to source from
+			 */
+			RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc);
+			/**
 			 * @brief Returns the rate coefficient for a (scalar) Te and Ne supplied
 			 * @details Performs a simple bivariate (multilinear) interpolation to return the rate coefficient
 			 * at the supplied Te and Ne values. N.b. will throw a std::runtime_error if the supplied Te or Ne
