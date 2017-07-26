@@ -185,76 +185,6 @@ std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, dou
 	}
 	return iz_stage_distribution;
 }
-
-/**
- * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
- * @details Still under development
- * 
- * * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
- * @param Te electron temperature in eV
- * @param Ne electron density in m^-3
- * @param Nn neutral density in m^-3
- * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
- * return dydt;
- * //where the derivative std::vector may be unpacked as
- *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
- *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
- *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
- *   	int dydt_index = k + 2;
- *   	dNik[k] = dydt[dydt_index];
- *   }
- *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
- *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
- */
-std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
-	// std::cout << "State std::vector in" << std::endl;
-	// std::cout << "Te: " << state_std::vector[0] << std::endl;
-	// std::cout << "Ne: " << state_std::vector[1] << std::endl;
-	// std::cout << "Nn: " << state_std::vector[2] << std::endl;
-	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	// 	int state_std::vector_index = k + 3;
-	// 	std::cout << "Nz^" << k << ": " << state_std::vector[state_std::vector_index] << std::endl;
-	// }
-
-	std::vector<double> dydt(Nik.size()+4);
-	
-	// Start with perfectly steady-state (dydt = 0 for all elements)
-	for(int i=0; i<dydt.size(); ++i){
-		dydt[i] = 1;
-	}
-	// Can replace this with derivative calculation
-	int Z = impurity.get_atomic_number();
-	// Derivatives of the charge states
-	for(int k=0; k<=Z; ++k){
-		
-		if (k==0){
-			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
-		} else if (k == Z){
-			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
-		} else {
-			// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
-		};
-
-
-		// // Ionisation
-		// // Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		// std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
-		// // Evaluate the RateCoefficient at the point
-		// double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
-
-		// // Recombination
-		// // Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		// std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
-		// // Evaluate the RateCoefficient at the point
-		// double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
-		// dydt[i] = 
-
-		// std::cout << "Nz^" << k << ": " << state_std::vector[state_std::vector_index] << std::endl;
-	}
-
-	return dydt;
-}
 /**
  * @brief Check that shared interpolation (for speed) can be used
  * @details Checks that the log_temperature and log_density attributes of the 
@@ -288,6 +218,174 @@ void initialiseSharedInterpolation(ImpuritySpecies& impurity){
 		}
 	}
 }
+std::pair<int, double> findSharedInterpolation(std::vector<double> log_grid, double eval){
+	// Perform a basic interpolation based on linear distance
+	// values to search for
+	double eval_log10 = log10(eval);
+	// Look through the grid to find nearest (strictly lower)
+	// Subtract 1 from answer to account for indexing from 0
+	int interp_gridpoint = lower_bound(log_grid.begin(), log_grid.end(), eval_log10) - log_grid.begin() - 1;
+
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((interp_gridpoint == log_grid.size()-1) or (interp_gridpoint == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
+	};
+
+	int next_gridpoint = interp_gridpoint + 1;
+
+	double grid_norm = 1/(log_grid[next_gridpoint] - log_grid[interp_gridpoint]); //Spacing between grid points
+
+	double interp_fraction = (eval_log10 - log_grid[interp_gridpoint])*grid_norm;
+
+	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
+	return interp_pair;
+
+}
+/**
+ * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
+ * @details Still under development
+ * 
+ * * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
+ * @param Te electron temperature in eV
+ * @param Ne electron density in m^-3
+ * @param Nn neutral density in m^-3
+ * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * return dydt;
+ * //where the derivative std::vector may be unpacked as
+ *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
+ *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
+ *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
+ *   	int dydt_index = k + 2;
+ *   	dNik[k] = dydt[dydt_index];
+ *   }
+ *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ */
+std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
+
+	int Z = impurity.get_atomic_number();
+	const double eV_to_J = 1.60217662e-19; //J per eV
+
+	double Pcool = 0; // Pcool = dydt[0]
+	double Prad = 0; // Prad  = dydt[1]
+	std::vector<double> dNik(impurity.get_atomic_number()+1); // dNik  = dydt[2:Z+3]
+	for(int k=0; k<dNik.size(); ++k){
+		dNik[k] = 0;
+	}
+	double dNe  = 0; // dNe   = dydt[Z+3]
+	double dNn  = 0; // dNn   = dydt[Z+3+1]
+	
+	// Find the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that the grids are identical
+	// we can use the same interpolated points for each
+	std::pair<int, double> Te_interp, Ne_interp;
+	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
+	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+
+	// std::cout << "Te_interp: " << Te_interp.first << " + " << Te_interp.second << std::endl;
+	// std::cout << "Ne_interp: " << Ne_interp.first << " + " << Ne_interp.second << std::endl;
+	
+
+	// Select all the non-cx processes - always need these, and also they are the only ones which affect the electron population and energy
+	std::set<std::string> non_cx_processes = {"ionisation","recombination","line_power","continuum_power"};
+	std::shared_ptr<RateCoefficient> ionisation_potential = impurity.get_rate_coefficient("ionisation_potential");
+	
+	for(std::set<std::string>::iterator iter = non_cx_processes.begin();iter != non_cx_processes.end();++iter){
+		std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
+		for(int k=0; k < Z; ++k){
+			double coeff_evaluated = rate_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+			double iz_potential_evaluated = eV_to_J * ionisation_potential->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+			if (*iter == "ionisation"){
+				int source_charge_state = k; 
+				int sink_charge_state = k + 1;
+				double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+
+				
+				// Compute the resulting change in the ionisation distribution
+				dNik[source_charge_state] -= rate; //Loss from the source state (i.e. reactant)
+				dNik[sink_charge_state] += rate; //Gain by the sink state (i.e. product)
+				dNe += rate; //Electron is liberated
+				Pcool -= iz_potential_evaluated * rate; //Energy loss from the electrons (iz_potential_evaluation is in J per reaction)
+				// N.b. Pcool due to iz/rec is found to be very small
+
+			} else if (*iter == "recombination"){
+				int source_charge_state = k + 1;
+				int sink_charge_state = k; //i.e. source_charge_state - 1 
+				double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+				
+				// Compute the resulting change in the ionisation distribution
+				dNik[source_charge_state] -= rate;
+				dNik[sink_charge_state] += rate;
+				dNe -= rate;
+				Pcool += iz_potential_evaluated * rate;
+
+			} else if (*iter == "line_power"){
+				int source_charge_state = k;
+				double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+
+				// Compute the power radiated
+				Prad += rate;
+				Pcool += rate;
+
+			} else if (*iter == "continuum_power"){
+				int source_charge_state = k + 1;
+				double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+
+				// Compute the power radiated
+				Prad += rate;
+				Pcool += rate;
+
+			} else {
+				throw std::invalid_argument( "not_cx_process not recognised (in computeDerivs)" );
+			}
+		}
+	}
+
+	if (impurity.get_has_charge_exchange()){
+		std::set<std::string> cx_processes = {"cx_recc","cx_power"};
+		
+		for(std::set<std::string>::iterator iter = cx_processes.begin();iter != cx_processes.end();++iter){
+			std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
+			for(int k=0; k < Z; ++k){
+				double coeff_evaluated = rate_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+				if (*iter == "cx_recc"){
+					int source_charge_state = k + 1;
+					int sink_charge_state = k; //i.e. source_charge_state - 1 
+					double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+					
+					// Compute the resulting change in the ionisation distribution
+					dNik[source_charge_state] -= rate;
+					dNik[sink_charge_state] += rate;
+					dNn -= rate;
+
+				} else if (*iter == "cx_power"){
+					int source_charge_state = k;
+					double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
+
+					// Compute the power radiated
+					Prad += rate;
+
+				} else {
+					throw std::invalid_argument( "cx_process not recognised (in computeDerivs)" );
+				}
+			}
+		}
+	}
+
+	std::vector<double> dydt(Nik.size()+4);
+	dydt[0] 	= Pcool;
+	dydt[1] 	= Prad;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		int dydt_index = k + 2;
+		dydt[dydt_index] = dNik[k];
+	}
+	dydt[impurity.get_atomic_number()+3] 	= dNe;
+	dydt[impurity.get_atomic_number()+3+1] 	= dNn;
+
+	return dydt;
+}
+
 
 int main(){
 	const std::string expt_results_json="sd1d-case-05.json";
@@ -340,14 +438,14 @@ int main(){
 	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
 	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
 
-	// std::cout << "\nRate-of-change" << std::endl;
-	// std::cout << "Pcool: " << Pcool << std::endl;
-	// std::cout << "Prad: "  << Prad << std::endl;
-	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	// 	std::cout << "dNz^" << k << "/dt: " << dNik[k] << std::endl;
-	// }
-	// std::cout << "dNe/dt: " << dNe << std::endl;
-	// std::cout << "dNn/dt: " << dNn << std::endl;
+	std::cout << "\nRate-of-change" << std::endl;
+	std::cout << "Pcool: " << Pcool << std::endl;
+	std::cout << "Prad: "  << Prad << std::endl;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		std::cout << "dNz^" << k << "/dt: " << dNik[k] << std::endl;
+	}
+	std::cout << "dNe/dt: " << dNe << std::endl;
+	std::cout << "dNn/dt: " << dNn << std::endl;
 
 
 	// Comparison to Post PSI

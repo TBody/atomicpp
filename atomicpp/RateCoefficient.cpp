@@ -77,10 +77,10 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	};
 
 	int high_Te = low_Te + 1;
-	int high_ne = low_Ne + 1;
+	int high_Ne = low_Ne + 1;
 
 	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-	double ne_norm = 1/(log_density[high_ne] - log_density[low_Ne]); //Spacing between grid points
+	double ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
 
 	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
 	double y = (eval_log10_Ne - log_density[low_Ne])*ne_norm;
@@ -94,20 +94,44 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	// // w00 ------ w10
 
 	double eval_log10_coeff =
-	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_ne]*y)*(1-x)
-	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_ne]*y)*x;
+	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_Ne]*y)*(1-x)
+	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_Ne]*y)*x;
 	double eval_coeff = pow(10,eval_log10_coeff);
 	// // Print inspection
 	// std::cout << std::endl;
 	// std::cout << "00 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[low_Ne] << " value: " << log_coeff[k][low_Te][low_Ne] << std::endl;
 	// std::cout << "10 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[low_Ne] << " value: " << log_coeff[k][high_Te][low_Ne] << std::endl;
-	// std::cout << "01 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][low_Te][high_ne] << std::endl;
-	// std::cout << "11 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[high_ne] << " value: " << log_coeff[k][high_Te][high_ne] << std::endl;
+	// std::cout << "01 - log Te: " << log_temperature[low_Te] << " log ne: " << log_density[high_Ne] << " value: " << log_coeff[k][low_Te][high_Ne] << std::endl;
+	// std::cout << "11 - log Te: " << log_temperature[high_Te] << " log ne: " << log_density[high_Ne] << " value: " << log_coeff[k][high_Te][high_Ne] << std::endl;
 	// std::cout << "xy - log Te: " << eval_log10_Te << " log ne: " << eval_log10_Ne << " value: " << eval_log10_coeff << std::endl;
 	// std::cout << "x: " << x << " y: " << y << std::endl;
 	// std::cout << std::endl;
 
 	return eval_coeff;
+};
+double RateCoefficient::call0DSharedInterpolation(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
+
+	int low_Te = Te_interp.first;
+	int high_Te = low_Te+1;
+	int low_Ne = Ne_interp.first;
+	int high_Ne = low_Ne+1;
+
+	double x = Te_interp.second;
+	double y = Ne_interp.second;
+
+	// // Construct the simple interpolation grid
+	// // Find weightings based on linear distance
+	// // w01 ------ w11    Ne -> y
+	// //  | \     / |      |
+	// //  |  w(x,y) |    --/--Te -> x
+	// //  | /     \ |      |
+	// // w00 ------ w10
+
+	double eval_log10_coeff =
+	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_Ne]*y)*(1-x)
+	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_Ne]*y)*x;
+	
+	double eval_coeff = pow(10,eval_log10_coeff);
 };
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;

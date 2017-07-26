@@ -46,6 +46,7 @@
 			 * @return eval_coeff evaluated rate coefficient in m^3/s
 			 */
 			double call0D(const int k, const double eval_Te, const double eval_Ne);
+			double call0DSharedInterpolation(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp);
 			friend std::ostream& operator<<(std::ostream& os, const RateCoefficient& RC); //Define the __str__ return to std::cout
 			int get_atomic_number();
 			std::string get_element();
