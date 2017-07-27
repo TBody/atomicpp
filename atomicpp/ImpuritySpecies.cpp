@@ -32,7 +32,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	std::map<std::string,std::string>datatype_abbrevs={
 		{"ionisation",           "scd"},
 		{"recombination",        "acd"},
-		{"cx_recc",              "ccd"},
+		{"cx_rec",              "ccd"},
 		{"continuum_power",      "prb"},
 		{"line_power",           "plt"},
 		{"cx_power",             "prc"},
@@ -56,7 +56,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 
 	// Add the JSON files associated with this impurity to its .adas_files_dict attribute where the key is the (extended) process name, which std::maps to a filename (std::string)
 	// Mark the physics processes which rely on charge exchange
-	std::set<std::string> cx_processes{datatype_abbrevs["cx_recc"],datatype_abbrevs["cx_power"]};
+	std::set<std::string> cx_processes{datatype_abbrevs["cx_rec"],datatype_abbrevs["cx_power"]};
 	// Iterate over the key -> value pairs in datatype_abbrevs
 	for (auto& kv : datatype_abbrevs) {
 		std::string physics_process = kv.first;

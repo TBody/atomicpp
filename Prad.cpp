@@ -299,21 +299,102 @@ std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, co
  */
 std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
 	std::vector<double> dydt(Nik.size()+4);
-	// dydt[0] 	= Pcool;
-	// dydt[1] 	= Prad;
-	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	// 	int dydt_index = k + 2;
-	// 	dydt[dydt_index] = dNik[k];
-	// }
-	// dydt[impurity.get_atomic_number()+3] 	= dNe;
-	// dydt[impurity.get_atomic_number()+3+1] 	= dNn;
+	
+	int Z = impurity.get_atomic_number();
+	const double eV_to_J = 1.60217662e-19; //J per eV
 
-	std::vector<double> test = {1e185,1e-175,1e-174,-1e185};
+	double Pcool = 0.0; // Pcool = dydt[0]
+	double Prad = 0.0; // Prad  = dydt[1]
+	std::vector<double> dNik(impurity.get_atomic_number()+1, 0.0); // dNik  = dydt[2:Z+3]
+	std::vector<double> dNik_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
+	double dNe  = 0.0; // dNe   = dydt[Z+3]
+	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
 
-	std::pair<double, double> neumaier_pair = neumaierSum(test);
+	// Find the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that the grids are identical
+	// we can use the same interpolated points for each
+	std::pair<int, double> Te_interp, Ne_interp;
+	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
+	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
 
-	std::printf("%e\n", neumaier_pair.first+neumaier_pair.second);
-	std::printf("%e\n", 1e185+1e-175+1e-174+-1e185);
+	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
+	// These will be summed with Kahan summation
+	std::vector<double>    iz_to_above(Z+1, 0.0);
+	std::vector<double>  iz_from_below(Z+1, 0.0);
+	std::vector<double>   rec_to_below(Z+1, 0.0);
+	std::vector<double> rec_from_above(Z+1, 0.0);
+
+
+	std::shared_ptr<RateCoefficient> ionisation_coefficient = impurity.get_rate_coefficient("ionisation");
+	std::shared_ptr<RateCoefficient> recombination_coefficient = impurity.get_rate_coefficient("recombination");
+	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
+		double ionisation_coefficient_evaluated = ionisation_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		double recombination_coefficient_evaluated = recombination_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		
+		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
+		// charge the target must have in each case)
+
+		double ionisation_rate = ionisation_coefficient_evaluated * Ne * Nik[k];
+		std::printf("ionisation(%i)    K = %e, Ne = %e, Nik = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nik[k],ionisation_rate);
+		double recombination_rate = recombination_coefficient_evaluated * Ne * Nik[k+1];
+		std::printf("recombination(%i) K = %e, Ne = %e, Nik = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nik[k+1],recombination_rate);
+
+		iz_to_above[k] = -ionisation_rate;
+		// std::printf("iz_to_above[%i]    : %+e\n",k,iz_to_above[k]);
+		iz_from_below[k+1] = ionisation_rate;
+		// std::printf("iz_from_below[%i]  : %+e\n",k+1,iz_from_below[k+1]);
+		rec_to_below[k+1] = -recombination_rate;
+		// std::printf("rec_to_below[%i]   : %+e\n",k+1,rec_to_below[k+1]);
+		rec_from_above[k] = recombination_rate;
+		// std::printf("rec_from_above[%i] : %+e\n",k,rec_from_above[k]);
+		// std::printf("\n");
+	}
+
+	// std::printf("\n-------------------------------------------------------------\n");
+	std::vector<double> dNe_from_stage(impurity.get_atomic_number(), 0.0);
+	std::shared_ptr<RateCoefficient> ionisation_potential = impurity.get_rate_coefficient("ionisation_potential");
+	std::pair<double, double> neumaier_pair;
+	for(int k=0; k < Z; ++k){//N.b. bare nucleus will not contribute to electron density nor have an ionisation potential -- treat it seperately
+		// N.b. rates will be zero for edge cases (from initialisation)
+		
+		// std::printf("iz_to_above[%i]    : %+e\n",k,iz_to_above[k]);
+		// std::printf("iz_from_below[%i]  : %+e\n",k,iz_from_below[k]);
+		// std::printf("rec_to_below[%i]   : %+e\n",k,rec_to_below[k]);
+		// std::printf("rec_from_above[%i] : %+e\n",k,rec_from_above[k]);
+		// std::printf("\n");
+
+
+		std::vector<double> rates_for_stage = {iz_to_above[k],iz_from_below[k],rec_to_below[k],rec_from_above[k]};
+		neumaier_pair = neumaierSum(rates_for_stage);
+		dNik[k] = neumaier_pair.first;
+		dNik_c[k] = neumaier_pair.second; //Store compensation seperately for later evaluation
+
+		double ionisation_potential_evaluated = ionisation_potential->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		Pcool += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
+		dNe_from_stage[k] = (iz_to_above[k] - rec_from_above[k]);
+	}
+	neumaier_pair = neumaierSum(dNe_from_stage);
+	dNe = neumaier_pair.first + neumaier_pair.second;
+
+	// std::printf("iz_to_above[%i]    : %+e\n",Z,iz_to_above[Z]);
+	// std::printf("iz_from_below[%i]  : %+e\n",Z,iz_from_below[Z]);
+	// std::printf("rec_to_below[%i]   : %+e\n",Z,rec_to_below[Z]);
+	// std::printf("rec_from_above[%i] : %+e\n",Z,rec_from_above[Z]);
+	// std::printf("\n");
+
+	std::vector<double> rates_for_stage = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
+	neumaier_pair = neumaierSum(rates_for_stage);
+	dNik[Z] = neumaier_pair.first;
+	dNik_c[Z] = neumaier_pair.second; //Store compensation seperately for later evaluation
+
+
+	dydt[0] 	= Pcool;
+	dydt[1] 	= Prad;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		int dydt_index = k + 2;
+		dydt[dydt_index] = dNik[k] + dNik_c[Z];
+	}
+	dydt[impurity.get_atomic_number()+3] 	= dNe;
+	dydt[impurity.get_atomic_number()+3+1] 	= dNn;
 
 	return dydt;
 }
@@ -344,7 +425,7 @@ std::vector<double> computeDerivs_old(ImpuritySpecies& impurity, const double Te
 		std::printf("Nz^%i: %+1.5E\n", k, Nik[k]);
 		// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
 	}
-	std::set<std::string> all_processes = {"ionisation","recombination","continuum_power","line_power","cx_recc","cx_power"};
+	std::set<std::string> all_processes = {"ionisation","recombination","continuum_power","line_power","cx_rec","cx_power"};
 	for(std::set<std::string>::iterator iter = all_processes.begin();iter != all_processes.end();++iter){
 		std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
 		for(int k=0; k < Z; ++k){
@@ -418,13 +499,13 @@ std::vector<double> computeDerivs_old(ImpuritySpecies& impurity, const double Te
 	}
 
 	// if (impurity.get_has_charge_exchange()){
-	// 	std::set<std::string> cx_processes = {"cx_recc","cx_power"};
+	// 	std::set<std::string> cx_processes = {"cx_rec","cx_power"};
 		
 	// 	for(std::set<std::string>::iterator iter = cx_processes.begin();iter != cx_processes.end();++iter){
 	// 		std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
 	// 		for(int k=0; k < Z; ++k){
 	// 			double coeff_evaluated = rate_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
-	// 			if (*iter == "cx_recc"){
+	// 			if (*iter == "cx_rec"){
 	// 				int source_charge_state = k + 1;
 	// 				int sink_charge_state = k; //i.e. source_charge_state - 1 
 	// 				double rate = coeff_evaluated * Ne * Nik[source_charge_state]; //Returns the rate in reactions m^-3 s^-1
