@@ -19,6 +19,7 @@
 #include <stdexcept> //For error-throwing
 #include <memory> //For smart pointers
 #include <cstdio> //For print formatting (printf, fprintf, sprintf, snprintf)
+#include <cmath> //For abs
 
 #include <limits>
 #include <cstdint>
@@ -222,7 +223,7 @@ void initialiseSharedInterpolation(ImpuritySpecies& impurity){
 		}
 	}
 }
-std::pair<int, double> findSharedInterpolation(std::vector<double> log_grid, double eval){
+std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
 	// Perform a basic interpolation based on linear distance
 	// values to search for
 	double eval_log10 = log10(eval);
@@ -247,6 +248,35 @@ std::pair<int, double> findSharedInterpolation(std::vector<double> log_grid, dou
 
 }
 /**
+ * @brief Uses Neumaier algorithm to add the elements of a list
+ * @details Extension on Kahan summation algorithm for an unsorted list
+ * Uses a compensated sum to improve precision when summing numbers of 
+ * significantly different magnitude
+ * 
+ * @param list_to_sum The list of numbers to sum
+ * @return neumaier_pair the uncompensated sum and the compensation
+ * Compensated sum is sum + correction - however, this is left external
+ * in case summation is restarted
+ */
+std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction = 0.0){
+    double sum = list_to_sum[0];
+    double correction = previous_correction;                 // A running compensation for lost low-order bits. Use previous result to restart summation
+
+    for(int i=1; i < list_to_sum.size(); ++i){
+        double temporary_sum = sum + list_to_sum[i];
+        if (abs(sum) >= abs(list_to_sum[i])){
+            correction += (sum - temporary_sum) + list_to_sum[i]; // If sum is bigger, low-order digits of list_to_sum[i] are lost.
+        } else {
+            correction += (list_to_sum[i] - temporary_sum) + sum; // Else low-order digits of sum are lost
+        }
+        sum = temporary_sum;
+	}
+
+	std::pair<double, double> neumaier_pair(sum, correction);
+
+	return neumaier_pair;
+}
+/**
  * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
  * @details Still under development
  * 
@@ -268,6 +298,26 @@ std::pair<int, double> findSharedInterpolation(std::vector<double> log_grid, dou
  *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
 std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
+	std::vector<double> dydt(Nik.size()+4);
+	// dydt[0] 	= Pcool;
+	// dydt[1] 	= Prad;
+	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	// 	int dydt_index = k + 2;
+	// 	dydt[dydt_index] = dNik[k];
+	// }
+	// dydt[impurity.get_atomic_number()+3] 	= dNe;
+	// dydt[impurity.get_atomic_number()+3+1] 	= dNn;
+
+	std::vector<double> test = {1e185,1e-175,1e-174,-1e185};
+
+	std::pair<double, double> neumaier_pair = neumaierSum(test);
+
+	std::printf("%e\n", neumaier_pair.first+neumaier_pair.second);
+	std::printf("%e\n", 1e185+1e-175+1e-174+-1e185);
+
+	return dydt;
+}
+std::vector<double> computeDerivs_old(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik){
 
 	int Z = impurity.get_atomic_number();
 	const double eV_to_J = 1.60217662e-19; //J per eV
