@@ -17,8 +17,12 @@
 #include <fstream>
 #include <set>
 #include <stdexcept> //For error-throwing
+#include <memory> //For smart pointers
+#include <cstdio> //For print formatting (printf, fprintf, sprintf, snprintf)
 
-#include <memory>
+#include <limits>
+#include <cstdint>
+#include <cinttypes>
 
 #include "atomicpp/ImpuritySpecies.hpp"
 #include "atomicpp/RateCoefficient.hpp"
@@ -283,29 +287,21 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
 	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
 
-	// std::cout << Te << std::endl;
-	// std::cout << Ne << std::endl;
-	// for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	// 	std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
-	// }
-	// std::set<std::string> all_processes = {"ionisation","recombination","continuum_power","line_power","cx_recc","cx_power"};
-	// for(std::set<std::string>::iterator iter = all_processes.begin();iter != all_processes.end();++iter){
-	// 	std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
-	// 	for(int k=0; k < Z; ++k){
-	// 		double coeff_evaluated = rate_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
-	// 		std::cout << *iter << "(" << k << ")" << " = " << coeff_evaluated << std::endl;
-	// 	}
-	// }
-
-	std::shared_ptr<RateCoefficient> ionisation = impurity.get_rate_coefficient("ionisation");
-	// int k = 1;
-	// std::cout << ionisation->call0D(k, Te, Ne) << std::endl;
-	// std::cout << ionisation->call0DSharedInterpolation(k, Te_interp, Ne_interp) << std::endl;
-
-
-	// std::cout << "Te_interp: " << Te_interp.first << " + " << Te_interp.second << std::endl;
-	// std::cout << "Ne_interp: " << Ne_interp.first << " + " << Ne_interp.second << std::endl;
-	
+	std::cout << Te << std::endl;
+	std::cout << Ne << std::endl;
+	std::cout << Nn << std::endl;
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		std::printf("Nz^%i: %+1.5E\n", k, Nik[k]);
+		// std::cout << "Nz^" << k << ": " << Nik[k] << std::endl;
+	}
+	std::set<std::string> all_processes = {"ionisation","recombination","continuum_power","line_power","cx_recc","cx_power"};
+	for(std::set<std::string>::iterator iter = all_processes.begin();iter != all_processes.end();++iter){
+		std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
+		for(int k=0; k < Z; ++k){
+			double coeff_evaluated = rate_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+			std::cout << *iter << "(" << k << ")" << " = " << coeff_evaluated << std::endl;
+		}
+	}
 
 	// Select all the non-cx processes - always need these, and also they are the only ones which affect the electron population and energy
 	std::set<std::string> non_cx_processes = {"ionisation","recombination","line_power","continuum_power"};
@@ -328,7 +324,10 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 				dNe += rate; //Electron is liberated
 				Pcool -= iz_potential_evaluated * rate; //Energy loss from the electrons (iz_potential_evaluation is in J per reaction)
 				// N.b. Pcool due to iz/rec is found to be very small
-				std::cout << *iter << "(" << k << ")" << " = " << rate << std::endl;
+				// std::printf("%s (%i)        R = %+1.20E\n", iter->c_str(), k, rate);
+				// std::printf("%s (%i) dNik (%i) = %+1.20E\n", iter->c_str(), k, source_charge_state, dNik[source_charge_state]);
+				// std::printf("%s (%i) dNik (%i) = %+1.20E\n", iter->c_str(), k, sink_charge_state, dNik[sink_charge_state]);
+				// std::printf("%s (%i)      dNe = %+1.20E\n", iter->c_str(), k, dNe);
 
 			} else if (*iter == "recombination"){
 				int source_charge_state = k + 1;
@@ -341,7 +340,10 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 				dNe -= rate;
 				Pcool += iz_potential_evaluated * rate;
 
-				std::cout << *iter << "(" << k << ")" << "  R = " << rate << std::endl;
+				// std::printf("%s (%i)        R = %+1.20E\n", iter->c_str(), k, rate);
+				// std::printf("%s (%i) dNik (%i) = %+1.20E\n", iter->c_str(), k, source_charge_state, dNik[source_charge_state]);
+				// std::printf("%s (%i) dNik (%i) = %+1.20E\n", iter->c_str(), k, sink_charge_state, dNik[sink_charge_state]);
+				// std::printf("%s (%i)      dNe = %+1.20E\n", iter->c_str(), k, dNe);
 
 			} else if (*iter == "line_power"){
 				int source_charge_state = k;
@@ -361,10 +363,6 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 
 			} else {
 				throw std::invalid_argument( "not_cx_process not recognised (in computeDerivs)" );
-			}
-			// End section for debugging
-			if (not((*iter == "line_power")or(*iter == "continuum_power"))){
-				std::cout << *iter << "(" << k << ")" << " dNe = " << dNe << std::endl;
 			}
 		}
 	}

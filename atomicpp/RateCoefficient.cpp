@@ -80,10 +80,10 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	int high_Ne = low_Ne + 1;
 
 	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-	double ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
+	double Ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
 
 	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
-	double y = (eval_log10_Ne - log_density[low_Ne])*ne_norm;
+	double y = (eval_log10_Ne - log_density[low_Ne])*Ne_norm;
 
 	// // Construct the simple interpolation grid
 	// // Find weightings based on linear distance
