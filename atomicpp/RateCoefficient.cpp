@@ -109,7 +109,9 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 
 	return eval_coeff;
 };
-double RateCoefficient::call0DSharedInterpolation(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
+//Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that Te_interp and Ne_interp
+//contain which point for which to return the coefficient - saves reevaluating)
+double RateCoefficient::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
 
 	int low_Te = Te_interp.first;
 	int high_Te = low_Te+1;
@@ -132,6 +134,8 @@ double RateCoefficient::call0DSharedInterpolation(const int k, const std::pair<i
 	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_Ne]*y)*x;
 	
 	double eval_coeff = pow(10,eval_log10_coeff);
+
+	return eval_coeff;
 };
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;

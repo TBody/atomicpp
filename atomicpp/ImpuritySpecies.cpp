@@ -70,9 +70,13 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 		};
 	}
 
-	// # Use the .adas_file_dict files to generate RateCoefficient objects for each process
-	// # Uses the same keys as .adas_file_dict
+	// Use the .adas_file_dict files to generate RateCoefficient objects for each process
+	// Uses the same keys as .adas_file_dict
 	makeRateCoefficients();
+
+	// Checks to see whether shared interpolation can be used - i.e. whether log_temperature and log_density are the same for all
+	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::shared_interpolation accordingly.
+	initialiseSharedInterpolation();
 
 };
 void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path){
@@ -130,12 +134,40 @@ void ImpuritySpecies::makeRateCoefficients(){
 	std::map<std::string,std::shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
 		return rate_coefficients;
 	};
+	bool ImpuritySpecies::get_shared_interpolation(){
+		return shared_interpolation;
+	};
 	void ImpuritySpecies::add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value){
 		rate_coefficients[key] = value;
 	};
 	std::shared_ptr<RateCoefficient> ImpuritySpecies::get_rate_coefficient(const std::string& key){
 		return rate_coefficients[key];
 	};
+	void ImpuritySpecies::initialiseSharedInterpolation(){
+		// Make a blank RateCoefficient object by calling the RateCoefficient constructor on another RateCoefficient object
+		//   (Choose ionisation as source since this is one of the processes always included in the model)
+		//   (Might consider pushing this into seperate method and constructor, but this works for now)
+		// Create a smart pointer 'RC' that points to this object
+		std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(rate_coefficients["ionisation"]));
+		// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
+		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
+		rate_coefficients["blank"] = blank_RC;
+
+		shared_interpolation = true;
+		for (auto& kv : rate_coefficients) {
+			std::string physics_process = kv.first;
+			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
+			// Seems to implicitly compare based on a small tolerance -- works for now
+			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
+				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+				shared_interpolation = false;
+			}
+			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
+				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+				shared_interpolation = false;
+			}
+		}
+	}
 // Accessing environment variables (shared by any function which calls the ImpuritySpecies.hpp header) -- shared functions
 	std::string get_json_database_path() {
 		std::string json_database_env = "ADAS_JSON_PATH";

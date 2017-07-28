@@ -73,8 +73,12 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 }
 ```
 
-#### Integrating the time-dependent into SD1D  
-*Still under development.*
+#### Numerical evaluation of population and energy equations for SD1D  
+
+*N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
+
+To compute the derivatives of state-vector quantities required to self-consistently model the ionisation stage distribution and radiation emission from an impurity (as a function of time) the required code is
+
 ```cpp
 /**
  * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
@@ -84,34 +88,97 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
  * @param Nn neutral density in m^-3
- * @param Nik impurity density in m^-3, vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
- * return dydt; //where the derivative vector may be unpacked via the below code
+ * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * @param Nthres threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9,
+ * although it is recommended that a time-step dependance be added in the calling code.
+ * return dydt;
+ * //where the derivative std::vector may be unpacked as
+ *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
+ *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
+ *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
+ *      int dydt_index = k + 2;
+ *      dNik[k] = dydt[dydt_index];
+ *   }
+ *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
-vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const vector<double>& Nik){
-    //Calculates the rate-of-change of plasma parameters due to impurity-atomic processes by evaluating impurity population and energy equations based on OpenADAS rate-coefficients.
+std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik, const double Nthres = 1e9){
 
-    vector<double> dydt(Nik.size()+4);
-    
-    ... //Derivative evaluation
-    
-    // Current version for integration into SD1D
-    // Start with perfectly steady-state (dydt = 0 for all elements)
-    for(int i=0; i<dydt.size(); ++i){
-        dydt[i] = 1;
-    }
+    ...
 
-    return dydt;
+    return dydt; //such that the following derivatives may be unpacked from the solver
 }
 
-double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
-double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
-vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+//Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
+double Pcool = dydt[0];
+//Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
+double Prad  = dydt[1];
+//Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+std::vector<double> dNik(impurity.get_atomic_number()+1);
 for(int k=0; k<=impurity.get_atomic_number(); ++k){
     int dydt_index = k + 2;
     dNik[k] = dydt[dydt_index];
 }
-double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
-double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+//Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
+//Density change for neutrals due to charge-exchange (perturbation) - in 1/(m^3 s)
+double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
 ```
+
+This function relies on the following sub-functions; to calculate the scaling factors for interpolation (since, if the grids are identical, this may be shared by all the rate-coefficient calls to interpolation)
+```cpp
+/**
+ * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
+ * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
+ * regardless of which process is called (since the underlying log_temperature and log_density grids are the same).
+ * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D such that,
+ * if a <int, double> pair is supplied as an argument then the shared interpolation method will be called
+ * 
+ * @param log_grid grid-points for which data is given
+ * @param eval point at which the interpolation should be performed
+ * 
+ * @return <int, double> pair where int is the lower-bound grid-point and fraction is the scaling factor (fractional distance
+ * between the lower and upper-bound gridpoints)
+ */
+std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
+    // Perform a basic interpolation based on linear distance
+    // values to search for
+    
+    ...
+
+    std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
+    return interp_pair;
+}
+```
+
+and; to add the elements of a list with significantly varying orders of magnitude to very high precision (avoids floating point rounding error)
+
+```cpp
+/**
+ * @brief Uses Neumaier algorithm to add the elements of a list
+ * @details Extension on Kahan summation algorithm for an unsorted list
+ * Uses a compensated sum to improve precision when summing numbers of 
+ * significantly different magnitude
+ * 
+ * @param list_to_sum The list of numbers to sum
+ * @return neumaier_pair the uncompensated sum and the compensation
+ * Compensated sum is sum + correction - however, this is left external
+ * in case summation is restarted
+ */
+std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction = 0.0){
+    
+    ...
+
+    std::pair<double, double> neumaier_pair(sum, correction);
+
+    return neumaier_pair;
+}
+```
+
+
+
+
+
 
 

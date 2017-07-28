@@ -191,38 +191,18 @@ std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, dou
 	return iz_stage_distribution;
 }
 /**
- * @brief Check that shared interpolation (for speed) can be used
- * @details Checks that the log_temperature and log_density attributes of the 
- * RateCoefficients in the impurity.rate_coefficient map are identical. Also
- * adds a "blank" RateCoefficient object that doesn't have any coefficients - 
- * hopefully throws an error if you try to do something incorrectly.
+ * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
+ * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
+ * regardless of which process is called (since the underlying log_temperature and log_density grids are the same).
+ * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D such that,
+ * if a <int, double> pair is supplied as an argument then the shared interpolation method will be called
  * 
- * @param impurity An ImpuritySpecies object
+ * @param log_grid grid-points for which data is given
+ * @param eval point at which the interpolation should be performed
+ * 
+ * @return <int, double> pair where int is the lower-bound grid-point and fraction is the scaling factor (fractional distance
+ * between the lower and upper-bound gridpoints)
  */
-void initialiseSharedInterpolation(ImpuritySpecies& impurity){
-	// Make a blank RateCoefficient object by calling the RateCoefficient constructor on another RateCoefficient object
-	//   (Choose ionisation as source since this is one of the processes always included in the model)
-	//   (Might consider pushing this into seperate method and constructor, but this works for now)
-	// Create a smart pointer 'RC' that points to this object
-	std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(impurity.get_rate_coefficients()["ionisation"]));
-	// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
-	// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
-	impurity.add_to_rate_coefficients("blank", blank_RC);
-
-	for (auto& kv : impurity.get_rate_coefficients()) {
-		std::string physics_process = kv.first;
-		std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
-		// Seems to implicitly compare based on a small tolerance -- works for now
-		if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
-			std::cout << "\n log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-			throw std::runtime_error("non-shared interpolation method not written - contact developer.");
-		}
-		if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
-			std::cout << "\n log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-			throw std::runtime_error("non-shared interpolation method not written - contact developer.");
-		}
-	}
-}
 std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
 	// Perform a basic interpolation based on linear distance
 	// values to search for
@@ -245,7 +225,6 @@ std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_gr
 
 	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
 	return interp_pair;
-
 }
 /**
  * @brief Uses Neumaier algorithm to add the elements of a list
@@ -314,11 +293,19 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	double dNe  = 0.0; // dNe   = dydt[Z+3]
 	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
 
-	// Find the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that the grids are identical
-	// we can use the same interpolated points for each
+	// Can't switch type in an if suite <<TODO>>
+	// if (impurity.get_shared_interpolation()){
+	// Find the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that
+	// the grids are identical we can use the same interpolated points for each
 	std::pair<int, double> Te_interp, Ne_interp;
 	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
 	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+	// } else {
+	// 	// Have found that the grids are not identical. Pass Te_interp and Ne_interp as doubles instead of pairs, and the program will
+	// 	// auto-switch to the full interpolation method.
+	// 	double Te_interp = Te;
+	// 	double Ne_interp = Ne;
+	// }
 
 	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
 	// These will be summed with Kahan summation
@@ -331,8 +318,8 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	std::shared_ptr<RateCoefficient> ionisation_coefficient = impurity.get_rate_coefficient("ionisation");
 	std::shared_ptr<RateCoefficient> recombination_coefficient = impurity.get_rate_coefficient("recombination");
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double ionisation_coefficient_evaluated = ionisation_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
-		double recombination_coefficient_evaluated = recombination_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D(k, Te_interp, Ne_interp);
+		double recombination_coefficient_evaluated = recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 		
 		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -364,7 +351,7 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		dNik[k] = neumaier_pair_rates.first;
 		dNik_c[k] = neumaier_pair_rates.second; //Store compensation seperately for later evaluation
 
-		double ionisation_potential_evaluated = ionisation_potential->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		double ionisation_potential_evaluated = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
 		dNe_from_stage[k] = (iz_to_above[k] - rec_from_above[k]);
 	}
@@ -384,7 +371,7 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 
 		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
 		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 			
 			// Note that cx_recombination coefficients are indexed from 1 to Z
 
@@ -400,9 +387,9 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		}
 
 		for(int k=0; k <= Z; ++k){//Consider all states at once
-			std::vector<double> rates_for_stage = {cx_rec_to_below[k],cx_rec_from_above[k]};
+			std::vector<double> rates_for_stage = {dNik[k], cx_rec_to_below[k], cx_rec_from_above[k]};
 			std::pair<double, double> neumaier_pair_dNik = neumaierSum(rates_for_stage,dNik_c[k]); //Extend on previous compensation
-			dNik[k] += neumaier_pair_dNik.first; //Add cx to the sum
+			dNik[k] = neumaier_pair_dNik.first; //Add cx to the sum
 			dNik_c[k] = neumaier_pair_dNik.second; //Overwrite compensation with updated value
 		}
 		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
@@ -424,8 +411,8 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	std::shared_ptr<RateCoefficient> line_power_coefficient = impurity.get_rate_coefficient("line_power");
 	std::shared_ptr<RateCoefficient> continuum_power_coefficient = impurity.get_rate_coefficient("continuum_power");
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double line_power_coefficient_evaluated = line_power_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
-		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+		double line_power_coefficient_evaluated = line_power_coefficient->call0D(k, Te_interp, Ne_interp);
+		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D(k, Te_interp, Ne_interp);
 		
 		// Note that continuum_power coefficients are indexed from 1 to Z, while line_power is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -439,7 +426,7 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	if (impurity.get_has_charge_exchange()){
 		std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
 		for(int k=0; k < Z; ++k){
-			double cx_power_coefficient_evaluated = cx_power_coefficient->call0DSharedInterpolation(k, Te_interp, Ne_interp);
+			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
 			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nik[k+1];
 			Prad  += cx_power_rate;
 		}
@@ -458,47 +445,57 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 }
 
 int main(){
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//Setup the ImpuritySpecies object
 	const std::string expt_results_json="sd1d-case-05.json";
 	std::string impurity_symbol="c";
 
 	ImpuritySpecies impurity(impurity_symbol);
 
-	// # Process the expt_results_json to extract
-	// # 	density(s) 					= electron density (in m^-3)
-	// # 	temperature(s)				= electron/ion temperature (in eV)
-	// # 	neutral_fraction(s)			= neutral density/electron density (no units)
-	// # where s is 1D distance index. Time is already contracted (using final time-step)
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Process the expt_results_json to extract
+	// 	density(s) 					= electron density (in m^-3)
+	// 	temperature(s)				= electron/ion temperature (in eV)
+	// 	neutral_fraction(s)			= neutral density/electron density (no units)
+	// where s is 1D distance index. Time is already contracted (using final time-step)
 	// Second argument is impurity fraction
-	// 
-	// N.b. This is only for training the data
 	SD1DData experiment(expt_results_json, 1e-2);
+	// N.b. This is only for training the data
 
+	//Cast the SD1D data into a form which is like how the function will be called by SD1D
 	int constant_position_index = 0;
-
 	double Te = experiment.get_temperature()[constant_position_index];
 	double Ne = experiment.get_density()[constant_position_index];
 	double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
 	double Nn = Ne * neutral_fraction;
 	double Ni = experiment.get_impurity_density()[constant_position_index];
-
-	// BOUT++/SD1D form for compute radiated power
-	double total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
-
-	std::cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<std::endl;
-
-	// Time dependant solver code
-	// Repeat the iz-stage-distribution calculation to create the Nik (charged-resolved impurity) density std::vector
+	// Compute the iz-stage-distribution to create the Nik (charged-resolved impurity) density std::vector
 	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Ni, Nn);
 	std::vector<double> Nik(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		Nik[k] = Ni * iz_stage_distribution[k];
 	}
 
-	initialiseSharedInterpolation(impurity);
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// BOUT++/SD1D form for compute radiated power
 
+	double total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
+
+	std::cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<std::endl;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Check that shared interpolation is allowed. Having an issue switching types in an if suite, so can't yet handle this exception.
+	if (not(impurity.get_shared_interpolation())){
+		throw std::runtime_error("Non-shared interpolation method requries switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Time dependant solver code
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
 	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik, Nthres);
 	
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//Unpacking the return from computeDerivs
 	double Pcool = dydt[0];
 	double Prad  = dydt[1];
 	std::vector<double> dNik(impurity.get_atomic_number()+1);
@@ -509,6 +506,8 @@ int main(){
 	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
 	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//Print-verifying the return from computeDerivs
 	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
 	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
@@ -517,6 +516,7 @@ int main(){
 	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Comparison to Post PSI
 	// Ne = 1e18;
 	// Te = 6;
