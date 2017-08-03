@@ -46,6 +46,7 @@
 		int get_year();
 		bool get_has_charge_exchange();
 		int get_atomic_number();
+		double get_mass();
 		std::map<std::string,std::string> get_adas_files_dict();
 		std::map<std::string,std::shared_ptr<RateCoefficient> > get_rate_coefficients();
 		bool get_shared_interpolation();

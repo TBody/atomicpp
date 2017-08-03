@@ -130,6 +130,9 @@ void ImpuritySpecies::makeRateCoefficients(){
 	int ImpuritySpecies::get_atomic_number(){
 		return atomic_number;
 	};
+	double ImpuritySpecies::get_mass(){
+		return mass;
+	};
 	std::map<std::string,std::string> ImpuritySpecies::get_adas_files_dict(){
 		return adas_files_dict;
 	};
