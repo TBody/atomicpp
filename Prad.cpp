@@ -443,8 +443,7 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 
 	return dydt;
 }
-std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn,
-	const std::vector<double>& Nzk, const double Nthres = 1e9){
+std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, const double Ne, const double Vi, const double Nn, const double Vn, const std::vector<double>& Nzk, const std::vector<double>& Vzk, const double Nthres = 1e9){
 	std::vector<double> dydt(Nzk.size()+4);
 	
 	int Z = impurity.get_atomic_number();
@@ -627,9 +626,16 @@ int main(){
 	// N.b. This is only for training the data
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
+	const double eV_to_J = 1.60217662e-19; //J per eV
+	const double Mz = 1.9944235e-26; //Kilograms
+	int Z = impurity.get_atomic_number();
+
+
 	int constant_position_index = 0;
 	double Te = experiment.get_temperature()[constant_position_index];
 	double Ne = experiment.get_density()[constant_position_index];
+	double Vi = 3.10080599e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
+	double Vn = 1.32440666e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
 	double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
 	double Nn = Ne * neutral_fraction;
 	double Nz = experiment.get_impurity_density()[constant_position_index];
@@ -637,7 +643,13 @@ int main(){
 	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Nz, Nn);
 	std::vector<double> Nzk(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		Nzk[k] = Nz * iz_stage_distribution[k];
+		// Use the plasma temperature, and then add a scaling based on the charge so that there's different velocities for each charge
+		// (so that momentum transfer results in an observable effect)
+		Nzk[k] = Nz * iz_stage_distribution[k] * k/Z;
+	}
+	std::vector<double> Vzk(impurity.get_atomic_number()+1);
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+		Vzk[k] = sqrt(2*Te*eV_to_J/Mz) * k/Z;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -656,7 +668,7 @@ int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
-	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nzk, Nthres);
+	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk, Nthres);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Unpacking the return from computeDerivs
@@ -695,8 +707,8 @@ int main(){
 	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
 	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
 
-	int Z = impurity.get_atomic_number();
-	const double eV_to_J = 1.60217662e-19; //J per eV
+	// int Z = impurity.get_atomic_number();
+	// const double eV_to_J = 1.60217662e-19; //J per eV
 
 	if (impurity.get_has_charge_exchange()){
 		std::vector<double> dNn_from_stage(impurity.get_atomic_number(), 0.0);
