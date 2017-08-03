@@ -689,6 +689,36 @@ int main(){
 	// std::cout << "Comparison to PSI paper:" << total_power << "W/m3" << std::endl;
 	// std::cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << std::endl;
 
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	std::pair<int, double> Te_interp, Ne_interp;
+	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
+	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+
+	int Z = impurity.get_atomic_number();
+	const double eV_to_J = 1.60217662e-19; //J per eV
+
+	if (impurity.get_has_charge_exchange()){
+		std::vector<double> dNn_from_stage(impurity.get_atomic_number(), 0.0);
+		std::vector<double>   cx_rec_to_below(Z+1, 0.0);
+		std::vector<double> cx_rec_from_above(Z+1, 0.0);
+
+		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
+		std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
+
+		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
+			// m^-3 s^-1
+			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
+			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nik[k+1];
+
+			// W m^-3
+			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
+			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nik[k+1] / eV_to_J;
+
+			std::printf("cx: %e [m^-3 s^-1], cx_power: %e [eV m^-3 s^-1], per transition: %e [eV] \n", cx_recombination_rate, cx_power_rate, cx_power_rate/cx_recombination_rate);
+		}
+	}
+
 }
 
 
