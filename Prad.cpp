@@ -43,15 +43,15 @@ using json = nlohmann::json;
  * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
- * @param Ni impurity density in m^-3, summed over all ionisation stages
+ * @param Nz impurity density in m^-3, summed over all ionisation stages
  * @param Nn neutral density in m^-3
  * @return Total power in W/m^3
  */
-double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
+double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
 	// Calculates the relative distribution across ionisation stages of the impurity by assuming collisional-radiative
 	// equilbrium. This is then used to calculate the density within each state, allowing the total power at a point
 	// to be evaluated
-	// std::cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Ni = " << Ni << ", Nn = " << Nn << std::endl;
+	// std::cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Nz = " << Nz << ", Nn = " << Nn << std::endl;
 
 	int Z = impurity.get_atomic_number();
 	std::vector<double> iz_stage_distribution(Z+1);
@@ -113,7 +113,7 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 				//# Prad = L * Ne * Nz^k+
 				//#      = L * scale
 				// N.b. Ne is function input
-				double Nz_charge_state = Ni * iz_stage_distribution[target_charge_state];
+				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
 				scale = Ne * Nz_charge_state;
 			} else if (*iter == "continuum_power"){
 				//# range of k is 1+ to Z+ (needs charged target)
@@ -121,7 +121,7 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 				//# Prad = L * Ne * Nz^(k+1)
 				//#      = L * scale
 				// N.b. Ne is function input
-				double Nz_charge_state = Ni * iz_stage_distribution[target_charge_state];
+				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
 				scale = Ne * Nz_charge_state;
 			} else if (*iter == "cx_power"){
 				//# range of k is 1+ to Z+ (needs charged target)
@@ -129,7 +129,7 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 				//# Prad = L * n_0 * Nz^(k+1)+
 				//#      = L * scale
 				// N.b. Nn is function input
-				double Nz_charge_state = Ni * iz_stage_distribution[target_charge_state];
+				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
 				scale = Nn * Nz_charge_state;
 			} else {
 				throw std::invalid_argument( "radiative_process not recognised (in computeRadiatedPower)" );
@@ -149,7 +149,7 @@ double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, dou
 	return total_power;
 }
 
-std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
+std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
 	//Identical to main code -- used to train time-dependent solver
 
 	int Z = impurity.get_atomic_number();
@@ -264,32 +264,32 @@ std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, co
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
  * @param Nn neutral density in m^-3
- * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * @param Nzk impurity density in m^-3, std::vector of densities of the form [Nz^0, Nz^1+, Nz^2+, ..., Nz^Z+]
  * @param Nthres threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9,
  * although it is recommended that a time-step dependance be added in the calling code.
  * return dydt;
  * //where the derivative std::vector may be unpacked as
  *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
  *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   std::vector<double> dNzk(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
  *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
  *   	int dydt_index = k + 2;
- *   	dNik[k] = dydt[dydt_index];
+ *   	dNzk[k] = dydt[dydt_index];
  *   }
  *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
 std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn,
-	const std::vector<double>& Nik, const double Nthres = 1e9){
-	std::vector<double> dydt(Nik.size()+4);
+	const std::vector<double>& Nzk, const double Nthres = 1e9){
+	std::vector<double> dydt(Nzk.size()+4);
 	
 	int Z = impurity.get_atomic_number();
 	const double eV_to_J = 1.60217662e-19; //J per eV
 
 	double Pcool = 0.0; // Pcool = dydt[0]
 	double Prad = 0.0; // Prad  = dydt[1]
-	std::vector<double> dNik(impurity.get_atomic_number()+1, 0.0); // dNik  = dydt[2:Z+3]
-	std::vector<double> dNik_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
+	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // dNzk  = dydt[2:Z+3]
+	std::vector<double> dNzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
 	double dNe  = 0.0; // dNe   = dydt[Z+3]
 	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
 
@@ -324,15 +324,15 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
 
-		double ionisation_rate = ionisation_coefficient_evaluated * Ne * Nik[k];
-		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nik = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nik[k],ionisation_rate);
-		double recombination_rate = recombination_coefficient_evaluated * Ne * Nik[k+1];
-		// std::printf("recombination(%i) K = %e, Ne = %e, Nik = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nik[k+1],recombination_rate);
+		double ionisation_rate = ionisation_coefficient_evaluated * Ne * Nzk[k];
+		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nzk = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nzk[k],ionisation_rate);
+		double recombination_rate = recombination_coefficient_evaluated * Ne * Nzk[k+1];
+		// std::printf("recombination(%i) K = %e, Ne = %e, Nzk = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nzk[k+1],recombination_rate);
 
 		// Want both the target and source densities to be above the Nthres density threshold
 		// If we allow target to be below the source density, then won't get particle balance if ignoring stage or alternatively
 		// will artificially pump a low density stage if we consider only source terms
-		if((Nik[k+1] > Nthres) and (Nik[k] > Nthres)){
+		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 			iz_to_above[k] = -ionisation_rate;
 			iz_from_below[k+1] = ionisation_rate;
 			rec_from_above[k] = recombination_rate;
@@ -348,8 +348,8 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 		// N.b. rates will be zero for edge cases (from initialisation)
 		std::vector<double> rates_for_stage = {iz_to_above[k],iz_from_below[k],rec_to_below[k],rec_from_above[k]};
 		std::pair<double, double> neumaier_pair_rates = neumaierSum(rates_for_stage);
-		dNik[k] = neumaier_pair_rates.first;
-		dNik_c[k] = neumaier_pair_rates.second; //Store compensation seperately for later evaluation
+		dNzk[k] = neumaier_pair_rates.first;
+		dNzk_c[k] = neumaier_pair_rates.second; //Store compensation seperately for later evaluation
 
 		double ionisation_potential_evaluated = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
@@ -359,9 +359,9 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 	dNe = neumaier_pair_dNe.first + neumaier_pair_dNe.second;
 	// Bare nucleus case
 	std::vector<double> rates_for_bare_nucleus = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
-	std::pair<double, double> neumaier_pair_dNik = neumaierSum(rates_for_bare_nucleus);
-	dNik[Z] = neumaier_pair_dNik.first;
-	dNik_c[Z] = neumaier_pair_dNik.second; //Store compensation seperately for later evaluation
+	std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_bare_nucleus);
+	dNzk[Z] = neumaier_pair_dNzk.first;
+	dNzk_c[Z] = neumaier_pair_dNzk.second; //Store compensation seperately for later evaluation
 
 	// Consider charge exchange after calculating Pcool
 	if (impurity.get_has_charge_exchange()){
@@ -375,10 +375,10 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 			
 			// Note that cx_recombination coefficients are indexed from 1 to Z
 
-			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nik[k+1];
+			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
 
 			// Want both the target and source densities to be above the Nthres density threshold
-			if((Nik[k+1] > Nthres) and (Nik[k] > Nthres)){
+			if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 				cx_rec_from_above[k] = cx_recombination_rate;
 				cx_rec_to_below[k+1] = -cx_recombination_rate;
 				dNn_from_stage[k] = -cx_recombination_rate;
@@ -387,24 +387,24 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 		}
 
 		for(int k=0; k <= Z; ++k){//Consider all states at once
-			std::vector<double> rates_for_stage = {dNik[k], cx_rec_to_below[k], cx_rec_from_above[k]};
-			std::pair<double, double> neumaier_pair_dNik = neumaierSum(rates_for_stage,dNik_c[k]); //Extend on previous compensation
-			dNik[k] = neumaier_pair_dNik.first; //Add cx to the sum
-			dNik_c[k] = neumaier_pair_dNik.second; //Overwrite compensation with updated value
+			std::vector<double> rates_for_stage = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]};
+			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_c[k]); //Extend on previous compensation
+			dNzk[k] = neumaier_pair_dNzk.first; //Add cx to the sum
+			dNzk_c[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
 		}
 		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 	}
 
 	// Verify that the sum over all elements equals zero (or very close to)
-	std::vector<double> dNik_corrected(Z+1);
+	std::vector<double> dNzk_corrected(Z+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		 dNik_corrected[k] = dNik[k] + dNik_c[k];
+		 dNzk_corrected[k] = dNzk[k] + dNzk_c[k];
 	}
-	std::pair<double, double> neumaier_pair_total_dNik = neumaierSum(dNik_corrected);
-	// std::printf("Total sum: %e\n", neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second);
-	if(abs(neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second) > 1){
-		std::printf("Warning: total sum of dNik elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second);
+	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk_corrected);
+	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
+	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 1){
+		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	}
 
 	//Calculate the power as well - doesn't need as high precision since everything is positive
@@ -417,8 +417,8 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 		// Note that continuum_power coefficients are indexed from 1 to Z, while line_power is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
 
-		double line_power_rate = line_power_coefficient_evaluated * Ne * Nik[k];
-		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nik[k+1];
+		double line_power_rate = line_power_coefficient_evaluated * Ne * Nzk[k];
+		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
@@ -427,7 +427,7 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 		std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
 		for(int k=0; k < Z; ++k){
 			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
-			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nik[k+1];
+			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 			Prad  += cx_power_rate;
 		}
 	}
@@ -436,7 +436,7 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 	dydt[1] 	= Prad;
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		int dydt_index = k + 2;
-		dydt[dydt_index] = dNik[k] + dNik_c[k];
+		dydt[dydt_index] = dNzk[k] + dNzk_c[k];
 	}
 	dydt[impurity.get_atomic_number()+3] 	= dNe;
 	dydt[impurity.get_atomic_number()+3+1] 	= dNn;
@@ -444,16 +444,16 @@ std::vector<double> computeDerivs_no_momentum(ImpuritySpecies& impurity, const d
 	return dydt;
 }
 std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn,
-	const std::vector<double>& Nik, const double Nthres = 1e9){
-	std::vector<double> dydt(Nik.size()+4);
+	const std::vector<double>& Nzk, const double Nthres = 1e9){
+	std::vector<double> dydt(Nzk.size()+4);
 	
 	int Z = impurity.get_atomic_number();
 	const double eV_to_J = 1.60217662e-19; //J per eV
 
 	double Pcool = 0.0; // Pcool = dydt[0]
 	double Prad = 0.0; // Prad  = dydt[1]
-	std::vector<double> dNik(impurity.get_atomic_number()+1, 0.0); // dNik  = dydt[2:Z+3]
-	std::vector<double> dNik_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
+	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // dNzk  = dydt[2:Z+3]
+	std::vector<double> dNzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
 	double dNe  = 0.0; // dNe   = dydt[Z+3]
 	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
 
@@ -488,15 +488,15 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
 
-		double ionisation_rate = ionisation_coefficient_evaluated * Ne * Nik[k];
-		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nik = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nik[k],ionisation_rate);
-		double recombination_rate = recombination_coefficient_evaluated * Ne * Nik[k+1];
-		// std::printf("recombination(%i) K = %e, Ne = %e, Nik = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nik[k+1],recombination_rate);
+		double ionisation_rate = ionisation_coefficient_evaluated * Ne * Nzk[k];
+		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nzk = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nzk[k],ionisation_rate);
+		double recombination_rate = recombination_coefficient_evaluated * Ne * Nzk[k+1];
+		// std::printf("recombination(%i) K = %e, Ne = %e, Nzk = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nzk[k+1],recombination_rate);
 
 		// Want both the target and source densities to be above the Nthres density threshold
 		// If we allow target to be below the source density, then won't get particle balance if ignoring stage or alternatively
 		// will artificially pump a low density stage if we consider only source terms
-		if((Nik[k+1] > Nthres) and (Nik[k] > Nthres)){
+		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 			iz_to_above[k] = -ionisation_rate;
 			iz_from_below[k+1] = ionisation_rate;
 			rec_from_above[k] = recombination_rate;
@@ -512,8 +512,8 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		// N.b. rates will be zero for edge cases (from initialisation)
 		std::vector<double> rates_for_stage = {iz_to_above[k],iz_from_below[k],rec_to_below[k],rec_from_above[k]};
 		std::pair<double, double> neumaier_pair_rates = neumaierSum(rates_for_stage);
-		dNik[k] = neumaier_pair_rates.first;
-		dNik_c[k] = neumaier_pair_rates.second; //Store compensation seperately for later evaluation
+		dNzk[k] = neumaier_pair_rates.first;
+		dNzk_c[k] = neumaier_pair_rates.second; //Store compensation seperately for later evaluation
 
 		double ionisation_potential_evaluated = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
@@ -523,9 +523,9 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	dNe = neumaier_pair_dNe.first + neumaier_pair_dNe.second;
 	// Bare nucleus case
 	std::vector<double> rates_for_bare_nucleus = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
-	std::pair<double, double> neumaier_pair_dNik = neumaierSum(rates_for_bare_nucleus);
-	dNik[Z] = neumaier_pair_dNik.first;
-	dNik_c[Z] = neumaier_pair_dNik.second; //Store compensation seperately for later evaluation
+	std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_bare_nucleus);
+	dNzk[Z] = neumaier_pair_dNzk.first;
+	dNzk_c[Z] = neumaier_pair_dNzk.second; //Store compensation seperately for later evaluation
 
 	// Consider charge exchange after calculating Pcool
 	if (impurity.get_has_charge_exchange()){
@@ -539,10 +539,10 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 			
 			// Note that cx_recombination coefficients are indexed from 1 to Z
 
-			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nik[k+1];
+			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
 
 			// Want both the target and source densities to be above the Nthres density threshold
-			if((Nik[k+1] > Nthres) and (Nik[k] > Nthres)){
+			if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 				cx_rec_from_above[k] = cx_recombination_rate;
 				cx_rec_to_below[k+1] = -cx_recombination_rate;
 				dNn_from_stage[k] = -cx_recombination_rate;
@@ -551,24 +551,24 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		}
 
 		for(int k=0; k <= Z; ++k){//Consider all states at once
-			std::vector<double> rates_for_stage = {dNik[k], cx_rec_to_below[k], cx_rec_from_above[k]};
-			std::pair<double, double> neumaier_pair_dNik = neumaierSum(rates_for_stage,dNik_c[k]); //Extend on previous compensation
-			dNik[k] = neumaier_pair_dNik.first; //Add cx to the sum
-			dNik_c[k] = neumaier_pair_dNik.second; //Overwrite compensation with updated value
+			std::vector<double> rates_for_stage = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]};
+			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_c[k]); //Extend on previous compensation
+			dNzk[k] = neumaier_pair_dNzk.first; //Add cx to the sum
+			dNzk_c[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
 		}
 		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 	}
 
 	// Verify that the sum over all elements equals zero (or very close to)
-	std::vector<double> dNik_corrected(Z+1);
+	std::vector<double> dNzk_corrected(Z+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		 dNik_corrected[k] = dNik[k] + dNik_c[k];
+		 dNzk_corrected[k] = dNzk[k] + dNzk_c[k];
 	}
-	std::pair<double, double> neumaier_pair_total_dNik = neumaierSum(dNik_corrected);
-	// std::printf("Total sum: %e\n", neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second);
-	if(abs(neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second) > 1){
-		std::printf("Warning: total sum of dNik elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNik.first + neumaier_pair_total_dNik.second);
+	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk_corrected);
+	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
+	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 1){
+		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	}
 
 	//Calculate the power as well - doesn't need as high precision since everything is positive
@@ -581,8 +581,8 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		// Note that continuum_power coefficients are indexed from 1 to Z, while line_power is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
 
-		double line_power_rate = line_power_coefficient_evaluated * Ne * Nik[k];
-		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nik[k+1];
+		double line_power_rate = line_power_coefficient_evaluated * Ne * Nzk[k];
+		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
@@ -591,7 +591,7 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 		std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
 		for(int k=0; k < Z; ++k){
 			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
-			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nik[k+1];
+			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 			Prad  += cx_power_rate;
 		}
 	}
@@ -600,7 +600,7 @@ std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, co
 	dydt[1] 	= Prad;
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		int dydt_index = k + 2;
-		dydt[dydt_index] = dNik[k] + dNik_c[k];
+		dydt[dydt_index] = dNzk[k] + dNzk_c[k];
 	}
 	dydt[impurity.get_atomic_number()+3] 	= dNe;
 	dydt[impurity.get_atomic_number()+3+1] 	= dNn;
@@ -632,18 +632,18 @@ int main(){
 	double Ne = experiment.get_density()[constant_position_index];
 	double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
 	double Nn = Ne * neutral_fraction;
-	double Ni = experiment.get_impurity_density()[constant_position_index];
-	// Compute the iz-stage-distribution to create the Nik (charged-resolved impurity) density std::vector
-	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Ni, Nn);
-	std::vector<double> Nik(impurity.get_atomic_number()+1);
+	double Nz = experiment.get_impurity_density()[constant_position_index];
+	// Compute the iz-stage-distribution to create the Nzk (charged-resolved impurity) density std::vector
+	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Nz, Nn);
+	std::vector<double> Nzk(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		Nik[k] = Ni * iz_stage_distribution[k];
+		Nzk[k] = Nz * iz_stage_distribution[k];
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// BOUT++/SD1D form for compute radiated power
 
-	double total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
+	double total_power = computeRadiatedPower(impurity, Te, Ne, Nz, Nn);
 
 	std::cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<std::endl;
 
@@ -656,16 +656,16 @@ int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
-	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nik, Nthres);
+	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Nn, Nzk, Nthres);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Unpacking the return from computeDerivs
 	double Pcool = dydt[0];
 	double Prad  = dydt[1];
-	std::vector<double> dNik(impurity.get_atomic_number()+1);
+	std::vector<double> dNzk(impurity.get_atomic_number()+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		int dydt_index = k + 2;
-		dNik[k] = dydt[dydt_index];
+		dNzk[k] = dydt[dydt_index];
 	}
 	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
 	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
@@ -675,7 +675,7 @@ int main(){
 	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
 	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNik[k]);
+	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
 	}
 	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
@@ -685,9 +685,9 @@ int main(){
 	// Ne = 1e18;
 	// Te = 6;
 	// Nn = 0;
-	// total_power = computeRadiatedPower(impurity, Te, Ne, Ni, Nn);
+	// total_power = computeRadiatedPower(impurity, Te, Ne, Nz, Nn);
 	// std::cout << "Comparison to PSI paper:" << total_power << "W/m3" << std::endl;
-	// std::cout << "Comparison to PSI paper:" << total_power/(Ni*Ne) << "Wm3" << std::endl;
+	// std::cout << "Comparison to PSI paper:" << total_power/(Nz*Ne) << "Wm3" << std::endl;
 
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -709,11 +709,11 @@ int main(){
 		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
 			// m^-3 s^-1
 			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
-			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nik[k+1];
+			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
 
 			// W m^-3
 			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
-			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nik[k+1] / eV_to_J;
+			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1] / eV_to_J;
 
 			std::printf("cx: %e [m^-3 s^-1], cx_power: %e [eV m^-3 s^-1], per transition: %e [eV] \n", cx_recombination_rate, cx_power_rate, cx_power_rate/cx_recombination_rate);
 		}

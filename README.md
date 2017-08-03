@@ -57,11 +57,11 @@ ImpuritySpecies impurity(impurity_symbol);
  * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
- * @param Ni impurity density in m^-3, summed over all ionisation stages
+ * @param Nz impurity density in m^-3, summed over all ionisation stages
  * @param Nn neutral density in m^-3
  * @return Total power in W/m^3
  */
-double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Ni, double Nn){
+double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
     /**Calculates the relative distribution across ionisation stages of the impurity by  
     assuming collisional-radiative equilibrium. This is then used to calculate the density within  
     each state, allowing the total power at a point to be evaluated.
@@ -88,22 +88,22 @@ To compute the derivatives of state-vector quantities required to self-consisten
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
  * @param Nn neutral density in m^-3
- * @param Nik impurity density in m^-3, std::vector of densities of the form [Ni^0, Ni^1+, Ni^2+, ..., Ni^Z+]
+ * @param Nzk impurity density in m^-3, std::vector of densities of the form [Nz^0, Nz^1+, Nz^2+, ..., Nz^Z+]
  * @param Nthres threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9,
  * although it is recommended that a time-step dependance be added in the calling code.
  * return dydt;
  * //where the derivative std::vector may be unpacked as
  *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
  *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   std::vector<double> dNik(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
+ *   std::vector<double> dNzk(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
  *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
  *      int dydt_index = k + 2;
- *      dNik[k] = dydt[dydt_index];
+ *      dNzk[k] = dydt[dydt_index];
  *   }
  *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
-std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nik, const double Nthres = 1e9){
+std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nzk, const double Nthres = 1e9){
 
     ...
 
@@ -115,10 +115,10 @@ double Pcool = dydt[0];
 //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
 double Prad  = dydt[1];
 //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
-std::vector<double> dNik(impurity.get_atomic_number()+1);
+std::vector<double> dNzk(impurity.get_atomic_number()+1);
 for(int k=0; k<=impurity.get_atomic_number(); ++k){
     int dydt_index = k + 2;
-    dNik[k] = dydt[dydt_index];
+    dNzk[k] = dydt[dydt_index];
 }
 //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
 double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
