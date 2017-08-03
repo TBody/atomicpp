@@ -78,7 +78,8 @@
 		std::string name;
 		int year;
 		bool has_charge_exchange;
-		int atomic_number;
+		int atomic_number; //in elementary charges
+		double mass; //in kg
 		std::map<std::string,std::string> adas_files_dict;
 		std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
 		bool shared_interpolation; //If all the rate coefficients have the same log_temperature and log_density then can use the same scaling 
@@ -87,4 +88,5 @@
 	std::string get_json_database_path();
 	std::string get_impurity_user_input();
 
+	const double amu_to_kg = 1.66054e-27; //amu per kg
 #endif

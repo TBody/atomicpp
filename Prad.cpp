@@ -453,6 +453,8 @@ std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, con
 	double Prad = 0.0; // Prad  = dydt[1]
 	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // dNzk  = dydt[2:Z+3]
 	std::vector<double> dNzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
+	std::vector<double> dVzk(impurity.get_atomic_number()+1, 0.0); // dVzk  = dydt[2:Z+3]
+	std::vector<double> dVzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
 	double dNe  = 0.0; // dNe   = dydt[Z+3]
 	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
 
@@ -662,7 +664,7 @@ int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Check that shared interpolation is allowed. Having an issue switching types in an if suite, so can't yet handle this exception.
 	if (not(impurity.get_shared_interpolation())){
-		throw std::runtime_error("Non-shared interpolation method requries switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
