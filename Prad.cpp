@@ -14,6 +14,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <tuple>
 #include <fstream>
 #include <set>
 #include <stdexcept> //For error-throwing
@@ -279,35 +280,62 @@ std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, co
  *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
  */
-std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, const double Ne, const double Vi, const double Nn, const double Vn, const std::vector<double>& Nzk, const std::vector<double>& Vzk, const double Nthres = 1e9){
+
+std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >
+	computeDerivs(ImpuritySpecies&impurity, const double Te, const double Ne, const double Vi, const double Nn, const double Vn,
+		const std::vector<double>& Nzk, const std::vector<double>& Vzk, const double Nthres = 1e9){
 	std::vector<double> dydt(Nzk.size()*2+4);
 	
 	int Z = impurity.get_atomic_number();
 	const double mz = impurity.get_mass(); //kilograms
 	const double eV_to_J = 1.60217662e-19; //J per eV
 
-	double Pcool = 0.0; // Pcool = dydt[0]
-	double Prad = 0.0; // Prad  = dydt[1]
-	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // dNzk  = dydt[2:Z+3]
-	std::vector<double> dNzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
-	std::vector<double> dpzk(impurity.get_atomic_number()+1, 0.0); // dpzk
-	std::vector<double> dpzk_c(impurity.get_atomic_number()+1, 0.0); // corrections for neumaierSum
-	double dNe  = 0.0; // dNe   = dydt[Z+3]
-	double dNn  = 0.0; // dNn   = dydt[Z+3+1]
+	//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+	double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
 
-	// Can't switch type in an if suite <<TODO>>
-	// if (impurity.get_shared_interpolation()){
-	// Find the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that
-	// the grids are identical we can use the same interpolated points for each
+	//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+	double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
+
+	//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
+	//The index corresponds to the charge of the ionisation stage
+	//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
+	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // = std::get<2>(derivative_tuple);
+
+	//Force on each particle of ionisation stage k of the impurity population, in N
+	//The index corresponds to the charge of the ionisation stage
+	//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
+	std::vector<double> F_zk(impurity.get_atomic_number()+1, 0.0); // = std::get<3>(derivative_tuple);
+	// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
+	
+	//Correction vectors for neumairSum
+	std::vector<double> dNzk_correction(impurity.get_atomic_number()+1, 0.0); // = std::get<2>(derivative_tuple);
+	std::vector<double> F_zk_correction(impurity.get_atomic_number()+1, 0.0); // = std::get<3>(derivative_tuple);
+
+	//Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
+	double dNe = 0.0; // = std::get<4>(derivative_tuple);
+	double F_i = 0.0; // = std::get<5>(derivative_tuple);
+
+	//Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
+	double dNn = 0.0; // = std::get<6>(derivative_tuple);
+	double F_n = 0.0; // = std::get<7>(derivative_tuple);
+
+	// // Can't switch type in an if suite <<TODO>>
+	// // if (impurity.get_shared_interpolation()){
+	// // F_ind the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that
+	// // the grids are identical we can use the same interpolated points for each
+	// std::pair<int, double> Te_interp, Ne_interp;
+	// Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
+	// Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+	// // } else {
+	// // 	// Have found that the grids are not identical. Pass Te_interp and Ne_interp as doubles instead of pairs, and the program will
+	// // 	// auto-switch to the full interpolation method.
+	// // 	double Te_interp = Te;
+	// // 	double Ne_interp = Ne;
+	// // }
+
 	std::pair<int, double> Te_interp, Ne_interp;
 	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
 	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
-	// } else {
-	// 	// Have found that the grids are not identical. Pass Te_interp and Ne_interp as doubles instead of pairs, and the program will
-	// 	// auto-switch to the full interpolation method.
-	// 	double Te_interp = Te;
-	// 	double Ne_interp = Ne;
-	// }
 
 	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
 	// These will be summed with Kahan summation
@@ -362,12 +390,12 @@ std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, con
 		std::vector<double> rates_for_stage = {iz_to_above[k],iz_from_below[k],rec_to_below[k],rec_from_above[k]};
 		std::pair<double, double> neumaier_pair_rates = neumaierSum(rates_for_stage);
 		dNzk[k] = neumaier_pair_rates.first;
-		dNzk_c[k] = neumaier_pair_rates.second; //Store compensation separately for later evaluation
+		dNzk_correction[k] = neumaier_pair_rates.second; //Store compensation separately for later evaluation
 
 		std::vector<double> momentum_for_stage = {iz_p_to_above[k],iz_p_from_below[k],rec_p_to_below[k],rec_p_from_above[k]};
 		std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
-		dpzk[k] = neumaier_pair_momentum.first;
-		dpzk_c[k] = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
+		F_zk[k] = neumaier_pair_momentum.first;
+		F_zk_correction[k] = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
 
 		double ionisation_potential_evaluated = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
@@ -380,12 +408,12 @@ std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, con
 	std::vector<double> rates_for_bare_nucleus = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
 	std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_bare_nucleus);
 	dNzk[Z] = neumaier_pair_dNzk.first;
-	dNzk_c[Z] = neumaier_pair_dNzk.second; //Store compensation separately for later evaluation
+	dNzk_correction[Z] = neumaier_pair_dNzk.second; //Store compensation separately for later evaluation
 
 	std::vector<double> momentum_for_stage = {iz_p_to_above[Z],iz_p_from_below[Z],rec_p_to_below[Z],rec_p_from_above[Z]};
 	std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
-	dpzk[Z] = neumaier_pair_momentum.first;
-	dpzk_c[Z] = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
+	F_zk[Z] = neumaier_pair_momentum.first;
+	F_zk_correction[Z] = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
 
 	// Consider charge exchange after calculating Pcool
 	if (impurity.get_has_charge_exchange()){
@@ -412,34 +440,34 @@ std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, con
 
 		for(int k=0; k <= Z; ++k){//Consider all states at once
 			std::vector<double> rates_for_stage = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]};
-			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_c[k]); //Extend on previous compensation
+			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
 			dNzk[k] = neumaier_pair_dNzk.first; //Add cx to the sum
-			dNzk_c[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
+			dNzk_correction[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
 		}
 		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 	}
 
 	// Verify that the sum over all elements equals zero (or very close to)
-	std::vector<double> dNzk_corrected(Z+1);
+	std::vector<double> dNzk_correctionorrected(Z+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		 dNzk_corrected[k] = dNzk[k] + dNzk_c[k];
+		 dNzk_correctionorrected[k] = dNzk[k] + dNzk_correction[k];
 	}
-	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk_corrected);
+	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk_correctionorrected);
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 1){
 		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	}
 
 	// Verify that the sum over all elements equals zero (or very close to)
-	std::vector<double> dpzk_corrected(Z+1);
+	std::vector<double> F_zk_correctionorrected(Z+1);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		 dpzk_corrected[k] = dpzk[k] + dpzk_c[k];
+		 F_zk_correctionorrected[k] = F_zk[k] + F_zk_correction[k];
 	}
-	std::pair<double, double> neumaier_pair_total_dpzk = neumaierSum(dpzk_corrected);
-	// std::printf("Total sum: %e\n", neumaier_pair_total_dpzk.first + neumaier_pair_total_dpzk.second);
-	if(abs(neumaier_pair_total_dpzk.first + neumaier_pair_total_dpzk.second) > 1){
-		std::printf("Warning: total sum of dpzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dpzk.first + neumaier_pair_total_dpzk.second);
+	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk_correctionorrected);
+	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
+	if(abs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 1){
+		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
 	}
 
 	//Calculate the power as well - doesn't need as high precision since everything is positive
@@ -467,20 +495,42 @@ std::vector<double> computeDerivs(ImpuritySpecies&impurity, const double Te, con
 		}
 	}
 
-	dydt[0] 	= Pcool;
-	dydt[1] 	= Prad;
+	// dydt[0] 	= Pcool;
+	// dydt[1] 	= Prad;
+	// dydt[impurity.get_atomic_number()+3] 	= dNe;
+	// dydt[impurity.get_atomic_number()+3+1] 	= dNn;
+	
+	//Apply neumairSum corrections
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int dydt_index = k + 2;
-		dydt[dydt_index] = dNzk[k] + dNzk_c[k];
-	}
-	dydt[impurity.get_atomic_number()+3] 	= dNe;
-	dydt[impurity.get_atomic_number()+3+1] 	= dNn;
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int dydt_index = k + impurity.get_atomic_number()+3+2;
-		dydt[dydt_index] = dpzk[k] + dpzk_c[k];
+		dNzk[k] += dNzk_correction[k];
+		F_zk[k] += F_zk_correction[k];
 	}
 
-	return dydt;
+
+	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >derivative_tuple = 
+	std::make_tuple(
+		Pcool,
+		Prad,
+		dNzk,
+		F_zk,
+		dNe,
+		F_i,
+		dNn,
+		F_n
+	);
+
+
+	// double Pcool = std::get<0>(derivative_tuple);
+	// double Prad  = std::get<1>(derivative_tuple);
+	// std::vector<double> dNzk = std::get<2>(derivative_tuple);
+	// std::vector<double> F_zk = std::get<3>(derivative_tuple);
+
+	// double dNe = std::get<4>(derivative_tuple);
+	// double F_i  = std::get<5>(derivative_tuple);
+	// double dNn = std::get<6>(derivative_tuple);
+	// double F_n  = std::get<7>(derivative_tuple);
+
+	return derivative_tuple;
 }
 
 int main(){
@@ -544,24 +594,19 @@ int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
-	std::vector<double> dydt = computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk, Nthres);
+	auto derivative_tuple = computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk, Nthres);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Unpacking the return from computeDerivs
-	double Pcool = dydt[0];
-	double Prad  = dydt[1];
-	std::vector<double> dNzk(impurity.get_atomic_number()+1);
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int dydt_index = k + 2;
-		dNzk[k] = dydt[dydt_index];
-	}
-	double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
-	double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
-	std::vector<double> dpzk(impurity.get_atomic_number()+1);
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		int dydt_index = k + (impurity.get_atomic_number()+2) + 3;
-		dpzk[k] = dydt[dydt_index];
-	}
+	double Pcool = std::get<0>(derivative_tuple);
+	double Prad  = std::get<1>(derivative_tuple);
+	std::vector<double> dNzk = std::get<2>(derivative_tuple);
+	std::vector<double> F_zk = std::get<3>(derivative_tuple);
+
+	double dNe = std::get<4>(derivative_tuple);
+	double F_i  = std::get<5>(derivative_tuple);
+	double dNn = std::get<6>(derivative_tuple);
+	double F_n  = std::get<7>(derivative_tuple);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Print-verifying the return from computeDerivs
@@ -570,11 +615,13 @@ int main(){
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
 	}
-	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
-	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	std::printf("dpz^(%i)/dt:  %+.2e [N]\n",k ,dpzk[k]);
+	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
 	}
+	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
+	std::printf("F_i/dt:      %+.2e [N]\n",F_i);
+	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
+	std::printf("F_n/dt:      %+.2e [N]\n",F_n);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Comparison to Post PSI
