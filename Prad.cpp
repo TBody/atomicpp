@@ -33,125 +33,8 @@
 #include "atomicpp/json.hpp"
 using json = nlohmann::json;
 
-
-/**
- * @brief Calculate the total radiated power assuming collisional-radiative equilibrium
- * @details  Assumes collisional-radiative equilibrium (i.e. infinite impurity retention time,
- * no charge-exchange recombination) to provide a simple method for calculating the ionisation stage distribution
- * for the impurity. This is then used to calculate the power due to each considered physics process (line power,
- * continuum power and charge-exchange power) for each ionisation stage. The total power (in W/m^3) is returned.
- * 
- * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
- * @param Te electron temperature in eV
- * @param Ne electron density in m^-3
- * @param Nz impurity density in m^-3, summed over all ionisation stages
- * @param Nn neutral density in m^-3
- * @return Total power in W/m^3
- */
-double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
-	// Calculates the relative distribution across ionisation stages of the impurity by assuming collisional-radiative
-	// equilbrium. This is then used to calculate the density within each state, allowing the total power at a point
-	// to be evaluated
-	// std::cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Nz = " << Nz << ", Nn = " << Nn << std::endl;
-
-	int Z = impurity.get_atomic_number();
-	std::vector<double> iz_stage_distribution(Z+1);
-
-	// std::set GS density equal to 1 (arbitrary)
-	iz_stage_distribution[0] = 1;
-	double sum_iz = 1;
-
-	// Loop over 0, 1, ..., Z-1
-	// Each charge state is std::set in terms of the density of the previous
-	for(int k=0; k<Z; ++k){
-		// Ionisation
-		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
-		// Evaluate the RateCoefficient at the point
-		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
-
-		// Recombination
-		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
-		// Evaluate the RateCoefficient at the point
-		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
-
-		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
-		// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
-		// ionisation from the bare nucleus, and no recombination onto the neutral (ignoring anion formation) the 'k'
-		// value of ionisation coeffs is shifted down  by one relative to the recombination coeffs - therefore this
-		// evaluation actually gives the balance
-
-		iz_stage_distribution[k+1] = iz_stage_distribution[k] * (k_iz_evaluated/k_rec_evaluated);
-		sum_iz += iz_stage_distribution[k+1];
-	}
-
-	// # Normalise such that the sum over all ionisation stages is '1' at all points
-	for(int k=0; k<=Z; ++k){
-		iz_stage_distribution[k] = iz_stage_distribution[k] / sum_iz;
-	}
-
-	std::set<std::string> radiative_processes = {"line_power","continuum_power"};
-	if (impurity.get_has_charge_exchange()){
-		radiative_processes.insert("cx_power");
-	}
-
-	double total_power = 0;
-
-	for(int k=0; k< Z; ++k){
-		double k_power = 0;
-		for(std::set<std::string>::iterator iter = radiative_processes.begin();iter != radiative_processes.end();++iter){
-				
-			std::shared_ptr<RateCoefficient> rate_coefficient = impurity.get_rate_coefficient(*iter);
-			double k_evaluated = rate_coefficient->call0D(k, Te, Ne);
-
-			double scale;
-			int target_charge_state;
-
-			if (*iter == "line_power"){
-				//# range of k is 0 to (Z-1)+ (needs bound electrons)
-				target_charge_state = k; //#electron-bound target
-				//# Prad = L * Ne * Nz^k+
-				//#      = L * scale
-				// N.b. Ne is function input
-				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
-				scale = Ne * Nz_charge_state;
-			} else if (*iter == "continuum_power"){
-				//# range of k is 1+ to Z+ (needs charged target)
-				target_charge_state = k + 1; //#charged target
-				//# Prad = L * Ne * Nz^(k+1)
-				//#      = L * scale
-				// N.b. Ne is function input
-				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
-				scale = Ne * Nz_charge_state;
-			} else if (*iter == "cx_power"){
-				//# range of k is 1+ to Z+ (needs charged target)
-				target_charge_state = k + 1; //#charged target
-				//# Prad = L * n_0 * Nz^(k+1)+
-				//#      = L * scale
-				// N.b. Nn is function input
-				double Nz_charge_state = Nz * iz_stage_distribution[target_charge_state];
-				scale = Nn * Nz_charge_state;
-			} else {
-				throw std::invalid_argument( "radiative_process not recognised (in computeRadiatedPower)" );
-			}
-		double power = scale * k_evaluated;
-		// N.b. These won't quite give the power from the kth charge state. Instead they give the
-		// power from the kth element on the rate coefficient, which may be kth or (k+1)th charge state
-		// std::cout << "Power due to "<< *iter << " from k="<<k<<" is "<<power<<" [W/m3]"<<std::endl;
-		k_power += power;
-		}
-		// N.b. These won't quite give the power from the kth charge state. Instead they give the
-		// power from the kth element on the rate coefficient, which may be kth or (k+1)th charge state
-		// std::cout << "Total power from all procs. from k="<<k<<" is "<<k_power<<" [W/m3]\n"<<std::endl;
-		total_power += k_power;
-	}
-
-	return total_power;
-}
-
+//Only used for getting guess values for the impurity ionisation-stage densities -- not required for final code
 std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
-	//Identical to main code -- used to train time-dependent solver
 
 	int Z = impurity.get_atomic_number();
 	std::vector<double> iz_stage_distribution(Z+1);
@@ -191,6 +74,12 @@ std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, dou
 	}
 	return iz_stage_distribution;
 }
+
+
+
+
+
+
 /**
  * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
  * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
@@ -227,6 +116,7 @@ std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_gr
 	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
 	return interp_pair;
 }
+
 /**
  * @brief Uses Neumaier algorithm to add the elements of a list
  * @details Extension on Kahan summation algorithm for an unsorted list
@@ -257,85 +147,95 @@ std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, co
 
 	return neumaier_pair;
 }
+
 /**
  * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
  * @details Still under development
  * 
- * * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
+ * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
  * @param Te electron temperature in eV
  * @param Ne electron density in m^-3
+ * @param Vi ion velocity in m/s
  * @param Nn neutral density in m^-3
+ * @param Vn neutral velocity in m/s
  * @param Nzk impurity density in m^-3, std::vector of densities of the form [Nz^0, Nz^1+, Nz^2+, ..., Nz^Z+]
+ * @param Vzk impurity velocity in m/s, std::vector of densities of the form [Vz^0, Vz^1+, Vz^2+, ..., Vz^Z+]
  * @param Nthres threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9,
  * although it is recommended that a time-step dependance be added in the calling code.
- * return dydt;
- * //where the derivative std::vector may be unpacked as
- *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
- *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   std::vector<double> dNzk(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
- *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
- *   	int dydt_index = k + 2;
- *   	dNzk[k] = dydt[dydt_index];
- *   }
- *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
- *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
+ * return derivative_tuple;
+ * where the return values are unpacked as
+ * 	double Pcool = std::get<0>(derivative_tuple);	//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+ * 	double Prad  = std::get<1>(derivative_tuple);	//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+ * 	std::vector<double> dNzk = std::get<2>(derivative_tuple);	//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
+ * 	std::vector<double> F_zk = std::get<3>(derivative_tuple);	//Force on each particle of ionisation stage k of the impurity population, in N
+ * (returned perturbation values, not essential for modelling)
+ * 	double dNe = std::get<4>(derivative_tuple); 	//Perturbation change in the electron density (in particles m^-3 s^-1) and
+ * 	double F_i  = std::get<5>(derivative_tuple);	//  perturbation force (in N) on the electron population due to atomic processes
+ * 	double dNn = std::get<6>(derivative_tuple); 	//Perturbation change in the neutral density (in particles m^-3 s^-1) and 
+ * 	double F_n  = std::get<7>(derivative_tuple);	// 	perturbation force (in N) on the neutral population due to atomic processes
  */
-
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >
-	computeDerivs(ImpuritySpecies&impurity, const double Te, const double Ne, const double Vi, const double Nn, const double Vn,
-		const std::vector<double>& Nzk, const std::vector<double>& Vzk, const double Nthres = 1e9){
-	std::vector<double> dydt(Nzk.size()*2+4);
+	computeDerivs(	ImpuritySpecies&impurity,
+					const double Te,
+					const double Ne,
+					const double Vi,
+					const double Nn,
+					const double Vn,
+					const std::vector<double>& Nzk,
+					const std::vector<double>& Vzk,
+					const double Nthres = 1e9){
 	
-	int Z = impurity.get_atomic_number();
-	const double mz = impurity.get_mass(); //kilograms
-	const double eV_to_J = 1.60217662e-19; //J per eV
+	// Set parameters that are useful for multiple functions
+		//Nuclear charge of the impurity, in elementary charge units
+		int Z = impurity.get_atomic_number();
+		//Mass of the impurity, in kilograms
+		const double mz = impurity.get_mass();
+		//Conversion factor between electron-volts and joules (effective units J/eV)
+		const double eV_to_J = 1.60217662e-19;
 
-	//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
-	double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
+	// Initialise all of the output variables
+		//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+		double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
 
-	//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
-	double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
+		//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+		double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
 
-	//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
-	//The index corresponds to the charge of the ionisation stage
-	//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
-	std::vector<double> dNzk(impurity.get_atomic_number()+1, 0.0); // = std::get<2>(derivative_tuple);
+		//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
+		//The index corresponds to the charge of the ionisation stage
+		//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
+		std::vector<double> dNzk(Z+1, 0.0); // = std::get<2>(derivative_tuple);
 
-	//Force on each particle of ionisation stage k of the impurity population, in N
-	//The index corresponds to the charge of the ionisation stage
-	//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
-	std::vector<double> F_zk(impurity.get_atomic_number()+1, 0.0); // = std::get<3>(derivative_tuple);
-	// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
-	
-	//Correction vectors for neumairSum
-	std::vector<double> dNzk_correction(impurity.get_atomic_number()+1, 0.0); // = std::get<2>(derivative_tuple);
-	std::vector<double> F_zk_correction(impurity.get_atomic_number()+1, 0.0); // = std::get<3>(derivative_tuple);
+		//Force on each particle of ionisation stage k of the impurity population, in N
+		//The index corresponds to the charge of the ionisation stage
+		//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
+		std::vector<double> F_zk(Z+1, 0.0); // = std::get<3>(derivative_tuple);
+		// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
+		
+		//Correction vectors for neumairSum
+		std::vector<double> dNzk_correction(Z+1, 0.0); // = std::get<2>(derivative_tuple);
+		std::vector<double> F_zk_correction(Z+1, 0.0); // = std::get<3>(derivative_tuple);
 
-	//Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
-	double dNe = 0.0; // = std::get<4>(derivative_tuple);
-	double F_i = 0.0; // = std::get<5>(derivative_tuple);
+		//Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
+		double dNe = 0.0; // = std::get<4>(derivative_tuple);
+		double F_i = 0.0; // = std::get<5>(derivative_tuple);
 
-	//Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
-	double dNn = 0.0; // = std::get<6>(derivative_tuple);
-	double F_n = 0.0; // = std::get<7>(derivative_tuple);
+		//Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
+		double dNn = 0.0; // = std::get<6>(derivative_tuple);
+		double F_n = 0.0; // = std::get<7>(derivative_tuple);
 
-	// // Can't switch type in an if suite <<TODO>>
-	// // if (impurity.get_shared_interpolation()){
-	// // F_ind the points on the grid which correspond to Te and Ne. Since we have determined in initialiseSharedInterpolation that
-	// // the grids are identical we can use the same interpolated points for each
-	// std::pair<int, double> Te_interp, Ne_interp;
-	// Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
-	// Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
-	// // } else {
-	// // 	// Have found that the grids are not identical. Pass Te_interp and Ne_interp as doubles instead of pairs, and the program will
-	// // 	// auto-switch to the full interpolation method.
-	// // 	double Te_interp = Te;
-	// // 	double Ne_interp = Ne;
-	// // }
-
+	// Perform 'sharedInterpolation'
 	std::pair<int, double> Te_interp, Ne_interp;
-	Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
-	Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+	if (impurity.get_shared_interpolation()){
+		Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
+		Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+	} else {
+		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
+		// double Te_interp = Te;
+		// double Ne_interp = Ne;
+	}
+
+
 
 	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
 	// These will be summed with Kahan summation
@@ -576,19 +476,6 @@ int main(){
 	for(int k=0; k<=impurity.get_atomic_number(); ++k){
 		Vzk[k] = sqrt(2*Te*eV_to_J/mz) * k/Z;
 		// std::printf("Vz_i^(%i):  %+.2e [m/s]\n",k ,Vzk[k]);
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// BOUT++/SD1D form for compute radiated power
-
-	double total_power = computeRadiatedPower(impurity, Te, Ne, Nz, Nn);
-
-	std::cout << "Total power from all stages is "<<total_power<<" [W/m3]\n"<<std::endl;
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Check that shared interpolation is allowed. Having an issue switching types in an if suite, so can't yet handle this exception.
-	if (not(impurity.get_shared_interpolation())){
-		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
