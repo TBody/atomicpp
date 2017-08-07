@@ -89,5 +89,6 @@
 	std::string get_json_database_path();
 	std::string get_impurity_user_input();
 
-	const double amu_to_kg = 1.66054e-27; //amu per kg
+	const double eV_to_J = 1.60217662e-19; //Conversion factor between electron-volts and joules (effective units J/eV)
+	const double amu_to_kg = 1.66054e-27; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
 #endif

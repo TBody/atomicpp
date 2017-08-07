@@ -34,6 +34,9 @@
 #include "atomicpp/json.hpp"
 using json = nlohmann::json;
 
+// extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
+// extern const double amu_to_kg; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
+
 //Only used for getting guess values for the impurity ionisation-stage densities -- not required for final code
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////// NOT FOR FINAL SIMULATION CODE //////
@@ -102,36 +105,37 @@ int main(){
 	// N.b. This is only for training the data
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
-	const int Z = impurity.get_atomic_number();
-	const double eV_to_J = 1.60217662e-19; //J per eV
-	const double mz = impurity.get_mass(); //Kilograms
+		const int Z = impurity.get_atomic_number();
+		const double mz = impurity.get_mass(); //amu
 
-	int constant_position_index = 0;
-	double Te = experiment.get_temperature()[constant_position_index];
-	double Ne = experiment.get_density()[constant_position_index];
-	double Vi = 3.10080599e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
-	double Vn = 1.32440666e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
-	double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
-	double Nn = Ne * neutral_fraction;
-	double Nz = experiment.get_impurity_density()[constant_position_index];
-	// Compute the iz-stage-distribution to create the Nzk (charged-resolved impurity) density std::vector
-	std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Nz, Nn);
-	std::vector<double> Nzk(impurity.get_atomic_number()+1);
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		// Use the plasma temperature, and then add a scaling based on the charge so that there's different velocities for each charge
-		// (so that momentum transfer results in an observable effect)
-		Nzk[k] = Nz * iz_stage_distribution[k] * k/Z;
-	}
-	std::vector<double> Vzk(impurity.get_atomic_number()+1);
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-		Vzk[k] = sqrt(2*Te*eV_to_J/mz) * k/Z;
-		// std::printf("Vz_i^(%i):  %+.2e [m/s]\n",k ,Vzk[k]);
-	}
+		int constant_position_index = 0;
+		double Te = experiment.get_temperature()[constant_position_index];
+		double Ne = experiment.get_density()[constant_position_index];
+		double Vi = 3.10080599e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
+		double Vn = 1.32440666e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
+		double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
+		double Nn = Ne * neutral_fraction;
+		double Nz = experiment.get_impurity_density()[constant_position_index];
+		// Compute the iz-stage-distribution to create the Nzk (charged-resolved impurity) density std::vector
+		std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Nz, Nn);
+		std::vector<double> Nzk(impurity.get_atomic_number()+1);
+		for(int k=0; k<=impurity.get_atomic_number(); ++k){
+			// Use the plasma temperature, and then add a scaling based on the charge so that there's different velocities for each charge
+			// (so that momentum transfer results in an observable effect)
+			Nzk[k] = Nz * iz_stage_distribution[k] * k/Z;
+		}
+		std::vector<double> Vzk(impurity.get_atomic_number()+1);
+		for(int k=0; k<=impurity.get_atomic_number(); ++k){
+			Vzk[k] = sqrt(2*Te*eV_to_J/mz) * k/Z;
+			// std::printf("Vz_i^(%i):  %+.2e [m/s]\n",k ,Vzk[k]);
+		}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
-	auto derivative_tuple = computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk, Nthres);
+	
+	RateEquations atomic_derivatives(impurity, 1e9);
+	auto derivative_tuple = atomic_derivatives.computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Unpacking the return from computeDerivs

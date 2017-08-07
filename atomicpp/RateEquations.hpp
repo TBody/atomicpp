@@ -21,14 +21,15 @@
 	#include "ImpuritySpecies.hpp"
 	#include "RateCoefficient.hpp"
 
+	class RateEquations{
+	public:
+	RateEquations(ImpuritySpecies& impurity, const double Nthres = 1e9);
 	std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval);
-	std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction = 0.0);
 	void calculate_ElectronImpact_PopulationEquation(
 		ImpuritySpecies& impurity,
 		const int Z,
 		const double mz,
 		const double eV_to_J,
-		const double Nthres,
 		const double Ne,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
@@ -49,6 +50,23 @@
 		const double Nn,
 		const double Vn,
 		const std::vector<double>& Nzk,
-		const std::vector<double>& Vzk,
-		const double Nthres = 1e9);
+		const std::vector<double>& Vzk);
+	private:
+		int Z;
+		double mz;
+		double Nthres;
+		double Pcool;
+		double Prad;
+		// std::vector<double> dNzk;
+		// std::vector<double> F_zk;
+		// std::vector<double> dNzk_correction;
+		// std::vector<double> F_zk_correction;
+		double dNe;
+		double F_i;
+		double dNn;
+		double F_n;
+	};
+
+	//Public function
+	std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction = 0.0);
 #endif

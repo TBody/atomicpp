@@ -19,6 +19,21 @@
 #include "RateCoefficient.hpp"
 #include "RateEquations.hpp"
 
+//Load global variables from ImpuritySpecies.hpp
+extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
+extern const double amu_to_kg; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
+
+RateEquations::RateEquations(ImpuritySpecies& impurity, const double Nthres_set /*= 1e9*/){
+	// Set parameters that are useful for multiple functions
+	//Nuclear charge of the impurity, in elementary charge units
+	Z = impurity.get_atomic_number();
+	std::printf("%d\n", Z);
+	//Mass of the impurity, in kilograms
+	mz = impurity.get_mass();
+
+	Nthres = Nthres_set;
+	std::printf("Called\n");
+};
 /**
  * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
  * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
@@ -32,7 +47,7 @@
  * @return <int, double> pair where int is the lower-bound grid-point and fraction is the scaling factor (fractional distance
  * between the lower and upper-bound gridpoints)
  */
-std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
+std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
 	// Perform a basic interpolation based on linear distance
 	// values to search for
 	double eval_log10 = log10(eval);
@@ -54,38 +69,7 @@ std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_gr
 
 	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
 	return interp_pair;
-}
-
-/**
- * @brief Uses Neumaier algorithm to add the elements of a list
- * @details Extension on Neumaier summation algorithm for an unsorted list
- * Uses a compensated sum to improve precision when summing numbers of 
- * significantly different magnitude
- * 
- * @param list_to_sum The list of numbers to sum
- * @return neumaier_pair the uncompensated sum and the compensation
- * Compensated sum is sum + correction - however, this is left external
- * in case summation is restarted
- */
-std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
-    double sum = 0.0;
-
-    double correction = previous_correction;                 // A running compensation for lost low-order bits. Use previous result to restart summation
-
-    for(int i=0; i < list_to_sum.size(); ++i){
-        double temporary_sum = sum + list_to_sum[i];
-        if (abs(sum) >= abs(list_to_sum[i])){
-            correction += (sum - temporary_sum) + list_to_sum[i]; // If sum is bigger, low-order digits of list_to_sum[i] are lost.
-        } else {
-            correction += (list_to_sum[i] - temporary_sum) + sum; // Else low-order digits of sum are lost
-        }
-        sum = temporary_sum;
-	}
-
-	std::pair<double, double> neumaier_pair(sum, correction);
-
-	return neumaier_pair;
-}
+};
 /**
  * @brief calculates the effects of electron-impact collisions on the impurity-species populations
  * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
@@ -106,12 +90,11 @@ std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, co
  * @param[out] dNe
  * @param[out] Pcool
  */
-void calculate_ElectronImpact_PopulationEquation(
+void RateEquations::calculate_ElectronImpact_PopulationEquation(
 	ImpuritySpecies& impurity,
 	const int Z,
 	const double mz,
 	const double eV_to_J,
-	const double Nthres,
 	const double Ne,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
@@ -215,8 +198,7 @@ void calculate_ElectronImpact_PopulationEquation(
 	std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
 	F_zk[Z]                                          = neumaier_pair_momentum.first;
 	F_zk_correction[Z]                               = neumaier_pair_momentum.second;
-}
-
+};
 /**
  * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
  * @details Still under development
@@ -243,7 +225,7 @@ void calculate_ElectronImpact_PopulationEquation(
  * 	double dNn = std::get<6>(derivative_tuple); 	//Perturbation change in the neutral density (in particles m^-3 s^-1) and 
  * 	double F_n  = std::get<7>(derivative_tuple);	// 	perturbation force (in N) on the neutral population due to atomic processes
  */
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivs(
+std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivs(
 	ImpuritySpecies& impurity,
 	const double Te,
 	const double Ne,
@@ -251,16 +233,15 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	const double Nn,
 	const double Vn,
 	const std::vector<double>& Nzk,
-	const std::vector<double>& Vzk,
-	const double Nthres /* = 1e9*/){
+	const std::vector<double>& Vzk){
 
-	// Set parameters that are useful for multiple functions
-		//Nuclear charge of the impurity, in elementary charge units
-		const int Z = impurity.get_atomic_number();
-		//Mass of the impurity, in kilograms
-		const double mz = impurity.get_mass();
-		//Conversion factor between electron-volts and joules (effective units J/eV)
-		const double eV_to_J = 1.60217662e-19;
+	std::printf("%d\n", Z);
+
+	// // Set parameters that are useful for multiple functions
+	// 	//Nuclear charge of the impurity, in elementary charge units
+	// 	const int Z = impurity.get_atomic_number();
+	// 	//Mass of the impurity, in kilograms
+	// 	const double mz = impurity.get_mass();
 
 	// Initialise all of the output variables
 		//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
@@ -306,7 +287,7 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 
 	calculate_ElectronImpact_PopulationEquation(
-		impurity, Z, mz, eV_to_J, Nthres,
+		impurity, Z, mz, eV_to_J,
 		Ne, Nzk, Vzk, Te_interp, Ne_interp,
 		dNzk, F_zk, dNzk_correction, F_zk_correction, dNe, Pcool
 		);
@@ -422,4 +403,34 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	// double F_n  = std::get<7>(derivative_tuple);
 
 	return derivative_tuple;
-}
+};
+/**
+ * @brief Uses Neumaier algorithm to add the elements of a list
+ * @details Extension on Neumaier summation algorithm for an unsorted list
+ * Uses a compensated sum to improve precision when summing numbers of 
+ * significantly different magnitude
+ * 
+ * @param list_to_sum The list of numbers to sum
+ * @return neumaier_pair the uncompensated sum and the compensation
+ * Compensated sum is sum + correction - however, this is left external
+ * in case summation is restarted
+ */
+std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
+    double sum = 0.0;
+
+    double correction = previous_correction;                 // A running compensation for lost low-order bits. Use previous result to restart summation
+
+    for(int i=0; i < list_to_sum.size(); ++i){
+        double temporary_sum = sum + list_to_sum[i];
+        if (abs(sum) >= abs(list_to_sum[i])){
+            correction += (sum - temporary_sum) + list_to_sum[i]; // If sum is bigger, low-order digits of list_to_sum[i] are lost.
+        } else {
+            correction += (list_to_sum[i] - temporary_sum) + sum; // Else low-order digits of sum are lost
+        }
+        sum = temporary_sum;
+	}
+
+	std::pair<double, double> neumaier_pair(sum, correction);
+
+	return neumaier_pair;
+};
