@@ -57,10 +57,10 @@
 		double Nthres;
 		double Pcool;
 		double Prad;
-		// std::vector<double> dNzk;
-		// std::vector<double> F_zk;
-		// std::vector<double> dNzk_correction;
-		// std::vector<double> F_zk_correction;
+		std::vector<double> dNzk;
+		std::vector<double> F_zk;
+		std::vector<double> dNzk_correction;
+		std::vector<double> F_zk_correction;
 		double dNe;
 		double F_i;
 		double dNn;
