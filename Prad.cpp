@@ -138,31 +138,9 @@ int main(){
 	auto derivative_tuple = atomic_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// //Unpacking the return from computeDerivs
-	double Pcool = std::get<0>(derivative_tuple);
-	double Prad  = std::get<1>(derivative_tuple);
-	std::vector<double> dNzk = std::get<2>(derivative_tuple);
-	std::vector<double> F_zk = std::get<3>(derivative_tuple);
+	
+	atomic_derivatives.print_derivative_tuple(derivative_tuple);
 
-	double dNe = std::get<4>(derivative_tuple);
-	double F_i  = std::get<5>(derivative_tuple);
-	double dNn = std::get<6>(derivative_tuple);
-	double F_n  = std::get<7>(derivative_tuple);
-
-	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Print-verifying the return from computeDerivs
-	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
-	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
-	}
-	for(int k=0; k<=impurity.get_atomic_number(); ++k){
-	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
-	}
-	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
-	std::printf("F_i/dt:      %+.2e [N]\n",F_i);
-	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
-	std::printf("F_n/dt:      %+.2e [N]\n",F_n);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Comparison to Post PSI
