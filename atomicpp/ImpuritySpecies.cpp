@@ -77,7 +77,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	makeRateCoefficients();
 
 	// Checks to see whether shared interpolation can be used - i.e. whether log_temperature and log_density are the same for all
-	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::shared_interpolation accordingly.
+	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::has_shared_interpolation accordingly.
 	initialiseSharedInterpolation();
 
 };
@@ -139,8 +139,8 @@ void ImpuritySpecies::makeRateCoefficients(){
 	std::map<std::string,std::shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
 		return rate_coefficients;
 	};
-	bool ImpuritySpecies::get_shared_interpolation(){
-		return shared_interpolation;
+	bool ImpuritySpecies::get_has_shared_interpolation(){
+		return has_shared_interpolation;
 	};
 	void ImpuritySpecies::add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value){
 		rate_coefficients[key] = value;
@@ -158,18 +158,18 @@ void ImpuritySpecies::makeRateCoefficients(){
 		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
 		rate_coefficients["blank"] = blank_RC;
 
-		shared_interpolation = true;
+		has_shared_interpolation = true;
 		for (auto& kv : rate_coefficients) {
 			std::string physics_process = kv.first;
 			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
 			// Seems to implicitly compare based on a small tolerance -- works for now
 			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
 				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				shared_interpolation = false;
+				has_shared_interpolation = false;
 			}
 			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
 				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				shared_interpolation = false;
+				has_shared_interpolation = false;
 			}
 		}
 	}

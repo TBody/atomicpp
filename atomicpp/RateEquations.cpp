@@ -30,21 +30,19 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double Nthres_set 
 	F_zk_correction(impurity.get_atomic_number()+1, 0.0)
 	{
 	// Set parameters that are useful for multiple functions
-	//Nuclear charge of the impurity, in elementary charge units
+	rate_coefficients2 = impurity.get_rate_coefficients();
+	std::cout << rate_coefficients2["ionisation"]->get_adf11_file() << std::endl;
+	use_shared_interpolation = impurity.get_has_shared_interpolation();
+	use_charge_exchange = impurity.get_has_charge_exchange();
 	Z = impurity.get_atomic_number();
-	//Mass of the impurity, in kilograms
 	mz = impurity.get_mass();
 
 	Nthres = Nthres_set;
 
-	// Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
 	Pcool = 0.0;
-	// Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
 	Prad  = 0.0;
-	// Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
 	dNe = 0.0;
 	F_i = 0.0;
-	// Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
 	dNn = 0.0;
 	F_n = 0.0;
 };
@@ -88,9 +86,6 @@ std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<
  * @brief calculates the effects of electron-impact collisions on the impurity-species populations
  * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
  * values with significantly varied magnitudes. See computeDerivs for description of parameters.
- * @param[in] Z 
- * @param[in] mz 
- * @param[in] eV_to_J 
  * @param[in] Nthres 
  * @param[in] Ne 
  * @param[in] Nzk 
@@ -105,21 +100,11 @@ std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<
  * @param[out] Pcool
  */
 void RateEquations::calculate_ElectronImpact_PopulationEquation(
-	ImpuritySpecies& impurity,
-	const int Z,
-	const double mz,
-	const double eV_to_J,
 	const double Ne,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
 	const std::pair<int, double>& Te_interp,
-	const std::pair<int, double>& Ne_interp,
-	std::vector<double>& dNzk,
-	std::vector<double>& F_zk,
-	std::vector<double>& dNzk_correction,
-	std::vector<double>& F_zk_correction,
-	double dNe,
-	double Pcool
+	const std::pair<int, double>& Ne_interp
 	){
 	
 	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
@@ -136,8 +121,8 @@ void RateEquations::calculate_ElectronImpact_PopulationEquation(
 		std::vector<double>   rec_p_to_below(Z+1, 0.0);
 		std::vector<double> rec_p_from_above(Z+1, 0.0);
 
-	std::shared_ptr<RateCoefficient> ionisation_coefficient    = impurity.get_rate_coefficient("ionisation");
-	std::shared_ptr<RateCoefficient> recombination_coefficient = impurity.get_rate_coefficient("recombination");
+	std::shared_ptr<RateCoefficient> ionisation_coefficient    = rate_coefficients2["ionisation"];
+	std::shared_ptr<RateCoefficient> recombination_coefficient = rate_coefficients2["recombination"];
 	
 	//N.b. iterating over all data indices of the rate coefficient, hence the <
 	for(int k=0; k < Z; ++k){
@@ -178,7 +163,7 @@ void RateEquations::calculate_ElectronImpact_PopulationEquation(
 	
 	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
 	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
-	std::shared_ptr<RateCoefficient> ionisation_potential = impurity.get_rate_coefficient("ionisation_potential");
+	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients2["ionisation_potential"];
 
 	for(int k=0; k < Z; ++k){
 		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential -- treat it separately
@@ -240,7 +225,6 @@ void RateEquations::calculate_ElectronImpact_PopulationEquation(
  * 	double F_n  = std::get<7>(derivative_tuple);	// 	perturbation force (in N) on the neutral population due to atomic processes
  */
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivs(
-	ImpuritySpecies& impurity,
 	const double Te,
 	const double Ne,
 	const double Vi,
@@ -249,47 +233,11 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk){
 
-	// // Set parameters that are useful for multiple functions
-	// 	//Nuclear charge of the impurity, in elementary charge units
-	// 	const int Z = impurity.get_atomic_number();
-	// 	//Mass of the impurity, in kilograms
-	// 	const double mz = impurity.get_mass();
-
-	// Initialise all of the output variables
-		//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
-		// double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
-
-		//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
-		// double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
-
-		//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
-		//The index corresponds to the charge of the ionisation stage
-		//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
-		// std::vector<double> dNzk(Z+1, 0.0); // = std::get<2>(derivative_tuple);
-
-		//Force on each particle of ionisation stage k of the impurity population, in N
-		//The index corresponds to the charge of the ionisation stage
-		//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
-		// std::vector<double> F_zk(Z+1, 0.0); // = std::get<3>(derivative_tuple);
-		// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
-		
-		//Correction vectors for neumairSum
-		// std::vector<double> dNzk_correction(Z+1, 0.0); // = std::get<2>(derivative_tuple);
-		// std::vector<double> F_zk_correction(Z+1, 0.0); // = std::get<3>(derivative_tuple);
-
-		//Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
-		// double dNe = 0.0; // = std::get<4>(derivative_tuple);
-		// double F_i = 0.0; // = std::get<5>(derivative_tuple);
-
-		//Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
-		// double dNn = 0.0; // = std::get<6>(derivative_tuple);
-		// double F_n = 0.0; // = std::get<7>(derivative_tuple);
-
 	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
 		std::pair<int, double> Te_interp, Ne_interp;
-		if (impurity.get_shared_interpolation()){
-			Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
-			Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+		if (use_shared_interpolation){
+			Te_interp = findSharedInterpolation(rate_coefficients2["blank"]->get_log_temperature(), Te);
+			Ne_interp = findSharedInterpolation(rate_coefficients2["blank"]->get_log_density(), Ne);
 		} else {
 			throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
 			// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
@@ -299,18 +247,16 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 
 	calculate_ElectronImpact_PopulationEquation(
-		impurity, Z, mz, eV_to_J,
-		Ne, Nzk, Vzk, Te_interp, Ne_interp,
-		dNzk, F_zk, dNzk_correction, F_zk_correction, dNe, Pcool
+		Ne, Nzk, Vzk, Te_interp, Ne_interp
 		);
 
 	// Consider charge exchange after calculating Pcool
-	if (impurity.get_has_charge_exchange()){
+	if (use_charge_exchange){
 		std::vector<double> dNn_from_stage(Z, 0.0);
-		std::vector<double>   cx_rec_to_below(Z+1, 0.0);
+		std::vector<double> cx_rec_to_below(Z+1, 0.0);
 		std::vector<double> cx_rec_from_above(Z+1, 0.0);
 
-		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
+		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = rate_coefficients2["cx_rec"];
 		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
 			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 			
@@ -360,8 +306,8 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	}
 
 	//Calculate the power as well - doesn't need as high precision since everything is positive
-	std::shared_ptr<RateCoefficient> line_power_coefficient = impurity.get_rate_coefficient("line_power");
-	std::shared_ptr<RateCoefficient> continuum_power_coefficient = impurity.get_rate_coefficient("continuum_power");
+	std::shared_ptr<RateCoefficient> line_power_coefficient = rate_coefficients2["line_power"];
+	std::shared_ptr<RateCoefficient> continuum_power_coefficient = rate_coefficients2["continuum_power"];
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
 		double line_power_coefficient_evaluated = line_power_coefficient->call0D(k, Te_interp, Ne_interp);
 		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D(k, Te_interp, Ne_interp);
@@ -375,8 +321,8 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
 	}
-	if (impurity.get_has_charge_exchange()){
-		std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
+	if (use_charge_exchange){
+		std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients2["cx_power"];
 		for(int k=0; k < Z; ++k){
 			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
 			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];

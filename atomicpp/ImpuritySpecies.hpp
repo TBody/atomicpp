@@ -49,7 +49,7 @@
 		double get_mass();
 		std::map<std::string,std::string> get_adas_files_dict();
 		std::map<std::string,std::shared_ptr<RateCoefficient> > get_rate_coefficients();
-		bool get_shared_interpolation();
+		bool get_has_shared_interpolation();
 		/**
 		 * @brief Adds the key, value pair to the rate_coefficients map attribute
 		 * 
@@ -80,10 +80,10 @@
 		int year;
 		bool has_charge_exchange;
 		int atomic_number; //in elementary charges
-		double mass; //in kg
+		double mass; //in amu
 		std::map<std::string,std::string> adas_files_dict;
 		std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
-		bool shared_interpolation; //If all the rate coefficients have the same log_temperature and log_density then can use the same scaling 
+		bool has_shared_interpolation; //If all the rate coefficients have the same log_temperature and log_density then can use the same scaling 
 		//values from a single bilinear interpolation, to save shared computation. Set by a pre-evaluation check.
 	};
 	std::string get_json_database_path();

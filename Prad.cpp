@@ -135,7 +135,7 @@ int main(){
 	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
 	
 	RateEquations atomic_derivatives(impurity, 1e9);
-	auto derivative_tuple = atomic_derivatives.computeDerivs(impurity, Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	auto derivative_tuple = atomic_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
 	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// //Unpacking the return from computeDerivs
