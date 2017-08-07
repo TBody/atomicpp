@@ -23,7 +23,7 @@
 
 	class RateEquations{
 	public:
-	RateEquations(ImpuritySpecies& impurity, const double Nthres = 1e9);
+	RateEquations(ImpuritySpecies& impurity, const double Nthres_set = 1e9);
 	std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval);
 	void calculate_ElectronImpact_PopulationEquation(
 		ImpuritySpecies& impurity,

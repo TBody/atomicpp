@@ -27,12 +27,21 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double Nthres_set 
 	// Set parameters that are useful for multiple functions
 	//Nuclear charge of the impurity, in elementary charge units
 	Z = impurity.get_atomic_number();
-	std::printf("%d\n", Z);
 	//Mass of the impurity, in kilograms
 	mz = impurity.get_mass();
 
 	Nthres = Nthres_set;
-	std::printf("Called\n");
+
+	// Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+	Pcool = 0.0;
+	// Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+	Prad  = 0.0;
+	// Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
+	dNe = 0.0;
+	F_i = 0.0;
+	// Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
+	dNn = 0.0;
+	F_n = 0.0;
 };
 /**
  * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
@@ -235,8 +244,6 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk){
 
-	std::printf("%d\n", Z);
-
 	// // Set parameters that are useful for multiple functions
 	// 	//Nuclear charge of the impurity, in elementary charge units
 	// 	const int Z = impurity.get_atomic_number();
@@ -245,10 +252,10 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 	// Initialise all of the output variables
 		//Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
-		double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
+		// double Pcool = 0.0; // = std::get<0>(derivative_tuple); 
 
 		//Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
-		double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
+		// double Prad  = 0.0; // = std::get<1>(derivative_tuple); 
 
 		//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
 		//The index corresponds to the charge of the ionisation stage
@@ -266,12 +273,12 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		std::vector<double> F_zk_correction(Z+1, 0.0); // = std::get<3>(derivative_tuple);
 
 		//Perturbation change in the electron density (in particles m^-3 s^-1) and perturbation force (in N) on the electron population due to atomic processes
-		double dNe = 0.0; // = std::get<4>(derivative_tuple);
-		double F_i = 0.0; // = std::get<5>(derivative_tuple);
+		// double dNe = 0.0; // = std::get<4>(derivative_tuple);
+		// double F_i = 0.0; // = std::get<5>(derivative_tuple);
 
 		//Perturbation change in the neutral density (in particles m^-3 s^-1) and perturbation force (in N) on the neutral population due to atomic processes
-		double dNn = 0.0; // = std::get<6>(derivative_tuple);
-		double F_n = 0.0; // = std::get<7>(derivative_tuple);
+		// double dNn = 0.0; // = std::get<6>(derivative_tuple);
+		// double F_n = 0.0; // = std::get<7>(derivative_tuple);
 
 	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
 		std::pair<int, double> Te_interp, Ne_interp;
@@ -286,44 +293,44 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		}
 
 
-	calculate_ElectronImpact_PopulationEquation(
-		impurity, Z, mz, eV_to_J,
-		Ne, Nzk, Vzk, Te_interp, Ne_interp,
-		dNzk, F_zk, dNzk_correction, F_zk_correction, dNe, Pcool
-		);
+	// calculate_ElectronImpact_PopulationEquation(
+	// 	impurity, Z, mz, eV_to_J,
+	// 	Ne, Nzk, Vzk, Te_interp, Ne_interp,
+	// 	dNzk, F_zk, dNzk_correction, F_zk_correction, dNe, Pcool
+	// 	);
 
 	// Consider charge exchange after calculating Pcool
-	if (impurity.get_has_charge_exchange()){
-		std::vector<double> dNn_from_stage(Z, 0.0);
-		std::vector<double>   cx_rec_to_below(Z+1, 0.0);
-		std::vector<double> cx_rec_from_above(Z+1, 0.0);
+	// if (impurity.get_has_charge_exchange()){
+	// 	std::vector<double> dNn_from_stage(Z, 0.0);
+	// 	std::vector<double>   cx_rec_to_below(Z+1, 0.0);
+	// 	std::vector<double> cx_rec_from_above(Z+1, 0.0);
 
-		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
-		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
+	// 	std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
+	// 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
+	// 		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 			
-			// Note that cx_recombination coefficients are indexed from 1 to Z
+	// 		// Note that cx_recombination coefficients are indexed from 1 to Z
 
-			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
+	// 		double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
 
-			// Want both the target and source densities to be above the Nthres density threshold
-			if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
-				cx_rec_from_above[k] = cx_recombination_rate;
-				cx_rec_to_below[k+1] = -cx_recombination_rate;
-				dNn_from_stage[k] = -cx_recombination_rate;
-			}
-			// Otherwise, the rates stay as default = 0
-		}
+	// 		// Want both the target and source densities to be above the Nthres density threshold
+	// 		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
+	// 			cx_rec_from_above[k] = cx_recombination_rate;
+	// 			cx_rec_to_below[k+1] = -cx_recombination_rate;
+	// 			dNn_from_stage[k] = -cx_recombination_rate;
+	// 		}
+	// 		// Otherwise, the rates stay as default = 0
+	// 	}
 
-		for(int k=0; k <= Z; ++k){//Consider all states at once
-			std::vector<double> rates_for_stage = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]};
-			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
-			dNzk[k] = neumaier_pair_dNzk.first; //Add cx to the sum
-			dNzk_correction[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
-		}
-		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
-		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
-	}
+	// 	for(int k=0; k <= Z; ++k){//Consider all states at once
+	// 		std::vector<double> rates_for_stage = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]};
+	// 		std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
+	// 		dNzk[k] = neumaier_pair_dNzk.first; //Add cx to the sum
+	// 		dNzk_correction[k] = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
+	// 	}
+	// 	std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
+	// 	dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
+	// }
 
 	// Verify that the sum over all elements equals zero (or very close to)
 	std::vector<double> dNzk_correctionorrected(Z+1);
