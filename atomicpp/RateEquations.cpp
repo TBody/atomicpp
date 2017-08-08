@@ -244,7 +244,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
-		dNe_from_stage[k]                                = (iz_to_above[k] - rec_from_above[k]);
+		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
 
 	// Perturbation on electron density
