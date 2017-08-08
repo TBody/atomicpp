@@ -61,6 +61,22 @@
 		const std::vector<double>& Vzk);
 	
 	/**
+	 * @brief Similar to computeDerivs, except simplified for the dominant ion/neutral species (i.e. Hydrogen)
+	 * @details No cx, cx_power or ion-ion drag
+	 * 
+	 * @param Te electron temperature in eV
+	 * @param Ne electron density in m^-3
+	 * @param Nhk Hydrogen density in m^-3, std::vector of densities of the form [Nh^0, Nh^1+, Nh^2+, ..., Nh^Z+]
+	 * @param Vhk Hydrogen velocity in m/s, std::vector of densities of the form [Vh^0, Vh^1+, Vh^2+, ..., Vh^Z+]
+	 * @return Same as computeDerivs
+	 */
+	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivsHydrogen(
+		const double Te,
+		const double Ne,
+		const std::vector<double>& Nhk,
+		const std::vector<double>& Vhk);
+
+	/**
 	 * @brief Set the Nthres value
 	 * @param density_threshold in m^-3
 	 */
@@ -158,10 +174,19 @@
 	);
 
 	/**
-	 * @brief Calculates the radiation rates for iz, rec, and cx
+	 * @brief Calculates the radiation rates for line power and continuum power
 	 */
-	void calculatePowerEquation(
+	void calculateElectronImpactPowerEquation(
 		const double Ne,
+		const std::vector<double>& Nzk,
+		const std::pair<int, double>& Te_interp,
+		const std::pair<int, double>& Ne_interp
+	);
+
+	/**
+	 * @brief Calculates the radiation rates for cx power
+	 */
+	void calculateChargeExchangePowerEquation(
 		const double Nn,
 		const std::vector<double>& Nzk,
 		const std::pair<int, double>& Te_interp,

@@ -126,7 +126,45 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
 	
-	calculatePowerEquation(Ne, Nn, Nzk, Te_interp, Ne_interp);
+	calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
+
+	calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+
+	auto derivative_tuple = makeDerivativeTuple();
+
+	return derivative_tuple;
+};
+std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivsHydrogen(
+	const double Te,
+	const double Ne,
+	const std::vector<double>& Nhk,
+	const std::vector<double>& Vhk){
+
+	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
+
+	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
+	std::pair<int, double> Te_interp, Ne_interp;
+	if (use_shared_interpolation){
+		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
+		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
+	} else {
+		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
+		// double Te_interp = Te;
+		// double Ne_interp = Ne;
+	}
+
+	calculateElectronImpactPopulationEquation(Ne, Nhk, Vhk, Te_interp, Ne_interp);
+
+	//Apply neumairSum corrections
+	for(int k=0; k<=Z; ++k){
+		dNzk[k] += dNzk_correction[k]; //Uses 'z' notation since these are the attributes stored in RateEquations object
+		F_zk[k] += F_zk_correction[k]; //
+	}
+
+	verifyNeumaierSummation();
+	
+	calculateElectronImpactPowerEquation(Ne, Nhk, Te_interp, Ne_interp);
 
 	auto derivative_tuple = makeDerivativeTuple();
 
@@ -244,7 +282,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
-		dNe_from_stage[k]                                = (iz_to_above[k] - rec_from_above[k]);
+		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
 
 	// Perturbation on electron density
@@ -354,9 +392,8 @@ void RateEquations::calculateIonIonDrag(
 	}
 
 };
-void RateEquations::calculatePowerEquation(
+void RateEquations::calculateElectronImpactPowerEquation(
 	const double Ne,
-	const double Nn,
 	const std::vector<double>& Nzk,
 	const std::pair<int, double>& Te_interp,
 	const std::pair<int, double>& Ne_interp
@@ -377,6 +414,14 @@ void RateEquations::calculatePowerEquation(
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
 	}
+};
+void RateEquations::calculateChargeExchangePowerEquation(
+	const double Nn,
+	const std::vector<double>& Nzk,
+	const std::pair<int, double>& Te_interp,
+	const std::pair<int, double>& Ne_interp
+	){
+	//Calculate the power - doesn't need as high precision since everything is positive
 	if (use_charge_exchange){
 		std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients["cx_power"];
 		for(int k=0; k < Z; ++k){
