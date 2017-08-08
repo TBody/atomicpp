@@ -46,6 +46,7 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	use_charge_exchange      = impurity.get_has_charge_exchange();
 	Z                        = impurity.get_atomic_number();
 	mz                       = impurity.get_mass();
+	// std::printf("%e\n", mz);
 
 	Nthres                   = density_threshold;
 	mi                       = mi_in_amu;
@@ -60,8 +61,6 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 
 	//Calculate the factor that doesn't change throughout evaluation
 	calculateStoppingTimeConstantFactor();
-	//Calculate the factor that changes each location point
-	// double tau_s_ii_pointfactor = calculateStoppingTimePointFactor(50.0, 1e19);
 };
 void RateEquations::setThresholdDensity(const double density_threshold){
 	Nthres = density_threshold;
@@ -75,12 +74,20 @@ void RateEquations::setDominantIonMass(const double mi_in_amu){
 };
 void RateEquations::calculateStoppingTimeConstantFactor(const double coulomb_logarithm){
 	//Stangeby "The Plasma Boundary of Magnetic Fusion Devices" (2000), eqn 6.35
-	tau_s_ii_constant_factor = ( 1.47e13 * mz * sqrt(1/mi) ) / ( (1 + mi/mz) * coulomb_logarithm );
+	tau_s_ii_CF = ( 1.47e13 * mz * sqrt(1/mi) ) / ( (1 + mi/mz) * coulomb_logarithm );
+	//s is 'stopping'
+	//ii is 'ion ion'
+	//CF stands for 'Constant Factor'
+	collision_frequency_s_ii_CF = 1/tau_s_ii_CF;
+	//Use the collision frequency instead of the characteristic time, since multiplication is faster than division
 };
-double RateEquations::calculateStoppingTimePointFactor(const double Ti, const double Ni){
+double RateEquations::calculateIonIonDragFactor(const double Ti, const double Ni){
 	//Stangeby "The Plasma Boundary of Magnetic Fusion Devices" (2000), eqn 6.35
-	double tau_s_ii_pointfactor = tau_s_ii_constant_factor * sqrt(Ti)/Ni;
-	return tau_s_ii_pointfactor;
+	double collision_frequency_ii_PF = collision_frequency_s_ii_CF * Ni/sqrt(Ti);
+	//ii is 'ion ion'
+	//PF stands for 'Point Factor' -- i.e. this factor is constant for a single location point at a single time
+	return collision_frequency_ii_PF;
+	//collision_frequency_s_ii on Impurity^k+ = collision_frequency_ii_PF * k*k where k is the impurity change
 };
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivs(
 	const double Te,
@@ -116,6 +123,8 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	}
 
 	verifyNeumaierSummation();
+
+	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
 	
 	calculatePowerEquation(Ne, Nn, Nzk, Te_interp, Ne_interp);
 
@@ -321,6 +330,28 @@ void RateEquations::verifyNeumaierSummation(){
 	if(abs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 1){ 
 		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
 	}
+};
+void RateEquations::calculateIonIonDrag(
+	const double Ne,
+	const double Te,
+	const double Vi,
+	const std::vector<double>& Nzk,
+	const std::vector<double>& Vzk
+	){
+	
+	//Assume that Te = Ti (isothermal), Ne = Ni (quasi-neutrality for Z=1 dominant ion)
+	double collision_frequency_ii_PF = calculateIonIonDragFactor(Te, Ne);
+	//ii is 'ion ion'
+	//PF is 'Point Factor' -- i.e. a constant value shared for this point
+
+	for(int k=1; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
+		if(Nzk[k] > Nthres){
+			double collision_frequency_s_ii = collision_frequency_ii_PF * k*k;
+			double IonIonDrag_FF = mz * (Vi - Vzk[k]) * collision_frequency_s_ii;
+			F_zk[k] += IonIonDrag_FF; //Calculate the force on the impurity ion due to ion-ion drag
+			F_i     -= IonIonDrag_FF; //Calculate the force on the dominant ion due to ion-ion drag
+		};
+	}
 
 };
 void RateEquations::calculatePowerEquation(
@@ -401,9 +432,9 @@ void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<
 	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
 	}
 	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
-	std::printf("F_i/dt:      %+.2e [N]\n",F_i);
+	std::printf("F_i:         %+.2e [N]\n",F_i);
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
-	std::printf("F_n/dt:      %+.2e [N]\n",F_n);
+	std::printf("F_n:         %+.2e [N]\n",F_n);
 };
 std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
     double sum = 0.0;

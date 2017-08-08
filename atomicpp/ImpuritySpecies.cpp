@@ -50,7 +50,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 		has_charge_exchange = j_object[impurity_symbol_supplied]["has_charge_exchange"];
 		atomic_number       = j_object[impurity_symbol_supplied]["atomic_number"];
 		double mass_in_amu  = j_object[impurity_symbol_supplied]["mass"]; //in amu
-		mass                = mass_in_amu * amu_to_kg;
+		mass                = mass_in_amu;
 	} else {
 		std::cout << "Error: "<< impurity_symbol_supplied << " not found in " << user_file << "\n";
 		throw std::invalid_argument( "Key not found in user input file" );

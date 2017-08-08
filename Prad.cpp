@@ -106,7 +106,6 @@ int main(){
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
 	//This is all not required for SD1D -- it's just to train the code with reasonable numbers
-		const int Z = impurity.get_atomic_number();
 		const double mz = impurity.get_mass(); //amu
 
 		int constant_position_index = 0;
@@ -123,11 +122,12 @@ int main(){
 		for(int k=0; k<=impurity.get_atomic_number(); ++k){
 			// Use the plasma temperature, and then add a scaling based on the charge so that there's different velocities for each charge
 			// (so that momentum transfer results in an observable effect)
-			Nzk[k] = Nz * iz_stage_distribution[k] * k/Z;
+			Nzk[k] = Nz * iz_stage_distribution[k];
 		}
 		std::vector<double> Vzk(impurity.get_atomic_number()+1);
 		for(int k=0; k<=impurity.get_atomic_number(); ++k){
-			Vzk[k] = sqrt(2*Te*eV_to_J/mz) * k/Z;
+			Vzk[k] = Vi;
+			// sqrt(2 * Te * eV_to_J / (mz * amu_to_kg));
 			// std::printf("Vz_i^(%i):  %+.2e [m/s]\n",k ,Vzk[k]);
 		}
 

@@ -24,6 +24,7 @@
 	class RateEquations{
 	public:
 	RateEquations(ImpuritySpecies& impurity, const double Nthres_set = 1e9, const double mi_in_amu = 1);
+	
 	/**
 	 * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
 	 * @details Still under development
@@ -58,31 +59,36 @@
 		const double Vn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk);
+	
 	/**
 	 * @brief Set the Nthres value
 	 * @param density_threshold in m^-3
 	 */
 	void setThresholdDensity(const double density_threshold);
+	
 	/**
 	 * @brief Set the mi value
 	 * 
 	 * @param mi_in_amu in atomic mass units
 	 */
 	void setDominantIonMass(const double mi_in_amu);
+	
 	/**
 	 * @brief Calculates the invariant term of the stopping time
 	 * 
 	 * @param coulomb_logarithm optional argument to set the Coulomb algorithm - default is 15
 	 */
 	void calculateStoppingTimeConstantFactor(const double coulomb_logarithm = 15);
+	
 	/**
 	 * @brief Calculate the stopping time, except for the factor of Z^-2 since this depends on the impurity charge
 	 * 
 	 * @param Ti in eV
 	 * @param Ni in m^-3
 	 */
-	double calculateStoppingTimePointFactor(const double Ti, const double Ni);
+	double calculateIonIonDragFactor(const double Ti, const double Ni);
 	void resetDerivatives();
+	
 	/**
 	 * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
 	 * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
@@ -97,6 +103,7 @@
 	 * between the lower and upper-bound gridpoints)
 	 */
 	std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval);
+	
 	/**
 	 * @brief calculates the effects of electron-impact collisions on the impurity-species populations
 	 * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
@@ -116,6 +123,7 @@
 		const std::pair<int, double>& Te_interp,
 		const std::pair<int, double>& Ne_interp
 		);
+	
 	/**
 	 * @brief calculates the effects of charge-exchange on the impurity-species populations
 	 * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
@@ -135,10 +143,20 @@
 		const std::pair<int, double>& Te_interp,
 		const std::pair<int, double>& Ne_interp
 		);
+	
 	/**
 	 * @brief Checks that the Neumaier sum for dNzk and F_zk is close to zero (no net particle source or force from transfer equations)
 	 */
 	void verifyNeumaierSummation();
+	
+	void calculateIonIonDrag(
+		const double Ne,
+		const double Te,
+		const double Vi,
+		const std::vector<double>& Nzk,
+		const std::vector<double>& Vzk
+	);
+
 	/**
 	 * @brief Calculates the radiation rates for iz, rec, and cx
 	 */
@@ -149,65 +167,71 @@
 		const std::pair<int, double>& Te_interp,
 		const std::pair<int, double>& Ne_interp
 	);
+	
 	/**
 	 * @brief makeDerivativeTuple
 	 * @details packs the calculated derivatives into a tuple to return to the main code
 	 * @return See commented out source code for a method to unpack return
 	 */
 	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > makeDerivativeTuple();
+	
 	/**
 	 * @brief print check for the returned derivative tuple
 	 */
 	void printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple);
-	private:
-		//Map of RateCoefficient objects, copied from an ImpuritySpecies object
-		std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
-		//If all the rate coefficients have the same log_temperature and log_density then can use the same scaling...
-		//...values from a single bilinear interpolation, to save shared computation. Copied from an ImpuritySpecies object.
-		bool use_shared_interpolation;
-		//Whether charge exchange should be considered
-		bool use_charge_exchange;
-		//Nuclear charge of the impurity, in elementary charge units
-		int Z; 
-		//Mass of the impurity, in amu
-		double mz; 
-		// Threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9 (constant),
-		// although it is recommended that a time-step dependence be added in the calling code (overloaded call to computeDerivs).
-		double Nthres;
-		//Mass of the dominant ion, in amu
-		double mi;
-		//FF ion-ion friction-force term which is constant for the whole evaluation
-		double tau_s_ii_constant_factor;
 
-		// Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
-		double Pcool; 												// = std::get<0>(derivative_tuple);  
-		// Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
-		double Prad; 												// = std::get<1>(derivative_tuple);  
-		
-		//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
-		//The index corresponds to the charge of the ionisation stage
-		//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
-		std::vector<double> dNzk; 									// = std::get<2>(derivative_tuple); 
-		//Force on each particle of ionisation stage k of the impurity population, in N
-		//The index corresponds to the charge of the ionisation stage
-		//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
-		std::vector<double> F_zk; 									// = std::get<3>(derivative_tuple); 
-		// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
-		// Corrections for Kahan-Neumaier summation
-		std::vector<double> dNzk_correction; 						// = std::get<2>(derivative_tuple); 
-		std::vector<double> F_zk_correction; 						// = std::get<3>(derivative_tuple); 
-		
-		// Perturbation change in the electron density (in particles m^-3 s^-1)...
-		double dNe; 												// = std::get<4>(derivative_tuple); 
-		// ... and perturbation force (in N) on the electron population due to atomic processes
-		double F_i; 												// = std::get<5>(derivative_tuple); 
-		// Perturbation change in the neutral density (in particles m^-3 s^-1)...
-		double dNn; 												// = std::get<6>(derivative_tuple); 
-		// ... and perturbation force (in N) on the neutral population due to atomic processes
-		double F_n; 												// = std::get<7>(derivative_tuple); 
+	private:
+	//Map of RateCoefficient objects, copied from an ImpuritySpecies object
+	std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
+	//If all the rate coefficients have the same log_temperature and log_density then can use the same scaling...
+	//...values from a single bilinear interpolation, to save shared computation. Copied from an ImpuritySpecies object.
+	bool use_shared_interpolation;
+	//Whether charge exchange should be considered
+	bool use_charge_exchange;
+	//Nuclear charge of the impurity, in elementary charge units
+	int Z; 
+	//Mass of the impurity, in amu
+	double mz; 
+	// Threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9 (constant),
+	// although it is recommended that a time-step dependence be added in the calling code (overloaded call to computeDerivs).
+	double Nthres;
+	//Mass of the dominant ion, in amu
+	double mi;
+	//FF ion-ion friction-force characteristic time which is constant for the whole evaluation
+	double tau_s_ii_CF;
+	// FF ion-ion friction-force collision frequency which is constant for the whole evaluation = 1/tau_s_ii_CF
+	double collision_frequency_s_ii_CF;
+
+	// Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+	double Pcool; 												// = std::get<0>(derivative_tuple);  
+	// Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+	double Prad; 												// = std::get<1>(derivative_tuple);  
+	
+	//Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
+	//The index corresponds to the charge of the ionisation stage
+	//	i.e. the elements are N_z^0+, N_z^1+, ... N_z^Z+ where Z is the nuclear charge
+	std::vector<double> dNzk; 									// = std::get<2>(derivative_tuple); 
+	//Force on each particle of ionisation stage k of the impurity population, in N
+	//The index corresponds to the charge of the ionisation stage
+	//	i.e. the elements are F on 0+ stage, F on 1+ stage, ..., F on Z+ stage where Z is the nuclear charge
+	std::vector<double> F_zk; 									// = std::get<3>(derivative_tuple); 
+	// The underscore in the name doesn't really mean anything - it's just for spacing since easier to read aligned text
+	// Corrections for Kahan-Neumaier summation
+	std::vector<double> dNzk_correction; 						// = std::get<2>(derivative_tuple); 
+	std::vector<double> F_zk_correction; 						// = std::get<3>(derivative_tuple); 
+	
+	// Perturbation change in the electron density (in particles m^-3 s^-1)...
+	double dNe; 												// = std::get<4>(derivative_tuple); 
+	// ... and perturbation force (in N) on the electron population due to atomic processes
+	double F_i; 												// = std::get<5>(derivative_tuple); 
+	// Perturbation change in the neutral density (in particles m^-3 s^-1)...
+	double dNn; 												// = std::get<6>(derivative_tuple); 
+	// ... and perturbation force (in N) on the neutral population due to atomic processes
+	double F_n; 												// = std::get<7>(derivative_tuple); 
 	};
 
-	//Public function
+	//Public functions
+	
 	/**
 	 * @brief Uses Neumaier algorithm to add the elements of a list
 	 * @details Extension on Neumaier summation algorithm for an unsorted list
