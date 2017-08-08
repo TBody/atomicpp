@@ -117,6 +117,7 @@ int main(){
 		double Vn = 1.32440666e-01 * 69205.6142373; //Picked random values from SD1D output. Using rho_s0 * Omega_ci to normalise (probably wrong!!)
 		double neutral_fraction = experiment.get_neutral_fraction()[constant_position_index];
 		double Nn = Ne * neutral_fraction;
+		
 		double Nz = experiment.get_impurity_density()[constant_position_index];
 		// Compute the iz-stage-distribution to create the Nzk (charged-resolved impurity) density std::vector
 		std::vector<double> iz_stage_distribution = computeIonisationDistribution(impurity, Te, Ne, Nz, Nn);
@@ -133,19 +134,39 @@ int main(){
 			// std::printf("Vz_i^(%i):  %+.2e [m/s]\n",k ,Vzk[k]);
 		}
 
+		std::vector<double> Nhk(hydrogen.get_atomic_number()+1);
+		Nhk[0] = Nn;
+		Nhk[1] = Ne;
+		std::vector<double> Vhk(hydrogen.get_atomic_number()+1);
+		for(int k=0; k<=hydrogen.get_atomic_number(); ++k){
+			Vhk[k] = Vi;
+		}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	
-	RateEquations atomic_derivatives(impurity); //Organised as a RateEquations object for cleanliness
-	atomic_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
-	atomic_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
+	RateEquations impurity_derivatives(impurity); //Organised as a RateEquations object for cleanliness
+	impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-	auto derivative_tuple = atomic_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	auto derivative_tuple_Z = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
 	std::printf("\nDerivatives for %s\n",impurity.get_name().c_str());
-	atomic_derivatives.printDerivativeTuple(derivative_tuple);
+	impurity_derivatives.printDerivativeTuple(derivative_tuple_Z);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	RateEquations hydrogen_derivatives(hydrogen); //Organised as a RateEquations object for cleanliness
+	hydrogen_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+	hydrogen_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
+
+	auto derivative_tuple_H = hydrogen_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nhk, Vhk);
+	
+	std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
+	hydrogen_derivatives.printDerivativeTuple(derivative_tuple_H);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 	// Comparison to Post PSI
 	// Ne = 1e18;
 	// Te = 6;
