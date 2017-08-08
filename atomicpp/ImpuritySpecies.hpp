@@ -32,8 +32,9 @@
 		 * @param physics_process a std::string corresponding to a physics process
 		 * @param filetype_code the code used by OpenADAS to represent this process
 		 * @param json_database_path relative or absolute path to where the json data files from OpenADAS are located
+		 * @param year_fallback if data isn't found for the specified year, try another year (default 1996) rather than immediately throw an error
 		 */
-		void addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path);
+		void addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path, const int year_fallback = 1996);
 		/**
 		 * @brief Uses the OpenADAS files determined in addJSONFiles to construct a
 		 * std::map between a physics_process std::string and a smart-pointer to a corresponding

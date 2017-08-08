@@ -91,8 +91,10 @@ int main(){
 	//Setup the ImpuritySpecies object
 	const std::string expt_results_json="sd1d-case-05.json";
 	std::string impurity_symbol="c";
+	std::string hydrogen_symbol="h";
 
 	ImpuritySpecies impurity(impurity_symbol);
+	ImpuritySpecies hydrogen(hydrogen_symbol);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Process the expt_results_json to extract
@@ -140,6 +142,7 @@ int main(){
 
 	auto derivative_tuple = atomic_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
+	std::printf("\nDerivatives for %s\n",impurity.get_name().c_str());
 	atomic_derivatives.printDerivativeTuple(derivative_tuple);
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

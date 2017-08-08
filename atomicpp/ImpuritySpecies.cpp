@@ -81,7 +81,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	initialiseSharedInterpolation();
 
 };
-void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path){
+void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path, const int year_fallback /* = 1996*/){
 	// # 1. Make the filename std::string expected for the json adas file
 	// # 2. Check that this file exists in the JSON_database_path/json_data directory
 	// # 3. Add this file to the atomic data .adas_files_dict attribute
@@ -90,13 +90,23 @@ void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std
 
 	filename = json_database_path + "/" + filetype_code + year_to_string.substr(2,4) + "_" + symbol + ".json";
 
-	if (not(test_file_exists(filename))) {
-		std::cout << std::boolalpha;
-		std::cout << "\nFile found: " << test_file_exists(filename) << "\n";
-		throw std::runtime_error("File not found error");
+	if (test_file_exists(filename)) {
+		adas_files_dict[physics_process] = filename;
+	} else {
+		std::printf("%s not found in the specified JSON database\n", filename.c_str());
+
+		std::string filename_fallback;
+		std::string year_to_string_fallback = std::to_string(year_fallback);
+		filename_fallback = json_database_path + "/" + filetype_code + year_to_string_fallback.substr(2,4) + "_" + symbol + ".json";
+		if (test_file_exists(filename_fallback)) {
+			std::printf("Warning: Fallback (%s) will be used\n", filename_fallback.c_str());
+			adas_files_dict[physics_process] = filename_fallback;
+		} else {
+			std::printf("Error: Fallback to %s failed\n", year_to_string_fallback.c_str());
+			throw std::runtime_error("File not found error (in ImpuritySpecies::addJSONFiles)");
+		}
 	}
 
-	adas_files_dict[physics_process] = filename;
 };
 void ImpuritySpecies::makeRateCoefficients(){
 	// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
