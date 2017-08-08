@@ -2,7 +2,7 @@
     "charge": 6,
     "class": "scd",
     "element": "c",
-    "help": "JSON file corresponding to an OpenADAS data file\nCreated by TBody/atomic1D/build_json.py/store_as_JSON\nDocumentation at https://github.com/TBody/atomic1D",
+    "help": "JSON file corresponding to an OpenADAS data file\nCreated by TBody/OpenADAS_to_JSON/build_json.py/store_as_JSON\nDocumentation at https://github.com/TBody/OpenADAS_to_JSON",
     "log_coeff": [
         [
             [
@@ -4755,7 +4755,7 @@
         4.0002,
         4.17629
     ],
-    "name": "/Users/thomasbody/Dropbox/Thesis/atomic1D/json_database/adas_data/scd96_c.dat",
+    "name": "/Users/thomasbody/Dropbox/Thesis/OpenADAS_to_JSON/json_database/adas_data/scd96_c.dat",
     "number_of_charge_states": 6,
     "numpy_ndarrays": [
         "log_density",
