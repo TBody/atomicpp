@@ -105,6 +105,7 @@ int main(){
 	// N.b. This is only for training the data
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
+	//This is all not required for SD1D -- it's just to train the code with reasonable numbers
 		const int Z = impurity.get_atomic_number();
 		const double mz = impurity.get_mass(); //amu
 
@@ -132,16 +133,15 @@ int main(){
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
-	double Nthres = 1e9; //Density threshold - ignore ionisation stages which don't have at least this density
 	
-	RateEquations atomic_derivatives(impurity, 1e9);
+	RateEquations atomic_derivatives(impurity); //Organised as a RateEquations object for cleanliness
+	atomic_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+	atomic_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
+
 	auto derivative_tuple = atomic_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
-	// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	atomic_derivatives.printDerivativeTuple(derivative_tuple);
 	
-	atomic_derivatives.print_derivative_tuple(derivative_tuple);
-
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Comparison to Post PSI
 	// Ne = 1e18;

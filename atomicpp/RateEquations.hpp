@@ -23,7 +23,7 @@
 
 	class RateEquations{
 	public:
-	RateEquations(ImpuritySpecies& impurity, const double Nthres_set = 1e9);
+	RateEquations(ImpuritySpecies& impurity, const double Nthres_set = 1e9, const double mi_in_amu = 1);
 	/**
 	 * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
 	 * @details Still under development
@@ -58,7 +58,31 @@
 		const double Vn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk);
-	void reset_derivatives();
+	/**
+	 * @brief Set the Nthres value
+	 * @param density_threshold in m^-3
+	 */
+	void setThresholdDensity(const double density_threshold);
+	/**
+	 * @brief Set the mi value
+	 * 
+	 * @param mi_in_amu in atomic mass units
+	 */
+	void setDominantIonMass(const double mi_in_amu);
+	/**
+	 * @brief Calculates the invariant term of the stopping time
+	 * 
+	 * @param coulomb_logarithm optional argument to set the Coulomb algorithm - default is 15
+	 */
+	void calculateStoppingTimeConstantFactor(const double coulomb_logarithm = 15);
+	/**
+	 * @brief Calculate the stopping time, except for the factor of Z^-2 since this depends on the impurity charge
+	 * 
+	 * @param Ti in eV
+	 * @param Ni in m^-3
+	 */
+	double calculateStoppingTimePointFactor(const double Ti, const double Ni);
+	void resetDerivatives();
 	/**
 	 * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
 	 * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
@@ -85,7 +109,7 @@
 	 * @param[in] Te_interp 
 	 * @param[in] Ne_interp
 	 */
-	void calculate_ElectronImpact_PopulationEquation(
+	void calculateElectronImpactPopulationEquation(
 		const double Ne,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
@@ -104,7 +128,7 @@
 	 * @param[in] Te_interp 
 	 * @param[in] Ne_interp
 	 */
-	void calculate_ChargeExchange_PopulationEquation(
+	void calculateChargeExchangePopulationEquation(
 		const double Nn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
@@ -114,11 +138,11 @@
 	/**
 	 * @brief Checks that the Neumaier sum for dNzk and F_zk is close to zero (no net particle source or force from transfer equations)
 	 */
-	void verify_Neumaier_Summation();
+	void verifyNeumaierSummation();
 	/**
 	 * @brief Calculates the radiation rates for iz, rec, and cx
 	 */
-	void calculate_PowerEquation(
+	void calculatePowerEquation(
 		const double Ne,
 		const double Nn,
 		const std::vector<double>& Nzk,
@@ -126,15 +150,15 @@
 		const std::pair<int, double>& Ne_interp
 	);
 	/**
-	 * @brief make_derivative_tuple
+	 * @brief makeDerivativeTuple
 	 * @details packs the calculated derivatives into a tuple to return to the main code
 	 * @return See commented out source code for a method to unpack return
 	 */
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > make_derivative_tuple();
+	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > makeDerivativeTuple();
 	/**
 	 * @brief print check for the returned derivative tuple
 	 */
-	void print_derivative_tuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple);
+	void printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple);
 	private:
 		//Map of RateCoefficient objects, copied from an ImpuritySpecies object
 		std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
@@ -150,6 +174,10 @@
 		// Threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9 (constant),
 		// although it is recommended that a time-step dependence be added in the calling code (overloaded call to computeDerivs).
 		double Nthres;
+		//Mass of the dominant ion, in amu
+		double mi;
+		//FF ion-ion friction-force term which is constant for the whole evaluation
+		double tau_s_ii_constant_factor;
 
 		// Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
 		double Pcool; 												// = std::get<0>(derivative_tuple);  

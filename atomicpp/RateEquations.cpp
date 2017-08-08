@@ -23,7 +23,18 @@
 extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
 extern const double amu_to_kg; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
 
-RateEquations::RateEquations(ImpuritySpecies& impurity, const double Nthres_set /*= 1e9*/) : 
+/**
+ * @brief Initialises a RateEquation object
+ * @details Reads the supplied ImpuritySpecies and copies useful attributes to its own methods. Sets the Nthres and mi attributes
+ * to default values unless another value is given. Calculates the tau_s_ii stopping time for the ion-ion friction term. Sets all
+ * evaluation values to zero
+ * 
+ * @param impurity an ImpuritySpecies object for which the radiation is calculated 
+ * @param density_threshold sets Nthres, a value below which the evolution of a ionisation stage is not monitored (for numerical stability)
+ * @param mi_in_amu the dominant ion mass in amu (i.e. 1 for protium, 2 for deuterium)
+ * @return [description]
+ */
+RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_threshold /*= 1e9*/, const double mi_in_amu /*= 1*/) : 
 	dNzk(impurity.get_atomic_number()+1, 0.0),
 	F_zk(impurity.get_atomic_number()+1, 0.0),
 	dNzk_correction(impurity.get_atomic_number()+1, 0.0),
@@ -36,14 +47,40 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double Nthres_set 
 	Z                        = impurity.get_atomic_number();
 	mz                       = impurity.get_mass();
 
-	Nthres                   = Nthres_set;
+	Nthres                   = density_threshold;
+	mi                       = mi_in_amu;
 
+	//Initialise the 
 	Pcool                    = 0.0;
 	Prad                     = 0.0;
 	dNe                      = 0.0;
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
+
+	//Calculate the factor that doesn't change throughout evaluation
+	calculateStoppingTimeConstantFactor();
+	//Calculate the factor that changes each location point
+	// double tau_s_ii_pointfactor = calculateStoppingTimePointFactor(50.0, 1e19);
+};
+void RateEquations::setThresholdDensity(const double density_threshold){
+	Nthres = density_threshold;
+};
+void RateEquations::setDominantIonMass(const double mi_in_amu){
+	//External set for dominant ion mass in amu
+	mi = mi_in_amu;
+	//Recalculate stopping time
+	calculateStoppingTimeConstantFactor();
+	// double tau_s_ii_pointfactor = calculateStoppingTimePointFactor(50.0, 1e19);
+};
+void RateEquations::calculateStoppingTimeConstantFactor(const double coulomb_logarithm){
+	//Stangeby "The Plasma Boundary of Magnetic Fusion Devices" (2000), eqn 6.35
+	tau_s_ii_constant_factor = ( 1.47e13 * mz * sqrt(1/mi) ) / ( (1 + mi/mz) * coulomb_logarithm );
+};
+double RateEquations::calculateStoppingTimePointFactor(const double Ti, const double Ni){
+	//Stangeby "The Plasma Boundary of Magnetic Fusion Devices" (2000), eqn 6.35
+	double tau_s_ii_pointfactor = tau_s_ii_constant_factor * sqrt(Ti)/Ni;
+	return tau_s_ii_pointfactor;
 };
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivs(
 	const double Te,
@@ -54,7 +91,7 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk){
 
-	reset_derivatives();
+	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
 
 	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
 	std::pair<int, double> Te_interp, Ne_interp;
@@ -68,9 +105,9 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		// double Ne_interp = Ne;
 	}
 
-	calculate_ElectronImpact_PopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
+	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
 
-	calculate_ChargeExchange_PopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
 
 	//Apply neumairSum corrections
 	for(int k=0; k<=Z; ++k){
@@ -78,15 +115,15 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		F_zk[k] += F_zk_correction[k];
 	}
 
-	verify_Neumaier_Summation();
+	verifyNeumaierSummation();
 	
-	calculate_PowerEquation(Ne, Nn, Nzk, Te_interp, Ne_interp);
+	calculatePowerEquation(Ne, Nn, Nzk, Te_interp, Ne_interp);
 
-	auto derivative_tuple = make_derivative_tuple();
+	auto derivative_tuple = makeDerivativeTuple();
 
 	return derivative_tuple;
 };
-void RateEquations::reset_derivatives(){
+void RateEquations::resetDerivatives(){
 	for(int k = 0; k<= Z; ++k){
 		dNzk[k] = 0.0;
 		F_zk[k] = 0.0;
@@ -117,7 +154,7 @@ std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<
 	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
 	return interp_pair;
 };
-void RateEquations::calculate_ElectronImpact_PopulationEquation(
+void RateEquations::calculateElectronImpactPopulationEquation(
 	const double Ne,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
@@ -216,7 +253,7 @@ void RateEquations::calculate_ElectronImpact_PopulationEquation(
 	F_zk[Z]                                          = neumaier_pair_momentum.first;
 	F_zk_correction[Z]                               = neumaier_pair_momentum.second;
 };
-void RateEquations::calculate_ChargeExchange_PopulationEquation(
+void RateEquations::calculateChargeExchangePopulationEquation(
 	const double Nn,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
@@ -270,7 +307,7 @@ void RateEquations::calculate_ChargeExchange_PopulationEquation(
 		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 	}
 };
-void RateEquations::verify_Neumaier_Summation(){
+void RateEquations::verifyNeumaierSummation(){
 	// Verify that the sum over all elements equals zero (or very close to) 
 	
 	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
@@ -286,7 +323,7 @@ void RateEquations::verify_Neumaier_Summation(){
 	}
 
 };
-void RateEquations::calculate_PowerEquation(
+void RateEquations::calculatePowerEquation(
 	const double Ne,
 	const double Nn,
 	const std::vector<double>& Nzk,
@@ -318,7 +355,7 @@ void RateEquations::calculate_PowerEquation(
 		}
 	}
 };
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::make_derivative_tuple(){
+std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::makeDerivativeTuple(){
 	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >derivative_tuple = 
 	std::make_tuple(
 		Pcool,
@@ -342,7 +379,7 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 		// double dNn = std::get<6>(derivative_tuple);
 		// double F_n  = std::get<7>(derivative_tuple);
 };
-void RateEquations::print_derivative_tuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple){
+void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple){
 	// //Unpacking the return from computeDerivs
 	double Pcool = std::get<0>(derivative_tuple);
 	double Prad  = std::get<1>(derivative_tuple);
