@@ -23,3 +23,21 @@ cdef extern from "RateEquations.hpp":
 		void setDominantIonMass(double mi_in_amu)
 		std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivs(double Te, double Ne, double Vi, double Nn, double Vn, std::vector<double>& Nzk, std::vector<double>& Vzk)
 
+# cdef class PyAdder:
+# 	cdef Adder *AdderPtr
+# 	def __cinit__(self, vector[double] Input):
+# 		self.AdderPtr = new Adder(Input)
+# 	def __dealloc__(self):
+# 		del self.AdderPtr
+# 	def ReturnVector(self):
+# 		return self.AdderPtr.ReturnVector()
+# 	# def PlusOne(self):
+# 	# 	self.AdderPtr.PlusOne()
+# 	def PlusTwo(self):
+# 		self.AdderPtr.PlusTwo()
+# 	def PlusVector(self, vector_to_add):
+# 		self.AdderPtr.PlusVector(vector_to_add)
+# 	def Print(self):
+# 		return self.AdderPtr.Print()
+# 	def sayHello(self):
+# 		return self.AdderPtr.sayHello()

@@ -134,6 +134,59 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 	return derivative_tuple;
 };
+returnDerivs RateEquations::computeDerivsStruct(
+	const double Te,
+	const double Ne,
+	const double Vi,
+	const double Nn,
+	const double Vn,
+	const std::vector<double>& Nzk,
+	const std::vector<double>& Vzk){
+
+	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
+
+	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
+	std::pair<int, double> Te_interp, Ne_interp;
+	if (use_shared_interpolation){
+		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
+		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
+	} else {
+		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
+		// double Te_interp = Te;
+		// double Ne_interp = Ne;
+	}
+
+	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
+
+	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+
+	//Apply neumairSum corrections
+	for(int k=0; k<=Z; ++k){
+		dNzk[k] += dNzk_correction[k];
+		F_zk[k] += F_zk_correction[k];
+	}
+
+	verifyNeumaierSummation();
+
+	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
+	
+	calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
+
+	calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+
+	returnDerivs Deriv;
+	Deriv.Pcool = Pcool;
+	Deriv.Prad = Prad;
+	Deriv.dNzk = dNzk;
+	Deriv.F_zk = F_zk;
+	Deriv.dNe = dNe;
+	Deriv.F_i = F_i;
+	Deriv.dNn = dNn;
+	Deriv.F_n = F_n;
+
+	return Deriv;
+};
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivsHydrogen(
 	const double Te,
 	const double Ne,

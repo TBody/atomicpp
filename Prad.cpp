@@ -148,11 +148,33 @@ int main(){
 	impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
 	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-	auto derivative_tuple_Z = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	// auto derivative_tuple_Z = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	
-	std::printf("\nDerivatives for %s\n",impurity.get_name().c_str());
-	impurity_derivatives.printDerivativeTuple(derivative_tuple_Z);
+	// std::printf("\nDerivatives for %s\n",impurity.get_name().c_str());
+	// impurity_derivatives.printDerivativeTuple(derivative_tuple_Z);
+
+	returnDerivs Deriv = impurity_derivatives.computeDerivsStruct(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	double Pcool             = Deriv.Pcool;
+	double Prad              = Deriv.Prad;
+	std::vector<double> dNzk = Deriv.dNzk;
+	std::vector<double> F_zk = Deriv.F_zk;
+	double dNe               = Deriv.dNe;
+	double F_i               = Deriv.F_i;
+	double dNn               = Deriv.dNn;
+	double F_n               = Deriv.F_n;
 	
+	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
+	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
+	}
+	for(int k=0; k<=impurity.get_atomic_number(); ++k){
+	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
+	}
+	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
+	std::printf("F_i:         %+.2e [N]\n",F_i);
+	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
+	std::printf("F_n:         %+.2e [N]\n",F_n);
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	RateEquations hydrogen_derivatives(hydrogen); //Organised as a RateEquations object for cleanliness
