@@ -12,49 +12,37 @@ from libcpp.memory cimport shared_ptr
 
 cdef extern from "ImpuritySpecies.hpp":
 	cdef cppclass ImpuritySpecies:
+		ImpuritySpecies(string& impurity_symbol_supplied)
+		void addJSONFiles(string& physics_process, string& filetype_code, string& json_database_path, int year_fallback = 1996) except +
+		void makeRateCoefficients()
+		string get_symbol()
+		string get_name()
+		int get_year()
+		bool get_has_charge_exchange()
+		int get_atomic_number()
+		double get_mass()
+		map[string,string] get_adas_files_dict()
+		map[string,std::shared_ptr<RateCoefficient> ] get_rate_coefficients()
+		bool get_has_shared_interpolation()
+		void add_to_rate_coefficients(string key, std::shared_ptr<RateCoefficient> value)
+		std::shared_ptr<RateCoefficient> get_rate_coefficient(string& key)
+		void initialiseSharedInterpolation()
+	
+		string symbol
+		string name
+		int year
+		bool has_charge_exchange
+		int atomic_number
+		double mass
+		std::map<string,string> adas_files_dict
+		std::map<string,std::shared_ptr<RateCoefficient> > rate_coefficients
+		bool has_shared_interpolation
 
 
-
-	#ifndef IMPURITYSPECIES_H //Preprocessor directives to prevent multiple definitions
-	#define IMPURITYSPECIES_H
-
-		#include <map>
-		#include <string>
-		#include "RateCoefficient.hpp"
-
-		#include <memory>
 		
-		class ImpuritySpecies{
-			ImpuritySpecies(string& impurity_symbol_supplied)
-			void addJSONFiles(string& physics_process, string& filetype_code, string& json_database_path, int year_fallback = 1996) except +
-			void makeRateCoefficients()
-			string get_symbol()
-			string get_name()
-			int get_year()
-			bool get_has_charge_exchange()
-			int get_atomic_number()
-			double get_mass()
-			map[string,string] get_adas_files_dict()
-			map[string,std::shared_ptr<RateCoefficient> ] get_rate_coefficients()
-			bool get_has_shared_interpolation()
-			void add_to_rate_coefficients(string key, std::shared_ptr<RateCoefficient> value)
-			std::shared_ptr<RateCoefficient> get_rate_coefficient(string& key)
-			void initialiseSharedInterpolation()
-		
-			string symbol
-			string name
-			int year
-			bool has_charge_exchange
-			int atomic_number
-			double mass
-			std::map<string,string> adas_files_dict
-			std::map<string,std::shared_ptr<RateCoefficient> > rate_coefficients
-			bool has_shared_interpolation
-		
-		}
-		string get_json_database_path()
-		string get_impurity_user_input()
+string get_json_database_path()
+string get_impurity_user_input()
 
-		double eV_to_J = 1.60217662e-19
-		double amu_to_kg = 1.66054e-27
-	#endif
+double eV_to_J = 1.60217662e-19
+double amu_to_kg = 1.66054e-27
+

@@ -17,6 +17,10 @@ void Adder::PlusOne(){
 		internal[i] += 1;
 	}
 };
+void Adder::PlusTwo(){
+	PlusOne();
+	PlusOne();
+};
 void Adder::PlusVector(std::vector<double> vector_to_add){
 	assert( internal.size()== vector_to_add.size());
 	for(int i=0; i< internal.size(); ++i){

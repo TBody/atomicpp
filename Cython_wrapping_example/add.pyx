@@ -14,7 +14,8 @@ cdef extern from "Adder.hpp":
 		Adder()
 		Adder(vector[double] Input)
 		vector[double] ReturnVector()
-		void PlusOne()
+		# void PlusOne()
+		void PlusTwo()
 		void PlusVector(vector[double] vector_to_add)
 		string Print()
 		vector[double] internal
@@ -28,8 +29,10 @@ cdef class PyAdder:
 		del self.AdderPtr
 	def ReturnVector(self):
 		return self.AdderPtr.ReturnVector()
-	def PlusOne(self):
-		self.AdderPtr.PlusOne()
+	# def PlusOne(self):
+	# 	self.AdderPtr.PlusOne()
+	def PlusTwo(self):
+		self.AdderPtr.PlusTwo()
 	def PlusVector(self, vector_to_add):
 		self.AdderPtr.PlusVector(vector_to_add)
 	def Print(self):

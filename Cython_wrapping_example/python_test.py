@@ -7,7 +7,7 @@ list = [1,2,3,4,5]
 
 A1 = PyAdder(list);
 
-A1.PlusOne()
+A1.PlusTwo()
 
 B = A1.ReturnVector()
 

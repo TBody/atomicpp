@@ -6,6 +6,12 @@
         "depends": [
             "Adder.hpp"
         ],
+        "extra_compile_args": [
+            "-std=c++11"
+        ],
+        "extra_link_args": [
+            "-std=c++11"
+        ],
         "language": "c++",
         "sources": [
             "Adder.cpp"
@@ -668,7 +674,7 @@ static const char *__pyx_f[] = {
 /*--- Type declarations ---*/
 struct __pyx_obj_3add_PyAdder;
 
-/* "add.pyx":23
+/* "add.pyx":24
  * 
  * # creating a cython wrapper class
  * cdef class PyAdder:             # <<<<<<<<<<<<<<
@@ -862,12 +868,12 @@ static PyObject *__pyx_n_s_test;
 static int __pyx_pf_3add_7PyAdder___cinit__(struct __pyx_obj_3add_PyAdder *__pyx_v_self, std::vector<double>  __pyx_v_Input); /* proto */
 static void __pyx_pf_3add_7PyAdder_2__dealloc__(struct __pyx_obj_3add_PyAdder *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3add_7PyAdder_4ReturnVector(struct __pyx_obj_3add_PyAdder *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_3add_7PyAdder_6PlusOne(struct __pyx_obj_3add_PyAdder *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_3add_7PyAdder_6PlusTwo(struct __pyx_obj_3add_PyAdder *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_3add_7PyAdder_8PlusVector(struct __pyx_obj_3add_PyAdder *__pyx_v_self, PyObject *__pyx_v_vector_to_add); /* proto */
 static PyObject *__pyx_pf_3add_7PyAdder_10Print(struct __pyx_obj_3add_PyAdder *__pyx_v_self); /* proto */
 static PyObject *__pyx_tp_new_3add_PyAdder(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 
-/* "add.pyx":25
+/* "add.pyx":26
  * cdef class PyAdder:
  * 	cdef Adder *AdderPtr
  * 	def __cinit__(self, vector[double] Input):             # <<<<<<<<<<<<<<
@@ -900,18 +906,18 @@ static int __pyx_pw_3add_7PyAdder_1__cinit__(PyObject *__pyx_v_self, PyObject *_
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__cinit__") < 0)) __PYX_ERR(0, 25, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__cinit__") < 0)) __PYX_ERR(0, 26, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 1) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_Input = __pyx_convert_vector_from_py_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L3_error)
+    __pyx_v_Input = __pyx_convert_vector_from_py_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 25, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 26, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("add.PyAdder.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -929,7 +935,7 @@ static int __pyx_pf_3add_7PyAdder___cinit__(struct __pyx_obj_3add_PyAdder *__pyx
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "add.pyx":26
+  /* "add.pyx":27
  * 	cdef Adder *AdderPtr
  * 	def __cinit__(self, vector[double] Input):
  * 		self.AdderPtr = new Adder(Input)             # <<<<<<<<<<<<<<
@@ -938,7 +944,7 @@ static int __pyx_pf_3add_7PyAdder___cinit__(struct __pyx_obj_3add_PyAdder *__pyx
  */
   __pyx_v_self->AdderPtr = new Adder(__pyx_v_Input);
 
-  /* "add.pyx":25
+  /* "add.pyx":26
  * cdef class PyAdder:
  * 	cdef Adder *AdderPtr
  * 	def __cinit__(self, vector[double] Input):             # <<<<<<<<<<<<<<
@@ -952,7 +958,7 @@ static int __pyx_pf_3add_7PyAdder___cinit__(struct __pyx_obj_3add_PyAdder *__pyx
   return __pyx_r;
 }
 
-/* "add.pyx":27
+/* "add.pyx":28
  * 	def __cinit__(self, vector[double] Input):
  * 		self.AdderPtr = new Adder(Input)
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -975,7 +981,7 @@ static void __pyx_pf_3add_7PyAdder_2__dealloc__(struct __pyx_obj_3add_PyAdder *_
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "add.pyx":28
+  /* "add.pyx":29
  * 		self.AdderPtr = new Adder(Input)
  * 	def __dealloc__(self):
  * 		del self.AdderPtr             # <<<<<<<<<<<<<<
@@ -984,7 +990,7 @@ static void __pyx_pf_3add_7PyAdder_2__dealloc__(struct __pyx_obj_3add_PyAdder *_
  */
   delete __pyx_v_self->AdderPtr;
 
-  /* "add.pyx":27
+  /* "add.pyx":28
  * 	def __cinit__(self, vector[double] Input):
  * 		self.AdderPtr = new Adder(Input)
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -996,12 +1002,12 @@ static void __pyx_pf_3add_7PyAdder_2__dealloc__(struct __pyx_obj_3add_PyAdder *_
   __Pyx_RefNannyFinishContext();
 }
 
-/* "add.pyx":29
+/* "add.pyx":30
  * 	def __dealloc__(self):
  * 		del self.AdderPtr
  * 	def ReturnVector(self):             # <<<<<<<<<<<<<<
  * 		return self.AdderPtr.ReturnVector()
- * 	def PlusOne(self):
+ * 	# def PlusOne(self):
  */
 
 /* Python wrapper */
@@ -1023,26 +1029,26 @@ static PyObject *__pyx_pf_3add_7PyAdder_4ReturnVector(struct __pyx_obj_3add_PyAd
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("ReturnVector", 0);
 
-  /* "add.pyx":30
+  /* "add.pyx":31
  * 		del self.AdderPtr
  * 	def ReturnVector(self):
  * 		return self.AdderPtr.ReturnVector()             # <<<<<<<<<<<<<<
- * 	def PlusOne(self):
- * 		self.AdderPtr.PlusOne()
+ * 	# def PlusOne(self):
+ * 	# 	self.AdderPtr.PlusOne()
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_convert_vector_to_py_double(__pyx_v_self->AdderPtr->ReturnVector()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_t_1 = __pyx_convert_vector_to_py_double(__pyx_v_self->AdderPtr->ReturnVector()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "add.pyx":29
+  /* "add.pyx":30
  * 	def __dealloc__(self):
  * 		del self.AdderPtr
  * 	def ReturnVector(self):             # <<<<<<<<<<<<<<
  * 		return self.AdderPtr.ReturnVector()
- * 	def PlusOne(self):
+ * 	# def PlusOne(self):
  */
 
   /* function exit code */
@@ -1056,46 +1062,46 @@ static PyObject *__pyx_pf_3add_7PyAdder_4ReturnVector(struct __pyx_obj_3add_PyAd
   return __pyx_r;
 }
 
-/* "add.pyx":31
- * 	def ReturnVector(self):
- * 		return self.AdderPtr.ReturnVector()
- * 	def PlusOne(self):             # <<<<<<<<<<<<<<
- * 		self.AdderPtr.PlusOne()
+/* "add.pyx":34
+ * 	# def PlusOne(self):
+ * 	# 	self.AdderPtr.PlusOne()
+ * 	def PlusTwo(self):             # <<<<<<<<<<<<<<
+ * 		self.AdderPtr.PlusTwo()
  * 	def PlusVector(self, vector_to_add):
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_3add_7PyAdder_7PlusOne(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3add_7PyAdder_7PlusOne(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_3add_7PyAdder_7PlusTwo(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_3add_7PyAdder_7PlusTwo(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("PlusOne (wrapper)", 0);
-  __pyx_r = __pyx_pf_3add_7PyAdder_6PlusOne(((struct __pyx_obj_3add_PyAdder *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("PlusTwo (wrapper)", 0);
+  __pyx_r = __pyx_pf_3add_7PyAdder_6PlusTwo(((struct __pyx_obj_3add_PyAdder *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3add_7PyAdder_6PlusOne(struct __pyx_obj_3add_PyAdder *__pyx_v_self) {
+static PyObject *__pyx_pf_3add_7PyAdder_6PlusTwo(struct __pyx_obj_3add_PyAdder *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("PlusOne", 0);
+  __Pyx_RefNannySetupContext("PlusTwo", 0);
 
-  /* "add.pyx":32
- * 		return self.AdderPtr.ReturnVector()
- * 	def PlusOne(self):
- * 		self.AdderPtr.PlusOne()             # <<<<<<<<<<<<<<
+  /* "add.pyx":35
+ * 	# 	self.AdderPtr.PlusOne()
+ * 	def PlusTwo(self):
+ * 		self.AdderPtr.PlusTwo()             # <<<<<<<<<<<<<<
  * 	def PlusVector(self, vector_to_add):
  * 		self.AdderPtr.PlusVector(vector_to_add)
  */
-  __pyx_v_self->AdderPtr->PlusOne();
+  __pyx_v_self->AdderPtr->PlusTwo();
 
-  /* "add.pyx":31
- * 	def ReturnVector(self):
- * 		return self.AdderPtr.ReturnVector()
- * 	def PlusOne(self):             # <<<<<<<<<<<<<<
- * 		self.AdderPtr.PlusOne()
+  /* "add.pyx":34
+ * 	# def PlusOne(self):
+ * 	# 	self.AdderPtr.PlusOne()
+ * 	def PlusTwo(self):             # <<<<<<<<<<<<<<
+ * 		self.AdderPtr.PlusTwo()
  * 	def PlusVector(self, vector_to_add):
  */
 
@@ -1106,9 +1112,9 @@ static PyObject *__pyx_pf_3add_7PyAdder_6PlusOne(struct __pyx_obj_3add_PyAdder *
   return __pyx_r;
 }
 
-/* "add.pyx":33
- * 	def PlusOne(self):
- * 		self.AdderPtr.PlusOne()
+/* "add.pyx":36
+ * 	def PlusTwo(self):
+ * 		self.AdderPtr.PlusTwo()
  * 	def PlusVector(self, vector_to_add):             # <<<<<<<<<<<<<<
  * 		self.AdderPtr.PlusVector(vector_to_add)
  * 	def Print(self):
@@ -1133,19 +1139,19 @@ static PyObject *__pyx_pf_3add_7PyAdder_8PlusVector(struct __pyx_obj_3add_PyAdde
   std::vector<double>  __pyx_t_1;
   __Pyx_RefNannySetupContext("PlusVector", 0);
 
-  /* "add.pyx":34
- * 		self.AdderPtr.PlusOne()
+  /* "add.pyx":37
+ * 		self.AdderPtr.PlusTwo()
  * 	def PlusVector(self, vector_to_add):
  * 		self.AdderPtr.PlusVector(vector_to_add)             # <<<<<<<<<<<<<<
  * 	def Print(self):
  * 		return self.AdderPtr.Print()
  */
-  __pyx_t_1 = __pyx_convert_vector_from_py_double(__pyx_v_vector_to_add); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_1 = __pyx_convert_vector_from_py_double(__pyx_v_vector_to_add); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 37, __pyx_L1_error)
   __pyx_v_self->AdderPtr->PlusVector(__pyx_t_1);
 
-  /* "add.pyx":33
- * 	def PlusOne(self):
- * 		self.AdderPtr.PlusOne()
+  /* "add.pyx":36
+ * 	def PlusTwo(self):
+ * 		self.AdderPtr.PlusTwo()
  * 	def PlusVector(self, vector_to_add):             # <<<<<<<<<<<<<<
  * 		self.AdderPtr.PlusVector(vector_to_add)
  * 	def Print(self):
@@ -1163,7 +1169,7 @@ static PyObject *__pyx_pf_3add_7PyAdder_8PlusVector(struct __pyx_obj_3add_PyAdde
   return __pyx_r;
 }
 
-/* "add.pyx":35
+/* "add.pyx":38
  * 	def PlusVector(self, vector_to_add):
  * 		self.AdderPtr.PlusVector(vector_to_add)
  * 	def Print(self):             # <<<<<<<<<<<<<<
@@ -1190,20 +1196,20 @@ static PyObject *__pyx_pf_3add_7PyAdder_10Print(struct __pyx_obj_3add_PyAdder *_
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("Print", 0);
 
-  /* "add.pyx":36
+  /* "add.pyx":39
  * 		self.AdderPtr.PlusVector(vector_to_add)
  * 	def Print(self):
  * 		return self.AdderPtr.Print()             # <<<<<<<<<<<<<<
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_convert_PyBytes_string_to_py_std__in_string(__pyx_v_self->AdderPtr->Print()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_t_1 = __pyx_convert_PyBytes_string_to_py_std__in_string(__pyx_v_self->AdderPtr->Print()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "add.pyx":35
+  /* "add.pyx":38
  * 	def PlusVector(self, vector_to_add):
  * 		self.AdderPtr.PlusVector(vector_to_add)
  * 	def Print(self):             # <<<<<<<<<<<<<<
@@ -1668,7 +1674,7 @@ static void __pyx_tp_dealloc_3add_PyAdder(PyObject *o) {
 
 static PyMethodDef __pyx_methods_3add_PyAdder[] = {
   {"ReturnVector", (PyCFunction)__pyx_pw_3add_7PyAdder_5ReturnVector, METH_NOARGS, 0},
-  {"PlusOne", (PyCFunction)__pyx_pw_3add_7PyAdder_7PlusOne, METH_NOARGS, 0},
+  {"PlusTwo", (PyCFunction)__pyx_pw_3add_7PyAdder_7PlusTwo, METH_NOARGS, 0},
   {"PlusVector", (PyCFunction)__pyx_pw_3add_7PyAdder_9PlusVector, METH_O, 0},
   {"Print", (PyCFunction)__pyx_pw_3add_7PyAdder_11Print, METH_NOARGS, 0},
   {0, 0, 0, 0}
@@ -1866,9 +1872,9 @@ PyMODINIT_FUNC PyInit_add(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_3add_PyAdder) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_3add_PyAdder) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
   __pyx_type_3add_PyAdder.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "PyAdder", (PyObject *)&__pyx_type_3add_PyAdder) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "PyAdder", (PyObject *)&__pyx_type_3add_PyAdder) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
   __pyx_ptype_3add_PyAdder = &__pyx_type_3add_PyAdder;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
