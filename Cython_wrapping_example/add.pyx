@@ -8,6 +8,11 @@
 from libcpp.vector cimport vector #to pass vectors to/from C++
 from libcpp.string cimport string #to pass strings to/from C++
 
+cdef extern from "Adder.hpp":
+	cdef struct twoInts:
+		int a
+		int b
+
 # c++ interface to cython
 cdef extern from "Adder.hpp":
 	cdef cppclass Adder:
@@ -20,6 +25,7 @@ cdef extern from "Adder.hpp":
 		string Print()
 		string sayHello() #can call this method, even though the internal attribute privatestring is not declared to the Python interface
 		vector[double] internal
+		twoInts returntwoInts()
 
 # creating a cython wrapper class
 cdef class PyAdder:
@@ -40,4 +46,6 @@ cdef class PyAdder:
 		return self.AdderPtr.Print()
 	def sayHello(self):
 		return self.AdderPtr.sayHello()
+	def returntwoInts(self):
+		return self.AdderPtr.returntwoInts()
 	

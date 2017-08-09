@@ -8,4 +8,6 @@ int main(){
 	A.PlusTwo();
 	std::printf("%s\n",A.Print().c_str());
 	std::printf("%s\n",A.sayHello().c_str());
+	twoInts B = A.returntwoInts();
+	std::printf("Two ints: %d, %d\n", B.a, B.b);
 }

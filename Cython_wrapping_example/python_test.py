@@ -19,3 +19,7 @@ print(A1.Print())
 print(B)
 
 print(A1.sayHello())
+
+D = A1.returntwoInts()
+
+print(D)

@@ -9,6 +9,8 @@ Adder::Adder(std::vector<double> Input):internal(Input.size(),0.0){
 		internal[i] = Input[i];
 	}
 	privatestring = "Hello";
+	structint.a = 1;
+	structint.b = 3;
 };
 std::vector<double> Adder::ReturnVector(){
 	return internal;
@@ -39,3 +41,6 @@ std::string Adder::Print(){
 std::string Adder::sayHello(){
 	return privatestring;
 };
+twoInts Adder::returntwoInts(){
+	return structint;
+}

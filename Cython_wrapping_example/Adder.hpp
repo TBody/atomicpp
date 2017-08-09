@@ -1,6 +1,11 @@
 #include <vector>
 #include <string>
 
+struct twoInts{
+	int a;
+	int b;	
+};
+
 class Adder{
 public:
 	Adder();
@@ -11,7 +16,9 @@ public:
 	void PlusVector(std::vector<double> vector_to_add);
 	std::string Print();
 	std::string sayHello();
+	twoInts returntwoInts();
 private:
 	std::vector<double> internal;
 	std::string privatestring; //Don't declare this attribute to Cython -- see if it can be accessed
+	twoInts structint;
 };
