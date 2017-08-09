@@ -17,3 +17,5 @@ A1.PlusVector(C)
 
 print(A1.Print())
 print(B)
+
+print(A1.sayHello())

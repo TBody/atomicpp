@@ -7,4 +7,5 @@ int main(){
 	A.PlusOne();
 	A.PlusTwo();
 	std::printf("%s\n",A.Print().c_str());
+	std::printf("%s\n",A.sayHello().c_str());
 }

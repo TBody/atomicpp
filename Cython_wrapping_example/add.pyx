@@ -13,11 +13,12 @@ cdef extern from "Adder.hpp":
 	cdef cppclass Adder:
 		Adder()
 		Adder(vector[double] Input)
-		vector[double] ReturnVector()
+		vector[double] ReturnVector() #passing vectors out
 		# void PlusOne()
-		void PlusTwo()
-		void PlusVector(vector[double] vector_to_add)
+		void PlusTwo() #can call this method, even though the internal method PlusOne() is not declared to the Python interface
+		void PlusVector(vector[double] vector_to_add) #passing vectors in
 		string Print()
+		string sayHello() #can call this method, even though the internal attribute privatestring is not declared to the Python interface
 		vector[double] internal
 
 # creating a cython wrapper class
@@ -37,4 +38,6 @@ cdef class PyAdder:
 		self.AdderPtr.PlusVector(vector_to_add)
 	def Print(self):
 		return self.AdderPtr.Print()
+	def sayHello(self):
+		return self.AdderPtr.sayHello()
 	

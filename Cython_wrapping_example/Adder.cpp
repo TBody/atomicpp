@@ -8,6 +8,7 @@ Adder::Adder(std::vector<double> Input):internal(Input.size(),0.0){
 	for(int i=0; i< internal.size(); ++i){
 		internal[i] = Input[i];
 	}
+	privatestring = "Hello";
 };
 std::vector<double> Adder::ReturnVector(){
 	return internal;
@@ -34,4 +35,7 @@ std::string Adder::Print(){
 	}
 	printstring += "]";
 	return printstring;
+};
+std::string Adder::sayHello(){
+	return privatestring;
 };
