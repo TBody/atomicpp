@@ -22,7 +22,8 @@
 	#include "RateCoefficient.hpp"
 
 	namespace atomicpp{
-	struct returnDerivs{
+
+	struct DerivStruct{
 		double Pcool;
 		double Prad;
 		std::vector<double> dNzk;
@@ -63,16 +64,7 @@
 	 * 	double dNn               = std::get<6>(derivative_tuple); 	//Perturbation change in the neutral density (in particles m^-3 s^-1) and
 	 * 	double F_n               = std::get<7>(derivative_tuple);	// 	perturbation force (in N) on the neutral population due to atomic processes
 	 */
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivs(
-		const double Te,
-		const double Ne,
-		const double Vi,
-		const double Nn,
-		const double Vn,
-		const std::vector<double>& Nzk,
-		const std::vector<double>& Vzk);
-
-	returnDerivs computeDerivsStruct(
+	DerivStruct computeDerivs(
 		const double Te,
 		const double Ne,
 		const double Vi,
@@ -91,7 +83,7 @@
 	 * @param Vhk Hydrogen velocity in m/s, std::vector of densities of the form [Vh^0, Vh^1+, Vh^2+, ..., Vh^Z+]
 	 * @return Same as computeDerivs
 	 */
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivsHydrogen(
+	DerivStruct computeDerivsHydrogen(
 		const double Te,
 		const double Ne,
 		const std::vector<double>& Nhk,
@@ -213,6 +205,10 @@
 		const std::pair<int, double>& Te_interp,
 		const std::pair<int, double>& Ne_interp
 	);
+
+	DerivStruct makeDerivativeStruct();
+
+	void printDerivativeStruct(DerivStruct& derivative_struct);
 
 	/**
 	 * @brief makeDerivativeTuple

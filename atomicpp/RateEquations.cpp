@@ -91,7 +91,7 @@ double RateEquations::calculateIonIonDragFactor(const double Ti, const double Ni
 	return collision_frequency_ii_PF;
 	//collision_frequency_s_ii on Impurity^k+ = collision_frequency_ii_PF * k*k where k is the impurity change
 };
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivs(
+DerivStruct RateEquations::computeDerivs(
 	const double Te,
 	const double Ne,
 	const double Vi,
@@ -132,64 +132,12 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 
 	calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
 
-	auto derivative_tuple = makeDerivativeTuple();
-
-	return derivative_tuple;
+	// auto derivative_tuple = makeDerivativeTuple();
+	// return derivative_tuple;
+	DerivStruct derivative_struct = makeDerivativeStruct();
+	return derivative_struct;
 };
-returnDerivs RateEquations::computeDerivsStruct(
-	const double Te,
-	const double Ne,
-	const double Vi,
-	const double Nn,
-	const double Vn,
-	const std::vector<double>& Nzk,
-	const std::vector<double>& Vzk){
-
-	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
-
-	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
-	std::pair<int, double> Te_interp, Ne_interp;
-	if (use_shared_interpolation){
-		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
-		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
-	} else {
-		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
-		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
-		// double Te_interp = Te;
-		// double Ne_interp = Ne;
-	}
-
-	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
-
-	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
-
-	//Apply neumairSum corrections
-	for(int k=0; k<=Z; ++k){
-		dNzk[k] += dNzk_correction[k];
-		F_zk[k] += F_zk_correction[k];
-	}
-
-	verifyNeumaierSummation();
-
-	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
-	
-	calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
-
-	calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
-
-	returnDerivs Deriv;
-	Deriv.Pcool = Pcool;
-	Deriv.Prad = Prad;
-	Deriv.dNzk = dNzk;
-	Deriv.F_zk = F_zk;
-	Deriv.dNe = dNe;
-	Deriv.F_i = F_i;
-	Deriv.dNn = dNn;
-	Deriv.F_n = F_n;
-
-	return Deriv;
-};
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::computeDerivsHydrogen(
+DerivStruct RateEquations::computeDerivsHydrogen(
 	const double Te,
 	const double Ne,
 	const std::vector<double>& Nhk,
@@ -221,9 +169,10 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 	
 	calculateElectronImpactPowerEquation(Ne, Nhk, Te_interp, Ne_interp);
 
-	auto derivative_tuple = makeDerivativeTuple();
-
-	return derivative_tuple;
+	// auto derivative_tuple = makeDerivativeTuple();
+	// return derivative_tuple;
+	DerivStruct derivative_struct = makeDerivativeStruct();
+	return derivative_struct;
 };
 void RateEquations::resetDerivatives(){
 	for(int k = 0; k<= Z; ++k){
@@ -445,7 +394,6 @@ void RateEquations::calculateIonIonDrag(
 			F_i     -= IonIonDrag_FF; //Calculate the force on the dominant ion due to ion-ion drag
 		};
 	}
-
 };
 void RateEquations::calculateElectronImpactPowerEquation(
 	const double Ne,
@@ -486,6 +434,44 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		}
 	}
 };
+DerivStruct RateEquations::makeDerivativeStruct(){
+	DerivStruct derivative_struct;
+
+	derivative_struct.Pcool = Pcool;
+	derivative_struct.Prad  = Prad;
+	derivative_struct.dNzk  = dNzk;
+	derivative_struct.F_zk  = F_zk;
+	derivative_struct.dNe   = dNe;
+	derivative_struct.F_i   = F_i;
+	derivative_struct.dNn   = dNn;
+	derivative_struct.F_n   = F_n;
+
+	return derivative_struct;
+};
+void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
+	double Pcool             = derivative_struct.Pcool;
+	double Prad              = derivative_struct.Prad;
+	std::vector<double> dNzk = derivative_struct.dNzk;
+	std::vector<double> F_zk = derivative_struct.F_zk;
+	double dNe               = derivative_struct.dNe;
+	double F_i               = derivative_struct.F_i;
+	double dNn               = derivative_struct.dNn;
+	double F_n               = derivative_struct.F_n;
+
+	//Print-verifying the return from computeDerivs
+	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
+	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
+	for(int k=0; k<=Z; ++k){
+	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
+	}
+	for(int k=0; k<=Z; ++k){
+	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
+	}
+	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
+	std::printf("F_i:         %+.2e [N]\n",F_i);
+	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
+	std::printf("F_n:         %+.2e [N]\n",F_n);
+};
 std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::makeDerivativeTuple(){
 	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >derivative_tuple = 
 	std::make_tuple(
@@ -512,15 +498,15 @@ std::tuple<double, double, std::vector<double>, std::vector<double>, double, dou
 };
 void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple){
 	// //Unpacking the return from computeDerivs
-	double Pcool = std::get<0>(derivative_tuple);
-	double Prad  = std::get<1>(derivative_tuple);
+	double Pcool             = std::get<0>(derivative_tuple);
+	double Prad              = std::get<1>(derivative_tuple);
 	std::vector<double> dNzk = std::get<2>(derivative_tuple);
 	std::vector<double> F_zk = std::get<3>(derivative_tuple);
 
-	double dNe = std::get<4>(derivative_tuple);
-	double F_i  = std::get<5>(derivative_tuple);
-	double dNn = std::get<6>(derivative_tuple);
-	double F_n  = std::get<7>(derivative_tuple);
+	double dNe               = std::get<4>(derivative_tuple);
+	double F_i               = std::get<5>(derivative_tuple);
+	double dNn               = std::get<6>(derivative_tuple);
+	double F_n               = std::get<7>(derivative_tuple);
 
 	//Print-verifying the return from computeDerivs
 	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
