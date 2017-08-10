@@ -23,3 +23,9 @@ print(A1.sayHello())
 D = A1.returntwoInts()
 
 print(D)
+
+InputString = 'abc'
+
+A1.stringIn(InputString)
+
+print(A1.stringOut())

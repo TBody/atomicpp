@@ -23,6 +23,8 @@ cdef extern from "Adder.hpp" namespace "addns":
 		void PlusTwo() #can call this method, even though the internal method PlusOne() is not declared to the Python interface
 		void PlusVector(vector[double] vector_to_add) #passing vectors in
 		string Print()
+		void stringIn(string Input)
+		string stringOut()
 		string sayHello() #can call this method, even though the internal attribute privatestring is not declared to the Python interface
 		vector[double] internal
 		twoInts returntwoInts()
@@ -40,8 +42,12 @@ cdef class PyAdder:
 	# 	self.AdderPtr.PlusOne()
 	def PlusTwo(self):
 		self.AdderPtr.PlusTwo()
-	def PlusVector(self, vector_to_add):
+	def PlusVector(self, vector[double] vector_to_add):
 		self.AdderPtr.PlusVector(vector_to_add)
+	def stringIn(self, string Input):
+		self.AdderPtr.stringIn(Input)
+	def stringOut(self):
+		return self.AdderPtr.stringOut()
 	def Print(self):
 		return self.AdderPtr.Print()
 	def sayHello(self):

@@ -15,6 +15,8 @@ public:
 	void PlusOne();
 	void PlusTwo(); //See if can call PlusOne from Python without declaring
 	void PlusVector(std::vector<double> vector_to_add);
+	void stringIn(std::string Input);
+	std::string stringOut();
 	std::string Print();
 	std::string sayHello();
 	twoInts returntwoInts();
@@ -22,5 +24,6 @@ private:
 	std::vector<double> internal;
 	std::string privatestring; //Don't declare this attribute to Cython -- see if it can be accessed
 	twoInts structint;
+	std::string inString;
 };
 }

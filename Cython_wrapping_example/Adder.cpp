@@ -40,6 +40,12 @@ std::string Adder::Print(){
 	printstring += "]";
 	return printstring;
 };
+void Adder::stringIn(std::string Input){
+	inString = Input;
+};
+std::string Adder::stringOut(){
+	return inString;
+};
 std::string Adder::sayHello(){
 	return privatestring;
 };
