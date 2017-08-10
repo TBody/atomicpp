@@ -3,6 +3,8 @@
 #include <string>
 #include <cassert>
 
+using namespace addns;
+
 Adder::Adder():internal(1,0.0){};
 Adder::Adder(std::vector<double> Input):internal(Input.size(),0.0){
 	for(int i=0; i< internal.size(); ++i){

@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 
+namespace addns{
 struct twoInts{
 	int a;
 	int b;	
@@ -22,3 +23,4 @@ private:
 	std::string privatestring; //Don't declare this attribute to Cython -- see if it can be accessed
 	twoInts structint;
 };
+}

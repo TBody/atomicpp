@@ -8,13 +8,13 @@
 from libcpp.vector cimport vector #to pass vectors to/from C++
 from libcpp.string cimport string #to pass strings to/from C++
 
-cdef extern from "Adder.hpp":
+cdef extern from "Adder.hpp" namespace "addns":
 	cdef struct twoInts:
 		int a
 		int b
 
 # c++ interface to cython
-cdef extern from "Adder.hpp":
+cdef extern from "Adder.hpp" namespace "addns":
 	cdef cppclass Adder:
 		Adder()
 		Adder(vector[double] Input)

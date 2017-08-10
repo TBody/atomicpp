@@ -683,7 +683,7 @@ struct __pyx_obj_3add_PyAdder;
  */
 struct __pyx_obj_3add_PyAdder {
   PyObject_HEAD
-  Adder *AdderPtr;
+  addns::Adder *AdderPtr;
 };
 
 
@@ -821,7 +821,7 @@ static void __Pyx_AddTraceback(const char *funcname, int c_line,
 /* CIntToPy.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
 
-static PyObject* __pyx_convert__to_py_struct__twoInts(struct twoInts s);
+static PyObject* __pyx_convert__to_py_struct__addns_3a__3a_twoInts(struct addns::twoInts s);
 /* CIntFromPy.proto */
 static CYTHON_INLINE size_t __Pyx_PyInt_As_size_t(PyObject *);
 
@@ -952,7 +952,7 @@ static int __pyx_pf_3add_7PyAdder___cinit__(struct __pyx_obj_3add_PyAdder *__pyx
  * 	def __dealloc__(self):
  * 		del self.AdderPtr
  */
-  __pyx_v_self->AdderPtr = new Adder(__pyx_v_Input);
+  __pyx_v_self->AdderPtr = new addns::Adder(__pyx_v_Input);
 
   /* "add.pyx":33
  * cdef class PyAdder:
@@ -1333,7 +1333,7 @@ static PyObject *__pyx_pf_3add_7PyAdder_14returntwoInts(struct __pyx_obj_3add_Py
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_convert__to_py_struct__twoInts(__pyx_v_self->AdderPtr->returntwoInts()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_1 = __pyx_convert__to_py_struct__addns_3a__3a_twoInts(__pyx_v_self->AdderPtr->returntwoInts()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2424,7 +2424,7 @@ static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
     }
 }
 
-static PyObject* __pyx_convert__to_py_struct__twoInts(struct twoInts s) {
+static PyObject* __pyx_convert__to_py_struct__addns_3a__3a_twoInts(struct addns::twoInts s) {
   PyObject* res;
   PyObject* member;
   res = PyDict_New(); if (unlikely(!res)) return NULL;

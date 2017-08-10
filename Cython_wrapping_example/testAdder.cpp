@@ -1,5 +1,7 @@
 #include "Adder.hpp"
 
+using namespace addns;
+
 int main(){
 	std::printf("Hi\n");
 	std::vector<double> Input = {1,2,3,4,5};
