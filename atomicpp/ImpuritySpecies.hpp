@@ -7,6 +7,7 @@
 
 	#include <memory>
 	
+	namespace atomicpp{
 	class ImpuritySpecies{
 		// # For storing OpenADAS data related to a particular impurity species
 		// # Loosely based on cfe316/atomic/atomic_data.py/AtomicData class (although with much less code since
@@ -87,9 +88,10 @@
 		bool has_shared_interpolation; //If all the rate coefficients have the same log_temperature and log_density then can use the same scaling 
 		//values from a single bilinear interpolation, to save shared computation. Set by a pre-evaluation check.
 	};
-	std::string get_json_database_path();
-	std::string get_impurity_user_input();
+	// std::string get_json_database_path();
+	// std::string get_impurity_user_input();
 
 	const double eV_to_J = 1.60217662e-19; //Conversion factor between electron-volts and joules (effective units J/eV)
 	const double amu_to_kg = 1.66054e-27; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
+	}
 #endif

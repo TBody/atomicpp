@@ -19,6 +19,8 @@
 #include "RateCoefficient.hpp"
 #include "RateEquations.hpp"
 
+using namespace atomicpp;
+
 //Load global variables from ImpuritySpecies.hpp
 extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
 extern const double amu_to_kg; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)
@@ -534,7 +536,7 @@ void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
 	std::printf("F_n:         %+.2e [N]\n",F_n);
 };
-std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
+std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
     double sum = 0.0;
 
     double correction = previous_correction;                 // A running compensation for lost low-order bits. Use previous result to restart summation

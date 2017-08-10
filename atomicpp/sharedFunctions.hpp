@@ -7,6 +7,8 @@
 	#include "json.hpp"
 	using json = nlohmann::json;
 
+	namespace atomicpp{
+
 	/**
 	 * @brief Returns a JSON object from a specified file location
 	 * @details Reads a .json file given at path_to_file
@@ -26,4 +28,5 @@
 	 * @return boolean - true if file found, false if not
 	 */
 	bool test_file_exists (const std::string& name);
+	}
 #endif

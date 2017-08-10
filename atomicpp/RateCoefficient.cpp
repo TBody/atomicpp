@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include <algorithm> //for upper/lower_bound
 #include <typeinfo>
 
+using namespace atomicpp;
 RateCoefficient::RateCoefficient(const std::string& filename){
 	// # Create an instance of RateCoefficient by reading an OpenADAS JSON file
 
@@ -41,10 +42,6 @@ RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_r
 	log_density = source_rc->get_log_density();
 
 };
-std::ostream& operator<<(std::ostream& os, const RateCoefficient& RC){
-    os << "RateCoefficient object from " << RC.adf11_file << std::endl;
-    return os;
-}
 double RateCoefficient::call0D(const int k, const double eval_Te, const double eval_Ne){
 
 	// """Evaluate the ionisation/recombination coefficients of

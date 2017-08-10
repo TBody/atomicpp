@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include "sharedFunctions.hpp"
 #include "RateCoefficient.hpp"
 
+using namespace atomicpp;
 ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Constructor for the ImpuritySpecies class
 	// Input is a std::string, which typically should be of length 1 (i.e. "c" for carbon, "n" for nitrogen)
@@ -184,27 +185,27 @@ void ImpuritySpecies::makeRateCoefficients(){
 		}
 	}
 // Accessing environment variables (shared by any function which calls the ImpuritySpecies.hpp header) -- shared functions
-	std::string get_json_database_path() {
-		std::string json_database_env = "ADAS_JSON_PATH";
-		char * environment_variable;
-		environment_variable = getenv( json_database_env.c_str() );
+	// std::string atomicpp::get_json_database_path() {
+	// 	std::string json_database_env = "ADAS_JSON_PATH";
+	// 	char * environment_variable;
+	// 	environment_variable = getenv( json_database_env.c_str() );
 
-		if (environment_variable != NULL) {
-		    return environment_variable;
-		} else {
-			std::cout << "ADAS_JSON_PATH not found. std::setting to default (= json_database/json_data)" << std::endl;
-			return "json_database/json_data";
-		}
-	}
-	std::string get_impurity_user_input() {
-		std::string json_database_env = "ADAS_JSON_IMPURITY";
-		char * environment_variable;
-		environment_variable = getenv( json_database_env.c_str() );
+	// 	if (environment_variable != NULL) {
+	// 	    return environment_variable;
+	// 	} else {
+	// 		std::cout << "ADAS_JSON_PATH not found. std::setting to default (= json_database/json_data)" << std::endl;
+	// 		return "json_database/json_data";
+	// 	}
+	// }
+	// std::string atomicpp::get_impurity_user_input() {
+	// 	std::string json_database_env = "ADAS_JSON_IMPURITY";
+	// 	char * environment_variable;
+	// 	environment_variable = getenv( json_database_env.c_str() );
 
-		if (environment_variable != NULL) {
-		    return environment_variable;
-		} else {
-			std::cout << "ADAS_JSON_IMPURITY not found. std::setting to default (= c)" << std::endl;
-			return "json_database/json_data";
-	}
-}
+	// 	if (environment_variable != NULL) {
+	// 	    return environment_variable;
+	// 	} else {
+	// 		std::cout << "ADAS_JSON_IMPURITY not found. std::setting to default (= c)" << std::endl;
+	// 		return "json_database/json_data";
+	// 	}
+	// }

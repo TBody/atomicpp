@@ -41,7 +41,7 @@ using json = nlohmann::json;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////// NOT FOR FINAL SIMULATION CODE //////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
+std::vector<double> computeIonisationDistribution(atomicpp::ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
 
 	int Z = impurity.get_atomic_number();
 	std::vector<double> iz_stage_distribution(Z+1);
@@ -54,15 +54,15 @@ std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, dou
 	// Each charge state is std::set in terms of the density of the previous
 	for(int k=0; k<Z; ++k){
 		// Ionisation
-		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		std::shared_ptr<RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
-		// Evaluate the RateCoefficient at the point
+		// Get the atomicpp::RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<atomicpp::RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
+		// Evaluate the atomicpp::RateCoefficient at the point
 		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
 
 		// Recombination
-		// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
-		std::shared_ptr<RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
-		// Evaluate the RateCoefficient at the point
+		// Get the atomicpp::RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+		std::shared_ptr<atomicpp::RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
+		// Evaluate the atomicpp::RateCoefficient at the point
 		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
 
 		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
@@ -88,13 +88,13 @@ std::vector<double> computeIonisationDistribution(ImpuritySpecies& impurity, dou
 
 int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//Setup the ImpuritySpecies object
+	//Setup the atomicpp::ImpuritySpecies object
 	const std::string expt_results_json="sd1d-case-05.json";
 	std::string impurity_symbol="c";
 	std::string hydrogen_symbol="h";
 
-	ImpuritySpecies impurity(impurity_symbol);
-	ImpuritySpecies hydrogen(hydrogen_symbol);
+	atomicpp::ImpuritySpecies impurity(impurity_symbol);
+	atomicpp::ImpuritySpecies hydrogen(hydrogen_symbol);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Process the expt_results_json to extract
@@ -103,7 +103,7 @@ int main(){
 	// 	neutral_fraction(s)			= neutral density/electron density (no units)
 	// where s is 1D distance index. Time is already contracted (using final time-step)
 	// Second argument is impurity fraction
-	SD1DData experiment(expt_results_json, 1e-2);
+	atomicpp::SD1DData experiment(expt_results_json, 1e-2);
 	// N.b. This is only for training the data
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
@@ -144,7 +144,7 @@ int main(){
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Time dependant solver code
 	
-	RateEquations impurity_derivatives(impurity); //Organised as a RateEquations object for cleanliness
+	atomicpp::RateEquations impurity_derivatives(impurity); //Organised as a atomicpp::RateEquations object for cleanliness
 	impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
 	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
@@ -153,7 +153,7 @@ int main(){
 	// std::printf("\nDerivatives for %s\n",impurity.get_name().c_str());
 	// impurity_derivatives.printDerivativeTuple(derivative_tuple_Z);
 
-	returnDerivs Deriv = impurity_derivatives.computeDerivsStruct(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	atomicpp::returnDerivs Deriv = impurity_derivatives.computeDerivsStruct(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 	double Pcool             = Deriv.Pcool;
 	double Prad              = Deriv.Prad;
 	std::vector<double> dNzk = Deriv.dNzk;
@@ -177,7 +177,7 @@ int main(){
 	std::printf("F_n:         %+.2e [N]\n",F_n);
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	RateEquations hydrogen_derivatives(hydrogen); //Organised as a RateEquations object for cleanliness
+	atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
 	hydrogen_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
 	hydrogen_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
@@ -211,8 +211,8 @@ int main(){
 	// 	std::vector<double>   cx_rec_to_below(Z+1, 0.0);
 	// 	std::vector<double> cx_rec_from_above(Z+1, 0.0);
 
-	// 	std::shared_ptr<RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
-	// 	std::shared_ptr<RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
+	// 	std::shared_ptr<atomicpp::RateCoefficient> cx_recombination_coefficient = impurity.get_rate_coefficient("cx_rec");
+	// 	std::shared_ptr<atomicpp::RateCoefficient> cx_power_coefficient = impurity.get_rate_coefficient("cx_power");
 
 	// 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
 	// 		// m^-3 s^-1

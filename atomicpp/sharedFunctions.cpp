@@ -1,10 +1,14 @@
 #include <string>
 #include <fstream>
 
+#include "sharedFunctions.hpp"
+
 #include "json.hpp"
 using json = nlohmann::json;
 
-json retrieveFromJSON(std::string path_to_file){
+using namespace atomicpp;
+
+json atomicpp::retrieveFromJSON(std::string path_to_file){
 	// Do not pass path_to_file by reference - results in error!
 	// Reads a .json file given at path_to_file
 	// Uses the json module at https://github.com/nlohmann/json/
@@ -17,7 +21,7 @@ json retrieveFromJSON(std::string path_to_file){
 	json_file >> j_object;
 	return j_object;
 };
-bool test_file_exists (const std::string& name) {
+bool atomicpp::test_file_exists (const std::string& name) {
     if (FILE *file = fopen(name.c_str(), "r")) {
         fclose(file);
         return true;

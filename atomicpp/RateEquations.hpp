@@ -21,6 +21,7 @@
 	#include "ImpuritySpecies.hpp"
 	#include "RateCoefficient.hpp"
 
+	namespace atomicpp{
 	struct returnDerivs{
 		double Pcool;
 		double Prad;
@@ -289,4 +290,5 @@
 	 * in case summation is restarted
 	 */
 	std::pair<double, double> neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction = 0.0);
+	}
 #endif

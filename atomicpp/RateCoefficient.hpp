@@ -6,6 +6,7 @@
 	#include "json.hpp"
 	using json = nlohmann::json;
 	
+	namespace atomicpp{
 	class RateCoefficient{
 		// # For storing the RateCoefficients encoded in an OpenADAS data file
 		// # Intended to be called from the .makeRateCoefficients method of an ImpuritySpecies object
@@ -49,7 +50,6 @@
 			//Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method
 			//(i.e. assume that Te_interp and Ne_interp contain which point for which to return the coefficient - saves reevaluating)
 			double call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp);
-			friend std::ostream& operator<<(std::ostream& os, const RateCoefficient& RC); //Define the __str__ return to std::cout
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
@@ -64,4 +64,5 @@
 			std::vector<double> log_temperature;
 			std::vector<double> log_density;
 		};
+	}
 #endif
