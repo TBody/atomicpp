@@ -10,34 +10,53 @@ from libcpp.string cimport string #to pass strings to/from C++
 from libcpp.map cimport map
 from libcpp.memory cimport shared_ptr
 
-# Note - only need to declare the functions that you will use. Internal functions and attributes do not 
+# Note - only need to declare the functions that you will use. Internal functions and attributes do not need to be declared.
 
-cdef extern from "ImpuritySpecies.hpp":
+cdef extern from "ImpuritySpecies.hpp" namespace "atomicpp":
 	cdef cppclass ImpuritySpecies:
 		ImpuritySpecies(string& impurity_symbol_supplied) except +
 
-cdef extern from "RateEquations.hpp":
+cdef extern from "RateEquations.hpp" namespace "atomicpp":
+	cdef struct DerivStruct:
+		double Pcool
+		double Prad
+		vector[double] dNzk
+		vector[double] F_zk
+		double dNe
+		double F_i
+		double dNn
+		double F_n
+
+cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef cppclass RateEquations:
-		RateEquations(ImpuritySpecies& impurity, double Nthres_set = 1e9, double mi_in_amu = 1) except +
+		RateEquations(ImpuritySpecies& impurity) except + #different case to Python class
 		void setThresholdDensity(double density_threshold)
 		void setDominantIonMass(double mi_in_amu)
-		std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > computeDerivs(double Te, double Ne, double Vi, double Nn, double Vn, std::vector<double>& Nzk, std::vector<double>& Vzk)
+		DerivStruct computeDerivs(double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk)
 
-# cdef class PyAdder:
-# 	cdef Adder *AdderPtr
-# 	def __cinit__(self, vector[double] Input):
-# 		self.AdderPtr = new Adder(Input)
-# 	def __dealloc__(self):
-# 		del self.AdderPtr
-# 	def ReturnVector(self):
-# 		return self.AdderPtr.ReturnVector()
-# 	# def PlusOne(self):
-# 	# 	self.AdderPtr.PlusOne()
-# 	def PlusTwo(self):
-# 		self.AdderPtr.PlusTwo()
-# 	def PlusVector(self, vector_to_add):
-# 		self.AdderPtr.PlusVector(vector_to_add)
-# 	def Print(self):
-# 		return self.AdderPtr.Print()
-# 	def sayHello(self):
-# 		return self.AdderPtr.sayHello()
+cdef class PyImpuritySpecies:
+	cdef ImpuritySpecies *ImpuritySpeciesPtr
+	def __cinit__(self, string impurity_symbol_supplied):
+		self.ImpuritySpeciesPtr = new ImpuritySpecies(impurity_symbol_supplied)
+	def __dealloc__(self):
+		del self.ImpuritySpeciesPtr
+
+cdef class PyRateEquations:
+	cdef RateEquations *RateEquationsPtr
+	def __cinit__(self, PyImpuritySpecies impurity):
+		self.RateEquationsPtr = new RateEquations(impurity.ImpuritySpeciesPtr[0]) #will have to play about to get this working with default values
+	def __dealloc__(self):
+		del self.RateEquationsPtr
+	def setThresholdDensity(self, double density_threshold):
+		self.RateEquationsPtr.setThresholdDensity(density_threshold)
+	def setDominantIonMass(self, double mi_in_amu):
+		self.RateEquationsPtr.setDominantIonMass(mi_in_amu)
+	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):
+		return self.RateEquationsPtr.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
+
+
+
+
+
+
+

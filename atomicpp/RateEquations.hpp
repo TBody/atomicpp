@@ -38,6 +38,8 @@
 	public:
 	RateEquations(ImpuritySpecies& impurity, const double Nthres_set = 1e9, const double mi_in_amu = 1);
 
+	// RateEquations(ImpuritySpecies impurity);
+
 	/**
 	 * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
 	 * @details Still under development
