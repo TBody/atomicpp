@@ -9,16 +9,19 @@ help_flags   =  --enable-checking -v -da -Q
 
 objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 
 
-run: $(objects)
+cpp_run: $(objects)
 	$(compiler) -o Prad $(objects)
 	./Prad
+
+cpp: $(objects)
+	$(compiler) -o Prad $(objects)
 
 %.o: %.cpp
 	$(compiler) $(flags) -c $< -o $@
 
 py_run: $(objects) $(atomicpp)/setup.py $(atomicpp)/atomicpy.pyx
 	cd atomicpp; python setup.py build_ext --inplace --verbose
-	python 
+	python Prad.py
 
 py: $(objects) $(atomicpp)/setup.py $(atomicpp)/atomicpy.pyx
 	cd atomicpp; python setup.py build_ext --inplace --verbose
