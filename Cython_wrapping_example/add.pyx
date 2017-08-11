@@ -28,6 +28,7 @@ cdef extern from "Adder.hpp" namespace "addns":
 		string sayHello() #can call this method, even though the internal attribute privatestring is not declared to the Python interface
 		vector[double] internal
 		twoInts returntwoInts()
+		string convertToStdString(char *pyStr);
 
 # creating a cython wrapper class
 cdef class PyAdder:
@@ -54,4 +55,13 @@ cdef class PyAdder:
 		return self.AdderPtr.sayHello()
 	def returntwoInts(self):
 		return self.AdderPtr.returntwoInts()
+	def convertToStdString(self, pyStr):
+		return "%s" % pyStr
+		# return self.AdderPtr.convertToStdString(pyStr)
+
+# def convertToStdString(char *pyStr):
+# 	string cppStr(pyStr)
+# 	return cppStr
+
+
 	

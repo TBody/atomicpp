@@ -12,4 +12,9 @@ int main(){
 	std::printf("%s\n",A.sayHello().c_str());
 	twoInts B = A.returntwoInts();
 	std::printf("Two ints: %d, %d\n", B.a, B.b);
+
+	char *s = "Hello, World!";
+	std::string newString = A.convertToStdString(s);
+	std::printf("%s\n",newString.c_str());
+
 }

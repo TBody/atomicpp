@@ -20,6 +20,7 @@ public:
 	std::string Print();
 	std::string sayHello();
 	twoInts returntwoInts();
+	std::string convertToStdString(char *pyStr);
 private:
 	std::vector<double> internal;
 	std::string privatestring; //Don't declare this attribute to Cython -- see if it can be accessed

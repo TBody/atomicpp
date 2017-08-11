@@ -52,3 +52,7 @@ std::string Adder::sayHello(){
 twoInts Adder::returntwoInts(){
 	return structint;
 }
+std::string Adder::convertToStdString(char *pyStr){
+	std::string cppStr(pyStr);
+	return cppStr;
+}
