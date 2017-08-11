@@ -4,7 +4,7 @@
 
 1. [Acknowledgements](#acknowledgements)
 2. [Introduction](#introduction)
-3. 
+3. [System requirements](#system-requirements)
 
 ## Acknowledgements
 
@@ -18,21 +18,25 @@ This project provides a `C++` library for the analysis of atomic processes in a 
 
 The project consists of three main parts:
 
-1. The [`atomicpp`](https://github.com/TBody/atomicpp/tree/master/atomicpp)library -- provides all analysis code;
+1. The [`atomicpp`](https://github.com/TBody/atomicpp/tree/master/atomicpp)library -- provides all analysis code as well the Cython `.pyx` wrapper;
 2. `Prad.cpp` testing suite in `C++` -- tests basic functionality ;
 3. `Prad.py` verification suite in `Python3` -- uses a Python wrapper to the `atomicpp` library to check the results from the library.
 
-The project is built and run using a `Makefile` architecture
+The project is built and run using a `Makefile` architecture. All commands are localised to the project directory -- to uninstall simply delete the project folder.
 
+## System requirements  
+It is recommended that a package manager (`apt-get` (Linux) or `MacPorts` (Mac), etc) be used to install the required packages.
 
-This code translates the [atomic1D] code into C++ so that it may be easily integrated into the . It provides a subset of the functionality of the [atomic1D] code, and therefore it is recommended that [_atomic1D_](https://github.com/TBody/atomic1D) is used in preference to this code for standalone analysis.
+For the core `atomicpp` library and the `Prad.cpp` C++ test suite
+* A C++ compiler which supports C++11 standard (tested with [GNU](https://gcc.gnu.org/) compiler `gcc/g++ version 6.3.0`)
+* `gmake` to run the `Makefile` (tested with `GNU Make 3.81`)
 
-This program is built using a `Makefile` which controls compilation and linking of the required source files. The core development code is supplied in the main project directory as `Prad.cpp`, while the `atomicpp` folder contains contains the required header (`.hpp`) and corresponding source (`.cpp`) files which provide broadly applicable functions for storing and processing OpenADAS data. To run the `Prad.cpp` code requires
+For the `Prad.py` Python3 verification suite
+* A [Python3](https://www.python.org/) installation with an installed SciPy(https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are included in [Anaconda](https://www.continuum.io/anaconda-overview) (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
 
-#### System requirements  
-
-* A C++ compiler which supports C++11 standard.
-* `gmake` to run the `Makefile`.
+To extend the `json_database` of OpenADAS rate-coefficients
+* The (OpenADAS_to_JSON)[https://github.com/TBody/OpenADAS_to_JSON] project. See [Modifying the impurity database](#modifying-the-impurity-database) and the OpenADAS_to_JSON `README` for more details.
+* A Fortran compiler (tested with [GNU](https://gcc.gnu.org/) compiler `gcc/gfortran version 6.3.0`)
 
 #### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
 
@@ -47,6 +51,9 @@ This program is built using a `Makefile` which controls compilation and linking 
 
 ### Understanding the code  
 Effort was made to ensure reasonably comprehensive code-commenting in the source -- however, this README will not describe the code function. Instead, see the README for `atomic1D` (which has almost identical functionality) since this will be more thoroughly commented.
+
+#### Modifying the impurity database
+Will need to modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile` and then run `make json_update`, then copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite). The [`impurity_user_input.json`](https://github.com/TBody/atomicpp/blob/master/impurity_user_input.json) should be updated accordingly, and also the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93).
 
 ## Program execution  
 
