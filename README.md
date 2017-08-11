@@ -75,10 +75,10 @@ A separate project is supplied at [OpenADAS_to_JSON]((https://github.com/TBody/O
 
 ## SD1D Integration
 Sub-contents
-1. [Impurity rate equations](impurity-rate-equations)
-2. [Hydrogen rate equations](hydrogen-rate-equations)
-3. [The `DerivStruct` data structure](the-derivstruct-data-structure)
-4. [Print method for the data structure](print-method-for-the-data-structure)
+1. [Impurity rate equations](#impurity-rate-equations)
+2. [Hydrogen rate equations](#hydrogen-rate-equations)
+3. [The `DerivStruct` data structure](#the-derivstruct-data-structure)
+4. [Print method for the data structure](#print-method-for-the-data-structure)
 ---
 *N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
 
