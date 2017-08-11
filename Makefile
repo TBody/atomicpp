@@ -31,8 +31,8 @@ clean:
 	rm -rf $(atomicpp)/__pycache__
 	rm -f $(atomicpp)/*.so
 	rm -f $(atomicpp)/*.o
-	rm -f *.o
-	rm -rf *.dSYM
+	rm -f **/*.o
+	rm -rf **/*.dSYM
 	rm -f *.html
 	rm -f Prad
 

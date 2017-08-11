@@ -368,7 +368,6 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	
 	std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 	dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
-	
 };
 void RateEquations::verifyNeumaierSummation(){
 	// Verify that the sum over all elements equals zero (or very close to) 
@@ -437,14 +436,14 @@ void RateEquations::calculateChargeExchangePowerEquation(
 	const std::pair<int, double>& Ne_interp
 	){
 	//Calculate the power - doesn't need as high precision since everything is positive
-	if (use_charge_exchange){
-		std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients["cx_power"];
-		for(int k=0; k < Z; ++k){
-			double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
-			double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
-			Prad  += cx_power_rate;
-		}
+	
+	std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients["cx_power"];
+	for(int k=0; k < Z; ++k){
+		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
+		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
+		Prad  += cx_power_rate;
 	}
+	
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
 	DerivStruct derivative_struct;
