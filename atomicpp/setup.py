@@ -7,7 +7,7 @@ from Cython.Build import cythonize
 # to compile
 
 ext_module = Extension(
-    "atomicpp.pyVerify",
+    "atomicpy",
     ["*.pyx"],
     language="c++",
     extra_compile_args=["-std=c++11"],
@@ -15,6 +15,6 @@ ext_module = Extension(
 )
 
 setup(
-  name = "atomicpp.pyVerify",
+  name = "atomicpy",
   ext_modules = cythonize(ext_module),
 )

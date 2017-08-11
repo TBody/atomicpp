@@ -21,7 +21,7 @@
             "RateEquations.cpp"
         ]
     },
-    "module_name": "atomicpp.pyVerify"
+    "module_name": "atomicpy"
 }
 END: Cython Metadata */
 
@@ -466,8 +466,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__atomicpp__pyVerify
-#define __PYX_HAVE_API__atomicpp__pyVerify
+#define __PYX_HAVE__atomicpy
+#define __PYX_HAVE_API__atomicpy
 #include <vector>
 #include "ios"
 #include "new"
@@ -675,35 +675,35 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "atomicpp/pyVerify.pyx",
-  "atomicpp/stringsource",
+  "atomicpy.pyx",
+  "stringsource",
 };
 
 /*--- Type declarations ---*/
-struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies;
-struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations;
+struct __pyx_obj_8atomicpy_PyImpuritySpecies;
+struct __pyx_obj_8atomicpy_PyRateEquations;
 
-/* "atomicpp/pyVerify.pyx":37
+/* "atomicpy.pyx":37
  * 		DerivStruct computeDerivs(double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk)
  * 
  * cdef class PyImpuritySpecies:             # <<<<<<<<<<<<<<
  * 	cdef ImpuritySpecies *ImpuritySpeciesPtr
  * 	def __cinit__(self, string impurity_symbol_supplied):
  */
-struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies {
+struct __pyx_obj_8atomicpy_PyImpuritySpecies {
   PyObject_HEAD
   atomicpp::ImpuritySpecies *ImpuritySpeciesPtr;
 };
 
 
-/* "atomicpp/pyVerify.pyx":44
+/* "atomicpy.pyx":44
  * 		del self.ImpuritySpeciesPtr
  * 
  * cdef class PyRateEquations:             # <<<<<<<<<<<<<<
  * 	cdef RateEquations *RateEquationsPtr
  * 	def __cinit__(self, PyImpuritySpecies impurity):
  */
-struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations {
+struct __pyx_obj_8atomicpy_PyRateEquations {
   PyObject_HEAD
   atomicpp::RateEquations *RateEquationsPtr;
 };
@@ -920,16 +920,16 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'libcpp.memory' */
 
-/* Module declarations from 'atomicpp.pyVerify' */
-static PyTypeObject *__pyx_ptype_8atomicpp_8pyVerify_PyImpuritySpecies = 0;
-static PyTypeObject *__pyx_ptype_8atomicpp_8pyVerify_PyRateEquations = 0;
+/* Module declarations from 'atomicpy' */
+static PyTypeObject *__pyx_ptype_8atomicpy_PyImpuritySpecies = 0;
+static PyTypeObject *__pyx_ptype_8atomicpy_PyRateEquations = 0;
 static std::string __pyx_convert_string_from_py_std__in_string(PyObject *); /*proto*/
 static std::vector<double>  __pyx_convert_vector_from_py_double(PyObject *); /*proto*/
 static PyObject *__pyx_convert_vector_to_py_double(const std::vector<double>  &); /*proto*/
-#define __Pyx_MODULE_NAME "atomicpp.pyVerify"
-int __pyx_module_is_main_atomicpp__pyVerify = 0;
+#define __Pyx_MODULE_NAME "atomicpy"
+int __pyx_module_is_main_atomicpy = 0;
 
-/* Implementation of 'atomicpp.pyVerify' */
+/* Implementation of 'atomicpy' */
 static PyObject *__pyx_builtin_range;
 static const char __pyx_k_Ne[] = "Ne";
 static const char __pyx_k_Nn[] = "Nn";
@@ -971,17 +971,17 @@ static PyObject *__pyx_n_s_impurity_symbol_supplied;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_test;
-static int __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_self, std::string __pyx_v_impurity_symbol_supplied); /* proto */
-static void __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_self); /* proto */
-static int __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_impurity); /* proto */
-static void __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDensity(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_density_threshold); /* proto */
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonMass(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_mi_in_amu); /* proto */
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_8computeDerivs(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_Te, double __pyx_v_Ne, double __pyx_v_Vi, double __pyx_v_Nn, double __pyx_v_Vn, std::vector<double>  __pyx_v_Nzk, std::vector<double>  __pyx_v_Vzk); /* proto */
-static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyImpuritySpecies(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyRateEquations(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static int __pyx_pf_8atomicpy_17PyImpuritySpecies___cinit__(struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_self, std::string __pyx_v_impurity_symbol_supplied); /* proto */
+static void __pyx_pf_8atomicpy_17PyImpuritySpecies_2__dealloc__(struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_self); /* proto */
+static int __pyx_pf_8atomicpy_15PyRateEquations___cinit__(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_impurity); /* proto */
+static void __pyx_pf_8atomicpy_15PyRateEquations_2__dealloc__(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_4setThresholdDensity(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_density_threshold); /* proto */
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_6setDominantIonMass(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_mi_in_amu); /* proto */
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_8computeDerivs(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_Te, double __pyx_v_Ne, double __pyx_v_Vi, double __pyx_v_Nn, double __pyx_v_Vn, std::vector<double>  __pyx_v_Nzk, std::vector<double>  __pyx_v_Vzk); /* proto */
+static PyObject *__pyx_tp_new_8atomicpy_PyImpuritySpecies(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_8atomicpy_PyRateEquations(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 
-/* "atomicpp/pyVerify.pyx":39
+/* "atomicpy.pyx":39
  * cdef class PyImpuritySpecies:
  * 	cdef ImpuritySpecies *ImpuritySpeciesPtr
  * 	def __cinit__(self, string impurity_symbol_supplied):             # <<<<<<<<<<<<<<
@@ -990,8 +990,8 @@ static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyRateEquations(PyTypeObject *
  */
 
 /* Python wrapper */
-static int __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static int __pyx_pw_8atomicpy_17PyImpuritySpecies_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_8atomicpy_17PyImpuritySpecies_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   std::string __pyx_v_impurity_symbol_supplied;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -1027,24 +1027,24 @@ static int __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_1__cinit__(PyObject 
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 39, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyImpuritySpecies.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyImpuritySpecies.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(((struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *)__pyx_v_self), __pyx_v_impurity_symbol_supplied);
+  __pyx_r = __pyx_pf_8atomicpy_17PyImpuritySpecies___cinit__(((struct __pyx_obj_8atomicpy_PyImpuritySpecies *)__pyx_v_self), __pyx_v_impurity_symbol_supplied);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_self, std::string __pyx_v_impurity_symbol_supplied) {
+static int __pyx_pf_8atomicpy_17PyImpuritySpecies___cinit__(struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_self, std::string __pyx_v_impurity_symbol_supplied) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   atomicpp::ImpuritySpecies *__pyx_t_1;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "atomicpp/pyVerify.pyx":40
+  /* "atomicpy.pyx":40
  * 	cdef ImpuritySpecies *ImpuritySpeciesPtr
  * 	def __cinit__(self, string impurity_symbol_supplied):
  * 		self.ImpuritySpeciesPtr = new ImpuritySpecies(impurity_symbol_supplied)             # <<<<<<<<<<<<<<
@@ -1059,7 +1059,7 @@ static int __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(struct __p
   }
   __pyx_v_self->ImpuritySpeciesPtr = __pyx_t_1;
 
-  /* "atomicpp/pyVerify.pyx":39
+  /* "atomicpy.pyx":39
  * cdef class PyImpuritySpecies:
  * 	cdef ImpuritySpecies *ImpuritySpeciesPtr
  * 	def __cinit__(self, string impurity_symbol_supplied):             # <<<<<<<<<<<<<<
@@ -1071,14 +1071,14 @@ static int __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(struct __p
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyImpuritySpecies.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyImpuritySpecies.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "atomicpp/pyVerify.pyx":41
+/* "atomicpy.pyx":41
  * 	def __cinit__(self, string impurity_symbol_supplied):
  * 		self.ImpuritySpeciesPtr = new ImpuritySpecies(impurity_symbol_supplied)
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1087,21 +1087,21 @@ static int __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies___cinit__(struct __p
  */
 
 /* Python wrapper */
-static void __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_8atomicpy_17PyImpuritySpecies_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_8atomicpy_17PyImpuritySpecies_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(((struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *)__pyx_v_self));
+  __pyx_pf_8atomicpy_17PyImpuritySpecies_2__dealloc__(((struct __pyx_obj_8atomicpy_PyImpuritySpecies *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_self) {
+static void __pyx_pf_8atomicpy_17PyImpuritySpecies_2__dealloc__(struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "atomicpp/pyVerify.pyx":42
+  /* "atomicpy.pyx":42
  * 		self.ImpuritySpeciesPtr = new ImpuritySpecies(impurity_symbol_supplied)
  * 	def __dealloc__(self):
  * 		del self.ImpuritySpeciesPtr             # <<<<<<<<<<<<<<
@@ -1110,7 +1110,7 @@ static void __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(struct
  */
   delete __pyx_v_self->ImpuritySpeciesPtr;
 
-  /* "atomicpp/pyVerify.pyx":41
+  /* "atomicpy.pyx":41
  * 	def __cinit__(self, string impurity_symbol_supplied):
  * 		self.ImpuritySpeciesPtr = new ImpuritySpecies(impurity_symbol_supplied)
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1122,7 +1122,7 @@ static void __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(struct
   __Pyx_RefNannyFinishContext();
 }
 
-/* "atomicpp/pyVerify.pyx":46
+/* "atomicpy.pyx":46
  * cdef class PyRateEquations:
  * 	cdef RateEquations *RateEquationsPtr
  * 	def __cinit__(self, PyImpuritySpecies impurity):             # <<<<<<<<<<<<<<
@@ -1131,9 +1131,9 @@ static void __pyx_pf_8atomicpp_8pyVerify_17PyImpuritySpecies_2__dealloc__(struct
  */
 
 /* Python wrapper */
-static int __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_impurity = 0;
+static int __pyx_pw_8atomicpy_15PyRateEquations_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_8atomicpy_15PyRateEquations_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_impurity = 0;
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__ (wrapper)", 0);
@@ -1162,18 +1162,18 @@ static int __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_1__cinit__(PyObject *_
     } else {
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
     }
-    __pyx_v_impurity = ((struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *)values[0]);
+    __pyx_v_impurity = ((struct __pyx_obj_8atomicpy_PyImpuritySpecies *)values[0]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 46, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_impurity), __pyx_ptype_8atomicpp_8pyVerify_PyImpuritySpecies, 1, "impurity", 0))) __PYX_ERR(0, 46, __pyx_L1_error)
-  __pyx_r = __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(((struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *)__pyx_v_self), __pyx_v_impurity);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_impurity), __pyx_ptype_8atomicpy_PyImpuritySpecies, 1, "impurity", 0))) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_r = __pyx_pf_8atomicpy_15PyRateEquations___cinit__(((struct __pyx_obj_8atomicpy_PyRateEquations *)__pyx_v_self), __pyx_v_impurity);
 
   /* function exit code */
   goto __pyx_L0;
@@ -1184,13 +1184,13 @@ static int __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_1__cinit__(PyObject *_
   return __pyx_r;
 }
 
-static int __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies *__pyx_v_impurity) {
+static int __pyx_pf_8atomicpy_15PyRateEquations___cinit__(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, struct __pyx_obj_8atomicpy_PyImpuritySpecies *__pyx_v_impurity) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   atomicpp::RateEquations *__pyx_t_1;
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "atomicpp/pyVerify.pyx":47
+  /* "atomicpy.pyx":47
  * 	cdef RateEquations *RateEquationsPtr
  * 	def __cinit__(self, PyImpuritySpecies impurity):
  * 		self.RateEquationsPtr = new RateEquations(impurity.ImpuritySpeciesPtr[0]) #will have to play about to get this working with default values             # <<<<<<<<<<<<<<
@@ -1205,7 +1205,7 @@ static int __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(struct __pyx
   }
   __pyx_v_self->RateEquationsPtr = __pyx_t_1;
 
-  /* "atomicpp/pyVerify.pyx":46
+  /* "atomicpy.pyx":46
  * cdef class PyRateEquations:
  * 	cdef RateEquations *RateEquationsPtr
  * 	def __cinit__(self, PyImpuritySpecies impurity):             # <<<<<<<<<<<<<<
@@ -1217,14 +1217,14 @@ static int __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(struct __pyx
   __pyx_r = 0;
   goto __pyx_L0;
   __pyx_L1_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.__cinit__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "atomicpp/pyVerify.pyx":48
+/* "atomicpy.pyx":48
  * 	def __cinit__(self, PyImpuritySpecies impurity):
  * 		self.RateEquationsPtr = new RateEquations(impurity.ImpuritySpeciesPtr[0]) #will have to play about to get this working with default values
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1233,21 +1233,21 @@ static int __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations___cinit__(struct __pyx
  */
 
 /* Python wrapper */
-static void __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
-static void __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_3__dealloc__(PyObject *__pyx_v_self) {
+static void __pyx_pw_8atomicpy_15PyRateEquations_3__dealloc__(PyObject *__pyx_v_self); /*proto*/
+static void __pyx_pw_8atomicpy_15PyRateEquations_3__dealloc__(PyObject *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__ (wrapper)", 0);
-  __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(((struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *)__pyx_v_self));
+  __pyx_pf_8atomicpy_15PyRateEquations_2__dealloc__(((struct __pyx_obj_8atomicpy_PyRateEquations *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
 }
 
-static void __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self) {
+static void __pyx_pf_8atomicpy_15PyRateEquations_2__dealloc__(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "atomicpp/pyVerify.pyx":49
+  /* "atomicpy.pyx":49
  * 		self.RateEquationsPtr = new RateEquations(impurity.ImpuritySpeciesPtr[0]) #will have to play about to get this working with default values
  * 	def __dealloc__(self):
  * 		del self.RateEquationsPtr             # <<<<<<<<<<<<<<
@@ -1256,7 +1256,7 @@ static void __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(struct _
  */
   delete __pyx_v_self->RateEquationsPtr;
 
-  /* "atomicpp/pyVerify.pyx":48
+  /* "atomicpy.pyx":48
  * 	def __cinit__(self, PyImpuritySpecies impurity):
  * 		self.RateEquationsPtr = new RateEquations(impurity.ImpuritySpeciesPtr[0]) #will have to play about to get this working with default values
  * 	def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -1268,7 +1268,7 @@ static void __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(struct _
   __Pyx_RefNannyFinishContext();
 }
 
-/* "atomicpp/pyVerify.pyx":50
+/* "atomicpy.pyx":50
  * 	def __dealloc__(self):
  * 		del self.RateEquationsPtr
  * 	def setThresholdDensity(self, double density_threshold):             # <<<<<<<<<<<<<<
@@ -1277,8 +1277,8 @@ static void __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_2__dealloc__(struct _
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_5setThresholdDensity(PyObject *__pyx_v_self, PyObject *__pyx_arg_density_threshold); /*proto*/
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_5setThresholdDensity(PyObject *__pyx_v_self, PyObject *__pyx_arg_density_threshold) {
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_5setThresholdDensity(PyObject *__pyx_v_self, PyObject *__pyx_arg_density_threshold); /*proto*/
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_5setThresholdDensity(PyObject *__pyx_v_self, PyObject *__pyx_arg_density_threshold) {
   double __pyx_v_density_threshold;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1288,23 +1288,23 @@ static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_5setThresholdDen
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.setThresholdDensity", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.setThresholdDensity", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDensity(((struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *)__pyx_v_self), ((double)__pyx_v_density_threshold));
+  __pyx_r = __pyx_pf_8atomicpy_15PyRateEquations_4setThresholdDensity(((struct __pyx_obj_8atomicpy_PyRateEquations *)__pyx_v_self), ((double)__pyx_v_density_threshold));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDensity(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_density_threshold) {
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_4setThresholdDensity(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_density_threshold) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("setThresholdDensity", 0);
 
-  /* "atomicpp/pyVerify.pyx":51
+  /* "atomicpy.pyx":51
  * 		del self.RateEquationsPtr
  * 	def setThresholdDensity(self, double density_threshold):
  * 		self.RateEquationsPtr.setThresholdDensity(density_threshold)             # <<<<<<<<<<<<<<
@@ -1313,7 +1313,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDen
  */
   __pyx_v_self->RateEquationsPtr->setThresholdDensity(__pyx_v_density_threshold);
 
-  /* "atomicpp/pyVerify.pyx":50
+  /* "atomicpy.pyx":50
  * 	def __dealloc__(self):
  * 		del self.RateEquationsPtr
  * 	def setThresholdDensity(self, double density_threshold):             # <<<<<<<<<<<<<<
@@ -1328,7 +1328,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDen
   return __pyx_r;
 }
 
-/* "atomicpp/pyVerify.pyx":52
+/* "atomicpy.pyx":52
  * 	def setThresholdDensity(self, double density_threshold):
  * 		self.RateEquationsPtr.setThresholdDensity(density_threshold)
  * 	def setDominantIonMass(self, double mi_in_amu):             # <<<<<<<<<<<<<<
@@ -1337,8 +1337,8 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_4setThresholdDen
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_7setDominantIonMass(PyObject *__pyx_v_self, PyObject *__pyx_arg_mi_in_amu); /*proto*/
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_7setDominantIonMass(PyObject *__pyx_v_self, PyObject *__pyx_arg_mi_in_amu) {
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_7setDominantIonMass(PyObject *__pyx_v_self, PyObject *__pyx_arg_mi_in_amu); /*proto*/
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_7setDominantIonMass(PyObject *__pyx_v_self, PyObject *__pyx_arg_mi_in_amu) {
   double __pyx_v_mi_in_amu;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
@@ -1348,23 +1348,23 @@ static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_7setDominantIonM
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.setDominantIonMass", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.setDominantIonMass", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonMass(((struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *)__pyx_v_self), ((double)__pyx_v_mi_in_amu));
+  __pyx_r = __pyx_pf_8atomicpy_15PyRateEquations_6setDominantIonMass(((struct __pyx_obj_8atomicpy_PyRateEquations *)__pyx_v_self), ((double)__pyx_v_mi_in_amu));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonMass(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_mi_in_amu) {
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_6setDominantIonMass(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_mi_in_amu) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("setDominantIonMass", 0);
 
-  /* "atomicpp/pyVerify.pyx":53
+  /* "atomicpy.pyx":53
  * 		self.RateEquationsPtr.setThresholdDensity(density_threshold)
  * 	def setDominantIonMass(self, double mi_in_amu):
  * 		self.RateEquationsPtr.setDominantIonMass(mi_in_amu)             # <<<<<<<<<<<<<<
@@ -1373,7 +1373,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonM
  */
   __pyx_v_self->RateEquationsPtr->setDominantIonMass(__pyx_v_mi_in_amu);
 
-  /* "atomicpp/pyVerify.pyx":52
+  /* "atomicpy.pyx":52
  * 	def setThresholdDensity(self, double density_threshold):
  * 		self.RateEquationsPtr.setThresholdDensity(density_threshold)
  * 	def setDominantIonMass(self, double mi_in_amu):             # <<<<<<<<<<<<<<
@@ -1388,7 +1388,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonM
   return __pyx_r;
 }
 
-/* "atomicpp/pyVerify.pyx":54
+/* "atomicpy.pyx":54
  * 	def setDominantIonMass(self, double mi_in_amu):
  * 		self.RateEquationsPtr.setDominantIonMass(mi_in_amu)
  * 	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):             # <<<<<<<<<<<<<<
@@ -1397,8 +1397,8 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_6setDominantIonM
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_9computeDerivs(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_9computeDerivs(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_9computeDerivs(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_8atomicpy_15PyRateEquations_9computeDerivs(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   double __pyx_v_Te;
   double __pyx_v_Ne;
   double __pyx_v_Vi;
@@ -1488,24 +1488,24 @@ static PyObject *__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_9computeDerivs(P
   __pyx_L5_argtuple_error:;
   __Pyx_RaiseArgtupleInvalid("computeDerivs", 1, 7, 7, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 54, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.computeDerivs", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.computeDerivs", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_8computeDerivs(((struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *)__pyx_v_self), __pyx_v_Te, __pyx_v_Ne, __pyx_v_Vi, __pyx_v_Nn, __pyx_v_Vn, __pyx_v_Nzk, __pyx_v_Vzk);
+  __pyx_r = __pyx_pf_8atomicpy_15PyRateEquations_8computeDerivs(((struct __pyx_obj_8atomicpy_PyRateEquations *)__pyx_v_self), __pyx_v_Te, __pyx_v_Ne, __pyx_v_Vi, __pyx_v_Nn, __pyx_v_Vn, __pyx_v_Nzk, __pyx_v_Vzk);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_8computeDerivs(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations *__pyx_v_self, double __pyx_v_Te, double __pyx_v_Ne, double __pyx_v_Vi, double __pyx_v_Nn, double __pyx_v_Vn, std::vector<double>  __pyx_v_Nzk, std::vector<double>  __pyx_v_Vzk) {
+static PyObject *__pyx_pf_8atomicpy_15PyRateEquations_8computeDerivs(struct __pyx_obj_8atomicpy_PyRateEquations *__pyx_v_self, double __pyx_v_Te, double __pyx_v_Ne, double __pyx_v_Vi, double __pyx_v_Nn, double __pyx_v_Vn, std::vector<double>  __pyx_v_Nzk, std::vector<double>  __pyx_v_Vzk) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("computeDerivs", 0);
 
-  /* "atomicpp/pyVerify.pyx":55
+  /* "atomicpy.pyx":55
  * 		self.RateEquationsPtr.setDominantIonMass(mi_in_amu)
  * 	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):
  * 		return self.RateEquationsPtr.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)             # <<<<<<<<<<<<<<
@@ -1519,7 +1519,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_8computeDerivs(s
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "atomicpp/pyVerify.pyx":54
+  /* "atomicpy.pyx":54
  * 	def setDominantIonMass(self, double mi_in_amu):
  * 		self.RateEquationsPtr.setDominantIonMass(mi_in_amu)
  * 	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):             # <<<<<<<<<<<<<<
@@ -1530,7 +1530,7 @@ static PyObject *__pyx_pf_8atomicpp_8pyVerify_15PyRateEquations_8computeDerivs(s
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("atomicpp.pyVerify.PyRateEquations.computeDerivs", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("atomicpy.PyRateEquations.computeDerivs", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1768,7 +1768,7 @@ static PyObject *__pyx_convert_vector_to_py_double(const std::vector<double>  &_
   return __pyx_r;
 }
 
-static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyImpuritySpecies(PyTypeObject *t, PyObject *a, PyObject *k) {
+static PyObject *__pyx_tp_new_8atomicpy_PyImpuritySpecies(PyTypeObject *t, PyObject *a, PyObject *k) {
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -1776,14 +1776,14 @@ static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyImpuritySpecies(PyTypeObject
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  if (unlikely(__pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_8atomicpy_17PyImpuritySpecies_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static void __pyx_tp_dealloc_8atomicpp_8pyVerify_PyImpuritySpecies(PyObject *o) {
+static void __pyx_tp_dealloc_8atomicpy_PyImpuritySpecies(PyObject *o) {
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -1793,23 +1793,23 @@ static void __pyx_tp_dealloc_8atomicpp_8pyVerify_PyImpuritySpecies(PyObject *o) 
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_8atomicpp_8pyVerify_17PyImpuritySpecies_3__dealloc__(o);
+    __pyx_pw_8atomicpy_17PyImpuritySpecies_3__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_8atomicpp_8pyVerify_PyImpuritySpecies[] = {
+static PyMethodDef __pyx_methods_8atomicpy_PyImpuritySpecies[] = {
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies = {
+static PyTypeObject __pyx_type_8atomicpy_PyImpuritySpecies = {
   PyVarObject_HEAD_INIT(0, 0)
-  "atomicpp.pyVerify.PyImpuritySpecies", /*tp_name*/
-  sizeof(struct __pyx_obj_8atomicpp_8pyVerify_PyImpuritySpecies), /*tp_basicsize*/
+  "atomicpy.PyImpuritySpecies", /*tp_name*/
+  sizeof(struct __pyx_obj_8atomicpy_PyImpuritySpecies), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8atomicpp_8pyVerify_PyImpuritySpecies, /*tp_dealloc*/
+  __pyx_tp_dealloc_8atomicpy_PyImpuritySpecies, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -1837,7 +1837,7 @@ static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8atomicpp_8pyVerify_PyImpuritySpecies, /*tp_methods*/
+  __pyx_methods_8atomicpy_PyImpuritySpecies, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -1847,7 +1847,7 @@ static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8atomicpp_8pyVerify_PyImpuritySpecies, /*tp_new*/
+  __pyx_tp_new_8atomicpy_PyImpuritySpecies, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -1862,7 +1862,7 @@ static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies = {
   #endif
 };
 
-static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyRateEquations(PyTypeObject *t, PyObject *a, PyObject *k) {
+static PyObject *__pyx_tp_new_8atomicpy_PyRateEquations(PyTypeObject *t, PyObject *a, PyObject *k) {
   PyObject *o;
   if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
     o = (*t->tp_alloc)(t, 0);
@@ -1870,14 +1870,14 @@ static PyObject *__pyx_tp_new_8atomicpp_8pyVerify_PyRateEquations(PyTypeObject *
     o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
   }
   if (unlikely(!o)) return 0;
-  if (unlikely(__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_1__cinit__(o, a, k) < 0)) goto bad;
+  if (unlikely(__pyx_pw_8atomicpy_15PyRateEquations_1__cinit__(o, a, k) < 0)) goto bad;
   return o;
   bad:
   Py_DECREF(o); o = 0;
   return NULL;
 }
 
-static void __pyx_tp_dealloc_8atomicpp_8pyVerify_PyRateEquations(PyObject *o) {
+static void __pyx_tp_dealloc_8atomicpy_PyRateEquations(PyObject *o) {
   #if PY_VERSION_HEX >= 0x030400a1
   if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
@@ -1887,26 +1887,26 @@ static void __pyx_tp_dealloc_8atomicpp_8pyVerify_PyRateEquations(PyObject *o) {
     PyObject *etype, *eval, *etb;
     PyErr_Fetch(&etype, &eval, &etb);
     ++Py_REFCNT(o);
-    __pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_3__dealloc__(o);
+    __pyx_pw_8atomicpy_15PyRateEquations_3__dealloc__(o);
     --Py_REFCNT(o);
     PyErr_Restore(etype, eval, etb);
   }
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyMethodDef __pyx_methods_8atomicpp_8pyVerify_PyRateEquations[] = {
-  {"setThresholdDensity", (PyCFunction)__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_5setThresholdDensity, METH_O, 0},
-  {"setDominantIonMass", (PyCFunction)__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_7setDominantIonMass, METH_O, 0},
-  {"computeDerivs", (PyCFunction)__pyx_pw_8atomicpp_8pyVerify_15PyRateEquations_9computeDerivs, METH_VARARGS|METH_KEYWORDS, 0},
+static PyMethodDef __pyx_methods_8atomicpy_PyRateEquations[] = {
+  {"setThresholdDensity", (PyCFunction)__pyx_pw_8atomicpy_15PyRateEquations_5setThresholdDensity, METH_O, 0},
+  {"setDominantIonMass", (PyCFunction)__pyx_pw_8atomicpy_15PyRateEquations_7setDominantIonMass, METH_O, 0},
+  {"computeDerivs", (PyCFunction)__pyx_pw_8atomicpy_15PyRateEquations_9computeDerivs, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
-static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyRateEquations = {
+static PyTypeObject __pyx_type_8atomicpy_PyRateEquations = {
   PyVarObject_HEAD_INIT(0, 0)
-  "atomicpp.pyVerify.PyRateEquations", /*tp_name*/
-  sizeof(struct __pyx_obj_8atomicpp_8pyVerify_PyRateEquations), /*tp_basicsize*/
+  "atomicpy.PyRateEquations", /*tp_name*/
+  sizeof(struct __pyx_obj_8atomicpy_PyRateEquations), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_8atomicpp_8pyVerify_PyRateEquations, /*tp_dealloc*/
+  __pyx_tp_dealloc_8atomicpy_PyRateEquations, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -1934,7 +1934,7 @@ static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyRateEquations = {
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
-  __pyx_methods_8atomicpp_8pyVerify_PyRateEquations, /*tp_methods*/
+  __pyx_methods_8atomicpy_PyRateEquations, /*tp_methods*/
   0, /*tp_members*/
   0, /*tp_getset*/
   0, /*tp_base*/
@@ -1944,7 +1944,7 @@ static PyTypeObject __pyx_type_8atomicpp_8pyVerify_PyRateEquations = {
   0, /*tp_dictoffset*/
   0, /*tp_init*/
   0, /*tp_alloc*/
-  __pyx_tp_new_8atomicpp_8pyVerify_PyRateEquations, /*tp_new*/
+  __pyx_tp_new_8atomicpy_PyRateEquations, /*tp_new*/
   0, /*tp_free*/
   0, /*tp_is_gc*/
   0, /*tp_bases*/
@@ -1970,7 +1970,7 @@ static struct PyModuleDef __pyx_moduledef = {
   #else
     PyModuleDef_HEAD_INIT,
   #endif
-    "pyVerify",
+    "atomicpy",
     0, /* m_doc */
     -1, /* m_size */
     __pyx_methods /* m_methods */,
@@ -2026,11 +2026,11 @@ static int __Pyx_InitGlobals(void) {
 }
 
 #if PY_MAJOR_VERSION < 3
-PyMODINIT_FUNC initpyVerify(void); /*proto*/
-PyMODINIT_FUNC initpyVerify(void)
+PyMODINIT_FUNC initatomicpy(void); /*proto*/
+PyMODINIT_FUNC initatomicpy(void)
 #else
-PyMODINIT_FUNC PyInit_pyVerify(void); /*proto*/
-PyMODINIT_FUNC PyInit_pyVerify(void)
+PyMODINIT_FUNC PyInit_atomicpy(void); /*proto*/
+PyMODINIT_FUNC PyInit_atomicpy(void)
 #endif
 {
   PyObject *__pyx_t_1 = NULL;
@@ -2044,7 +2044,7 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
           Py_FatalError("failed to import 'refnanny' module");
   }
   #endif
-  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_pyVerify(void)", 0);
+  __Pyx_RefNannySetupContext("PyMODINIT_FUNC PyInit_atomicpy(void)", 0);
   if (__Pyx_check_binary_version() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_tuple = PyTuple_New(0); if (unlikely(!__pyx_empty_tuple)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_empty_bytes = PyBytes_FromStringAndSize("", 0); if (unlikely(!__pyx_empty_bytes)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -2073,7 +2073,7 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
   #endif
   /*--- Module creation code ---*/
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("pyVerify", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("atomicpy", __pyx_methods, 0, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -2090,14 +2090,14 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_atomicpp__pyVerify) {
+  if (__pyx_module_is_main_atomicpy) {
     if (PyObject_SetAttrString(__pyx_m, "__name__", __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "atomicpp.pyVerify")) {
-      if (unlikely(PyDict_SetItemString(modules, "atomicpp.pyVerify", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "atomicpy")) {
+      if (unlikely(PyDict_SetItemString(modules, "atomicpy", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -2109,14 +2109,14 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
-  __pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "PyImpuritySpecies", (PyObject *)&__pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
-  __pyx_ptype_8atomicpp_8pyVerify_PyImpuritySpecies = &__pyx_type_8atomicpp_8pyVerify_PyImpuritySpecies;
-  if (PyType_Ready(&__pyx_type_8atomicpp_8pyVerify_PyRateEquations) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
-  __pyx_type_8atomicpp_8pyVerify_PyRateEquations.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "PyRateEquations", (PyObject *)&__pyx_type_8atomicpp_8pyVerify_PyRateEquations) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
-  __pyx_ptype_8atomicpp_8pyVerify_PyRateEquations = &__pyx_type_8atomicpp_8pyVerify_PyRateEquations;
+  if (PyType_Ready(&__pyx_type_8atomicpy_PyImpuritySpecies) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_type_8atomicpy_PyImpuritySpecies.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "PyImpuritySpecies", (PyObject *)&__pyx_type_8atomicpy_PyImpuritySpecies) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_ptype_8atomicpy_PyImpuritySpecies = &__pyx_type_8atomicpy_PyImpuritySpecies;
+  if (PyType_Ready(&__pyx_type_8atomicpy_PyRateEquations) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_type_8atomicpy_PyRateEquations.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "PyRateEquations", (PyObject *)&__pyx_type_8atomicpy_PyRateEquations) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_ptype_8atomicpy_PyRateEquations = &__pyx_type_8atomicpy_PyRateEquations;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
@@ -2125,7 +2125,7 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "atomicpp/pyVerify.pyx":1
+  /* "atomicpy.pyx":1
  * # distutils: language = c++             # <<<<<<<<<<<<<<
  * # distutils: sources = [ImpuritySpecies.cpp, RateCoefficient.cpp, sharedFunctions.cpp, RateEquations.cpp]
  * 
@@ -2150,11 +2150,11 @@ PyMODINIT_FUNC PyInit_pyVerify(void)
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init atomicpp.pyVerify", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init atomicpy", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_DECREF(__pyx_m); __pyx_m = 0;
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init atomicpp.pyVerify");
+    PyErr_SetString(PyExc_ImportError, "init atomicpy");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

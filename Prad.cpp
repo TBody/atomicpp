@@ -126,6 +126,7 @@ int main(){
 			// Use the plasma temperature, and then add a scaling based on the charge so that there's different velocities for each charge
 			// (so that momentum transfer results in an observable effect)
 			Nzk[k] = Nz * iz_stage_distribution[k];
+			// std::printf("Nzk^%d: %e \n", k, Nzk[k]); //To train python data
 		}
 		std::vector<double> Vzk(impurity.get_atomic_number()+1);
 		for(int k=0; k<=impurity.get_atomic_number(); ++k){

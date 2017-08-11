@@ -1,5 +1,3 @@
-# Autogeneration of dependancies: see http://make.mad-scientist.net/papers/advanced-auto-dependency-generation/#tldr
-
 compiler     = g++
 atomicpp     = atomicpp
 warn_flags   = -Og -Wall
@@ -17,6 +15,20 @@ run: $(objects)
 
 %.o: %.cpp
 	$(compiler) $(flags) -c $< -o $@
+
+py: $(objects) $(atomicpp)/setup.py $(atomicpp)/atomicpy.pyx
+	cd atomicpp; python setup.py build_ext --inplace --verbose
+
+clean:
+	rm -f $(atomicpp)/atomicpy.cpp
+	rm -rf $(atomicpp)/build
+	rm -rf $(atomicpp)/__pycache__
+	rm -f $(atomicpp)/*.so
+	rm -f $(atomicpp)/*.o
+	rm -f *.o
+	rm -rf *.dSYM
+	rm -f *.html
+	rm -f Prad
 
 Prad.o: Prad.cpp $(atomicpp)/sharedFunctions.hpp $(atomicpp)/ImpuritySpecies.hpp
 $(atomicpp)sharedFunctions.o: $(atomicpp)/sharedFunctions.cpp $(atomicpp)/sharedFunctions.hpp

@@ -42,6 +42,7 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	dNzk_correction(impurity.get_atomic_number()+1, 0.0),
 	F_zk_correction(impurity.get_atomic_number()+1, 0.0)
 	{
+
 	// Set parameters that are useful for multiple functions
 	rate_coefficients        = impurity.get_rate_coefficients();
 	use_shared_interpolation = impurity.get_has_shared_interpolation();
