@@ -176,6 +176,13 @@ DerivStruct RateEquations::computeDerivsHydrogen(
 	return derivative_struct;
 };
 void RateEquations::resetDerivatives(){
+	Pcool                    = 0.0;
+	Prad                     = 0.0;
+	dNe                      = 0.0;
+	F_i                      = 0.0;
+	dNn                      = 0.0;
+	F_n                      = 0.0;
+	
 	for(int k = 0; k<= Z; ++k){
 		dNzk[k] = 0.0;
 		F_zk[k] = 0.0;

@@ -1,5 +1,10 @@
 # atomic++
-## Acknowledgments
+
+## Contents
+
+1. [Acknowledgements](#acknowledgements)
+
+## Acknowledgements
 
 The majority of this code is based on the [_atomic1D_](https://github.com/TBody/atomic1D), which is in turn based on the excellent OpenADAS analysis tool provided at [_cfe316/atomic_](https://github.com/cfe316/atomic). The _atomic1D_ code translated the _atomic_ code into Python3 and used OpenADAS JSON reads rather than directly interfacing with the Fortran helper functions. The code to generate these OpenADAS JSON files is provided as [_OpenADAS\_to\_JSON_](https://github.com/TBody/OpenADAS_to_JSON).
 
