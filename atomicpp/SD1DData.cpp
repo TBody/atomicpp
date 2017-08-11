@@ -2,11 +2,13 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "json.hpp"
 #include "SD1DData.hpp"
 #include "sharedFunctions.hpp"
 
+#include "json.hpp"
 using json = nlohmann::json;
+
+using namespace atomicpp;
 
 SD1DData::SD1DData(const std::string& expt_results_json, double impurity_fraction_input){
 

@@ -8,6 +8,7 @@
 
 	using json = nlohmann::json;
 
+	namespace atomicpp{
 	class SD1DData{
 		// # For storing the data output from SD1D. To create the required JSON run the function
 		// # data_dict_export.py in an I/O (case) folder in SD1D.
@@ -25,4 +26,5 @@
 			double impurity_fraction;
 			std::vector<double> impurity_density;
 		};
+	}
 #endif

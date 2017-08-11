@@ -11,6 +11,7 @@ using json = nlohmann::json;
 #include "sharedFunctions.hpp"
 #include "RateCoefficient.hpp"
 
+using namespace atomicpp;
 ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Constructor for the ImpuritySpecies class
 	// Input is a std::string, which typically should be of length 1 (i.e. "c" for carbon, "n" for nitrogen)
@@ -49,6 +50,8 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 		year                = j_object[impurity_symbol_supplied]["year"];
 		has_charge_exchange = j_object[impurity_symbol_supplied]["has_charge_exchange"];
 		atomic_number       = j_object[impurity_symbol_supplied]["atomic_number"];
+		double mass_in_amu  = j_object[impurity_symbol_supplied]["mass"]; //in amu
+		mass                = mass_in_amu;
 	} else {
 		std::cout << "Error: "<< impurity_symbol_supplied << " not found in " << user_file << "\n";
 		throw std::invalid_argument( "Key not found in user input file" );
@@ -75,11 +78,11 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	makeRateCoefficients();
 
 	// Checks to see whether shared interpolation can be used - i.e. whether log_temperature and log_density are the same for all
-	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::shared_interpolation accordingly.
+	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::has_shared_interpolation accordingly.
 	initialiseSharedInterpolation();
 
 };
-void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path){
+void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path, const int year_fallback /* = 1996*/){
 	// # 1. Make the filename std::string expected for the json adas file
 	// # 2. Check that this file exists in the JSON_database_path/json_data directory
 	// # 3. Add this file to the atomic data .adas_files_dict attribute
@@ -88,13 +91,23 @@ void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std
 
 	filename = json_database_path + "/" + filetype_code + year_to_string.substr(2,4) + "_" + symbol + ".json";
 
-	if (not(test_file_exists(filename))) {
-		std::cout << std::boolalpha;
-		std::cout << "\nFile found: " << test_file_exists(filename) << "\n";
-		throw std::runtime_error("File not found error");
+	if (test_file_exists(filename)) {
+		adas_files_dict[physics_process] = filename;
+	} else {
+		std::printf("%s not found in the specified JSON database\n", filename.c_str());
+
+		std::string filename_fallback;
+		std::string year_to_string_fallback = std::to_string(year_fallback);
+		filename_fallback = json_database_path + "/" + filetype_code + year_to_string_fallback.substr(2,4) + "_" + symbol + ".json";
+		if (test_file_exists(filename_fallback)) {
+			std::printf("Warning: Fallback (%s) will be used\n", filename_fallback.c_str());
+			adas_files_dict[physics_process] = filename_fallback;
+		} else {
+			std::printf("Error: Fallback to %s failed\n", year_to_string_fallback.c_str());
+			throw std::runtime_error("File not found error (in ImpuritySpecies::addJSONFiles)");
+		}
 	}
 
-	adas_files_dict[physics_process] = filename;
 };
 void ImpuritySpecies::makeRateCoefficients(){
 	// # Calls the RateCoefficient constructor method for each entry in the .adas_files_dict
@@ -128,14 +141,17 @@ void ImpuritySpecies::makeRateCoefficients(){
 	int ImpuritySpecies::get_atomic_number(){
 		return atomic_number;
 	};
+	double ImpuritySpecies::get_mass(){
+		return mass;
+	};
 	std::map<std::string,std::string> ImpuritySpecies::get_adas_files_dict(){
 		return adas_files_dict;
 	};
 	std::map<std::string,std::shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
 		return rate_coefficients;
 	};
-	bool ImpuritySpecies::get_shared_interpolation(){
-		return shared_interpolation;
+	bool ImpuritySpecies::get_has_shared_interpolation(){
+		return has_shared_interpolation;
 	};
 	void ImpuritySpecies::add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value){
 		rate_coefficients[key] = value;
@@ -153,43 +169,43 @@ void ImpuritySpecies::makeRateCoefficients(){
 		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
 		rate_coefficients["blank"] = blank_RC;
 
-		shared_interpolation = true;
+		has_shared_interpolation = true;
 		for (auto& kv : rate_coefficients) {
 			std::string physics_process = kv.first;
 			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
 			// Seems to implicitly compare based on a small tolerance -- works for now
 			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
 				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				shared_interpolation = false;
+				has_shared_interpolation = false;
 			}
 			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
 				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				shared_interpolation = false;
+				has_shared_interpolation = false;
 			}
 		}
 	}
 // Accessing environment variables (shared by any function which calls the ImpuritySpecies.hpp header) -- shared functions
-	std::string get_json_database_path() {
-		std::string json_database_env = "ADAS_JSON_PATH";
-		char * environment_variable;
-		environment_variable = getenv( json_database_env.c_str() );
+	// std::string atomicpp::get_json_database_path() {
+	// 	std::string json_database_env = "ADAS_JSON_PATH";
+	// 	char * environment_variable;
+	// 	environment_variable = getenv( json_database_env.c_str() );
 
-		if (environment_variable != NULL) {
-		    return environment_variable;
-		} else {
-			std::cout << "ADAS_JSON_PATH not found. std::setting to default (= json_database/json_data)" << std::endl;
-			return "json_database/json_data";
-		}
-	}
-	std::string get_impurity_user_input() {
-		std::string json_database_env = "ADAS_JSON_IMPURITY";
-		char * environment_variable;
-		environment_variable = getenv( json_database_env.c_str() );
+	// 	if (environment_variable != NULL) {
+	// 	    return environment_variable;
+	// 	} else {
+	// 		std::cout << "ADAS_JSON_PATH not found. std::setting to default (= json_database/json_data)" << std::endl;
+	// 		return "json_database/json_data";
+	// 	}
+	// }
+	// std::string atomicpp::get_impurity_user_input() {
+	// 	std::string json_database_env = "ADAS_JSON_IMPURITY";
+	// 	char * environment_variable;
+	// 	environment_variable = getenv( json_database_env.c_str() );
 
-		if (environment_variable != NULL) {
-		    return environment_variable;
-		} else {
-			std::cout << "ADAS_JSON_IMPURITY not found. std::setting to default (= c)" << std::endl;
-			return "json_database/json_data";
-	}
-}
+	// 	if (environment_variable != NULL) {
+	// 	    return environment_variable;
+	// 	} else {
+	// 		std::cout << "ADAS_JSON_IMPURITY not found. std::setting to default (= c)" << std::endl;
+	// 		return "json_database/json_data";
+	// 	}
+	// }

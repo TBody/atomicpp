@@ -4,13 +4,23 @@
         "symbol": "c",
         "atomic_number": 6,
         "has_charge_exchange": true,
-        "year": 1996
+        "year": 1996,
+        "mass": 12.0107
     },
     "n": {
         "name": "Nitrogen",
         "symbol": "n",
         "atomic_number": 7,
         "has_charge_exchange": false,
-        "year": 1996
+        "year": 1996,
+        "mass": 14.0067
+    },
+    "h": {
+        "name": "Hydrogen",
+        "symbol": "h",
+        "atomic_number": 1,
+        "has_charge_exchange": false,
+        "year": 2012,
+        "mass": 1.00794
     }
 }
