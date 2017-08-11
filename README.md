@@ -38,7 +38,7 @@ For the `Prad.py` Python3 verification suite
 * A [Python3](https://www.python.org/) installation with an installed [SciPy](https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are included in [Anaconda](https://www.continuum.io/anaconda-overview) (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
 
 To extend the `json_database` of OpenADAS rate-coefficients
-* The (OpenADAS_to_JSON)(https://github.com/TBody/OpenADAS_to_JSON) project. See [Modifying the impurity database](#modifying-the-impurity-database) and the OpenADAS_to_JSON `README` for more details.
+* The [OpenADAS_to_JSON](https://github.com/TBody/OpenADAS_to_JSON) project. See [Modifying the impurity database](#modifying-the-impurity-database) and the OpenADAS_to_JSON `README` for more details.
 * A Fortran compiler (tested with [GNU](https://gcc.gnu.org/) compiler `gcc/gfortran version 6.3.0`)
 
 #### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
