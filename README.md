@@ -35,7 +35,7 @@ For the core `atomicpp` library and the `Prad.cpp` C++ test suite
 * `gmake` to run the `Makefile` (tested with `GNU Make 3.81`)
 
 For the `Prad.py` Python3 verification suite
-* A [Python3](https://www.python.org/) installation with an installed [SciPy](https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are included in [Anaconda](https://www.continuum.io/anaconda-overview) (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
+* A [Python3](https://www.python.org/) installation with an installed [SciPy](https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are available in the [Anaconda](https://www.continuum.io/anaconda-overview) distribution (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
 
 To extend the `json_database` of OpenADAS rate-coefficients
 * The [OpenADAS_to_JSON](https://github.com/TBody/OpenADAS_to_JSON) project. See [Modifying the impurity database](#modifying-the-impurity-database) and the OpenADAS_to_JSON `README` for more details.

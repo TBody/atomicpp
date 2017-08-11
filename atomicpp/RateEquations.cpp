@@ -371,13 +371,13 @@ void RateEquations::verifyNeumaierSummation(){
 	
 	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second); 
-	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 1){ 
+	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 10){ 
 		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	}
 
 	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second); 
-	if(abs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 1){ 
+	if(abs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 10){ 
 		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
 	}
 };

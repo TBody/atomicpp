@@ -16,15 +16,26 @@ impurity_derivatives = atomicpy.PyRateEquations(impurity);
 impurity_derivatives.setThresholdDensity(1e9);
 impurity_derivatives.setDominantIonMass(1.0);
 
-Te = 50;
-Ne = 1e19;
-Vi = 0;
-Nn = 0;
-Vn = 0;
+Te = 50; #eV
+Ne = 1e19; #m^-3
+Vi = 0; #m/s
+Nn = 0; #m^-3
+Vn = 0; #m/s
 
-Nzk = np.array([1.747803e-01, 1.366167e+05, 8.865589e+09, 6.294431e+13, 9.049412e+16, 9.440710e+15, 3.206463e+13])
+# From collisional radiative equilibrium, start values for the Carbon impurity densities
+Nzk_init = np.array([1.747803e-01, 1.366167e+05, 8.865589e+09, 6.294431e+13, 9.049412e+16, 9.440710e+15, 3.206463e+13])
 Vzk = np.zeros((7,))
 
-derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+from scipy.integrate import odeint
 
-print(derivative_struct['Pcool'])
+def evolve_density(Nzk, t, Te, Ne, Vi, Nn, Vn, Vzk):
+	derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+
+	return derivative_struct["dNzk"]
+
+if __name__ == "__main__":
+	t = np.linspace(0.0, 20, 10)
+	result = odeint(evolve_density, Nzk_init, t, args=(Te, Ne, Vi, Nn, Vn, Vzk))
+
+
+# print(derivative_struct['Pcool'])
