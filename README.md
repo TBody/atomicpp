@@ -116,9 +116,34 @@ atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHy
 ```
 
 #### The `DerivStruct` data structure
-
+The `computeDerivs` functions return a `DerivStruct` data structure. This is defined as
+```cpp
+struct DerivStruct{
+        double Pcool;
+        double Prad;
+        std::vector<double> dNzk;
+        std::vector<double> F_zk;
+        double dNe;
+        double F_i;
+        double dNn;
+        double F_n;
+    };
+```
+which may be unpacked as
+```cpp
+double Pcool             = derivative_struct.Pcool; //Electron-cooling power, in J m^-3 s^-1 (needed for electron power balance)
+double Prad              = derivative_struct.Prad;  //Radiated power, in in J m^-3 s^-1 (for comparing to diagnostic signal)
+std::vector<double> dNzk = derivative_struct.dNzk;  //Change in each ionisation stage of the impurity population, in particles m^-3 s^-1
+std::vector<double> F_zk = derivative_struct.F_zk;  //Force on each particle of ionisation stage k of the impurity population, in N
+double dNe               = derivative_struct.dNe;   //Perturbation change in the electron density (in particles m^-3 s^-1) and
+double F_i               = derivative_struct.F_i;   //  perturbation force (in N) on the electron population due to atomic processes
+double dNn               = derivative_struct.dNn;   //Perturbation change in the neutral density (in particles m^-3 s^-1) and
+double F_n               = derivative_struct.F_n;   //  perturbation force (in N) on the neutral population due to atomic processes
+```
 #### Print method for the data structure
+```cpp
 
+```
 
 This function relies on the following sub-functions; to calculate the scaling factors for interpolation (since, if the grids are identical, this may be shared by all the rate-coefficient calls to interpolation)
 ```cpp

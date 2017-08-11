@@ -167,7 +167,7 @@ int main(){
 	atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
 	hydrogen_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
 
-	atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(Te,Ne,Nhk,Vhk);
+	atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(Te, Ne, Nhk, Vhk);
 	
 	std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
 	hydrogen_derivatives.printDerivativeStruct(derivative_struct_H);
