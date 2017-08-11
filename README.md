@@ -7,6 +7,7 @@
 3. [System requirements](#system-requirements)
 4. [Quick-start](#quick-start)
 5. [Modifying the impurity database](#modifying-the-impurity-database)
+6. [SD1D Integration](#sd1d-integration)
 
 ## Acknowledgements
 
@@ -72,98 +73,52 @@ A separate project is supplied at [OpenADAS_to_JSON]((https://github.com/TBody/O
 5. Update the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93) if using the supplied testing programs.
 
 
-
-#### Integrating the power function into SD1D  
-
+## SD1D Integration
+Sub-contents
+1. [Impurity rate equations](impurity-rate-equations)
+2. [Hydrogen rate equations](hydrogen-rate-equations)
+3. [The `DerivStruct` data structure](the-derivstruct-data-structure)
+4. [Print method for the data structure](print-method-for-the-data-structure)
+---
 *N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
 
-To compute the total radiated power from a particular plasma impurity at a single location and single time the required code is
+The principal purpose of this code is to extend the radiation model of the [SD1D](https://github.com/boutproject/SD1D) SOL/divertor plasma simulation code, which is built on the [BOUT++](https://github.com/boutproject) project. 
+
+#### Impurity rate equations
+The derivative evaluator is provided in the `RateEquations` class. This class is initialised from a `ImpuritySpecies` object, shown here for a Carbon (`c`) impurity. The derivative evaluator is supplied as `computeDerivs` -- see the `RateEquations.hpp` header for identity and units of the arguments.
 ```cpp
+#include "atomicpp/ImpuritySpecies.hpp"
+#include "atomicpp/RateEquations.hpp"
 
-/**Constructs the ImpuritySpecies object corresponding to the supplied impurity_symbol. N.b. this symbol corresponds to a key for the impurity_user_input.json file which records hard-coded OpenADAS parameters.
-*/
-string impurity_symbol="<<impurity atomic symbol, i.e. C>>";
-ImpuritySpecies impurity(impurity_symbol);
+std::string impurity_symbol="c";
 
-/**
- * @brief Calculate the total radiated power assuming collisional-radiative equilibrium
- * @details Assumes collisional-radiative equilibrium (i.e. infinite impurity retention time,  
- no charge-exchange recombination) to provide a simple method for calculating the ionisation  
- stage distribution for the impurity. This is then used to calculate the power due to each  
- considered physics process (line power, continuum power and charge-exchange power) for each
- ionisation stage. The total power (in W/m^3) is returned.
- * 
- * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
- * @param Te electron temperature in eV
- * @param Ne electron density in m^-3
- * @param Nz impurity density in m^-3, summed over all ionisation stages
- * @param Nn neutral density in m^-3
- * @return Total power in W/m^3
- */
-double computeRadiatedPower(ImpuritySpecies& impurity, double Te, double Ne, double Nz, double Nn){
-    /**Calculates the relative distribution across ionisation stages of the impurity by  
-    assuming collisional-radiative equilibrium. This is then used to calculate the density within  
-    each state, allowing the total power at a point to be evaluated.
-    */
+atomicpp::ImpuritySpecies impurity(impurity_symbol);
 
-    ...
+atomicpp::RateEquations impurity_derivatives(impurity); //Organised as a RateEquations object for cleanliness
+impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-    return total_power; //In W/m^3
-}
+atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 ```
 
-#### Numerical evaluation of population and energy equations for SD1D  
-
-*N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
-
-To compute the derivatives of state-vector quantities required to self-consistently model the ionisation stage distribution and radiation emission from an impurity (as a function of time) the required code is
-
+#### Hydrogen rate equations
+The 'impurity' methods for evaluation of the OpenADAS rate-coefficient data can be equally applied to the dominant ion. A modified method `computeDerivsHydrogen` is supplied to avoid having to supply the same variables as the 'impurity' and 'dominant ion' values, although computationally the method is almost identical (ion-ion drag and charge-exchange are neglected). The equivalent case is
 ```cpp
-/**
- * @brief Calculates the rate of change (input units per second) for plasma parameters due to OpenADAS atomic physics processes
- * @details Still under development
- * 
- * * @param impurity ImpuritySpecies object, which contains OpenADAS data on relevant atomic-physics rate-coefficients
- * @param Te electron temperature in eV
- * @param Ne electron density in m^-3
- * @param Nn neutral density in m^-3
- * @param Nzk impurity density in m^-3, std::vector of densities of the form [Nz^0, Nz^1+, Nz^2+, ..., Nz^Z+]
- * @param Nthres threshold density for impurity stages, below which the time evolution of this stage is ignored. Default is 1e9,
- * although it is recommended that a time-step dependance be added in the calling code.
- * return dydt;
- * //where the derivative std::vector may be unpacked as
- *   double Pcool = dydt[0]; //Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
- *   double Prad  = dydt[1]; //Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
- *   std::vector<double> dNzk(impurity.get_atomic_number()+1); //Density change for each ionisation stage of the impurity - in 1/(m^3 s)
- *   for(int k=0; k<=impurity.get_atomic_number(); ++k){
- *      int dydt_index = k + 2;
- *      dNzk[k] = dydt[dydt_index];
- *   }
- *   double dNe   = dydt[(impurity.get_atomic_number()+2) + 1]; //Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
- *   double dNn   = dydt[(impurity.get_atomic_number()+2) + 2]; //Density change for neutrals due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
- */
-std::vector<double> computeDerivs(ImpuritySpecies& impurity, const double Te, const double Ne, const double Nn, const std::vector<double>& Nzk, const double Nthres = 1e9){
+#include "atomicpp/ImpuritySpecies.hpp"
+#include "atomicpp/RateEquations.hpp"
 
-    ...
+std::string hydrogen_symbol="h";
 
-    return dydt; //such that the following derivatives may be unpacked from the solver
-}
+atomicpp::ImpuritySpecies hydrogen(hydrogen_symbol);
+impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
 
-//Electron-cooling power - rate at which energy is lost from the electron population - in W/m^3
-double Pcool = dydt[0];
-//Radiated power - rate at which energy is dissipated as radiation (for diagnostics) - in W/m^3
-double Prad  = dydt[1];
-//Density change for each ionisation stage of the impurity - in 1/(m^3 s)
-std::vector<double> dNzk(impurity.get_atomic_number()+1);
-for(int k=0; k<=impurity.get_atomic_number(); ++k){
-    int dydt_index = k + 2;
-    dNzk[k] = dydt[dydt_index];
-}
-//Density change for electrons due to impurity-atomic processes (perturbation) - in 1/(m^3 s)
-double dNe   = dydt[(impurity.get_atomic_number()+2) + 1];
-//Density change for neutrals due to charge-exchange (perturbation) - in 1/(m^3 s)
-double dNn   = dydt[(impurity.get_atomic_number()+2) + 2];
+atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(Te, Ne, Nhk, Vhk);
 ```
+
+#### The `DerivStruct` data structure
+
+#### Print method for the data structure
+
 
 This function relies on the following sub-functions; to calculate the scaling factors for interpolation (since, if the grids are identical, this may be shared by all the rate-coefficient calls to interpolation)
 ```cpp
