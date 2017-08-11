@@ -3,6 +3,10 @@
 **/.DS_Store
 .DS_Store
 
+*_store.py
+*_store.cpp
+*_store.hpp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -146,3 +150,5 @@ Build_notes_splinter
 README\.html
 
 Prad
+
+atomicpp/atomicpy\.cpp
