@@ -17,6 +17,8 @@ from cython.operator cimport dereference as deref
 cdef extern from "ImpuritySpecies.hpp" namespace "atomicpp":
 	cdef cppclass ImpuritySpecies:
 		ImpuritySpecies(string& impurity_symbol_supplied) except +
+		string get_name()
+		int get_atomic_number()
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef struct DerivStruct:
@@ -38,9 +40,13 @@ cdef extern from "RateEquations.hpp" namespace "atomicpp":
 
 cdef class PyImpuritySpecies:
 	cdef unique_ptr[ImpuritySpecies] ImpuritySpeciesPtr
-
 	def __init__(self, string impurity_symbol_supplied):
 		self.ImpuritySpeciesPtr.reset(new ImpuritySpecies(impurity_symbol_supplied))
+
+	def get_name(self):
+		return deref(self.ImpuritySpeciesPtr).get_name()
+	def get_atomic_number(self):
+		return deref(self.ImpuritySpeciesPtr).get_atomic_number()
 
 cdef class PyRateEquations:
 	cdef unique_ptr[RateEquations] RateEquationsPtr
