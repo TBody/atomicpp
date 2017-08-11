@@ -1,10 +1,9 @@
 compiler     = g++
 atomicpp     = atomicpp
-warn_flags   = -Og -Wall
+warn_flags   = -g -O0 -Wall -fno-inline
 run_flags    = -O3
-help_flags   =  --enable-checking -v -da -Q
 # flags        = $(warn_flags) -std=c++11
-# flags        = $(help_flags) -std=c++11
+flags        = -std=c++11
 # flags        = -Og -std=c++11
 
 objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 

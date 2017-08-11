@@ -22,6 +22,8 @@ Vi = 0; #m/s
 Nn = 0; #m^-3
 Vn = 0; #m/s
 
+Z=6
+
 # From collisional radiative equilibrium, start values for the Carbon impurity densities
 Nzk_init = np.array([1.747803e-01, 1.366167e+05, 8.865589e+09, 6.294431e+13, 9.049412e+16, 9.440710e+15, 3.206463e+13])
 Vzk = np.zeros((7,))
@@ -34,8 +36,13 @@ def evolve_density(Nzk, t, Te, Ne, Vi, Nn, Vn, Vzk):
 	return derivative_struct["dNzk"]
 
 if __name__ == "__main__":
-	t = np.linspace(0.0, 20, 10)
+	t = np.logspace(0.0, 1, 20)
 	result = odeint(evolve_density, Nzk_init, t, args=(Te, Ne, Vi, Nn, Vn, Vzk))
 
+	import matplotlib.pyplot as plt
 
-# print(derivative_struct['Pcool'])
+	for i in range(Z+1):
+		plt.loglog(t, result[:,i], label="{}".format(i))
+		
+	plt.legend()
+	plt.show()

@@ -117,7 +117,9 @@ DerivStruct RateEquations::computeDerivs(
 
 	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
 
-	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+	if (use_charge_exchange){
+		calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+	}
 
 	//Apply neumairSum corrections
 	for(int k=0; k<=Z; ++k){
@@ -130,8 +132,10 @@ DerivStruct RateEquations::computeDerivs(
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
 	
 	calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
-
-	calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+	
+	if (use_charge_exchange){
+		calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+	}
 
 	// auto derivative_tuple = makeDerivativeTuple();
 	// return derivative_tuple;
@@ -199,7 +203,7 @@ std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<
 	int interp_gridpoint = lower_bound(log_grid.begin(), log_grid.end(), eval_log10) - log_grid.begin() - 1;
 
 	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((interp_gridpoint == log_grid.size()-1) or (interp_gridpoint == -1)){
+	if ((interp_gridpoint == (int)(log_grid.size()-1)) or (interp_gridpoint == -1)){
 		// An easy error to make is supplying the function arguments already having taken the log10
 		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
 	};
@@ -247,10 +251,10 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		// charge the target must have in each case)
 		int k_rec = k + 1; //The target charge state for recombination -- makes it a bit easier to understand
 
-		double ionisation_rate = ionisation_coefficient_evaluated * Ne;
-		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nzk = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nzk[k],ionisation_rate);
-		double recombination_rate = recombination_coefficient_evaluated * Ne;
-		// std::printf("recombination(%i) K = %e, Ne = %e, Nzk = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nzk[k+1],recombination_rate);
+		double ionisation_rate_factor = ionisation_coefficient_evaluated * Ne;
+		// std::printf("ionisation(%i)    K = %e, Ne = %e, Nzk = %e, R= %e\n",k,ionisation_coefficient_evaluated, Ne, Nzk[k],ionisation_rate_factor);
+		double recombination_rate_factor = recombination_coefficient_evaluated * Ne;
+		// std::printf("recombination(%i) K = %e, Ne = %e, Nzk = %e, R= %e\n",k+1,recombination_coefficient_evaluated, Ne, Nzk[k+1],recombination_rate_factor);
 
 		// Want both the target and source densities to be above the Nthres density threshold
 		// If we allow target to be below the source density, then won't get particle balance if ignoring stage or alternatively
@@ -259,15 +263,15 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 			//Rates 'to' a state are loss terms from that state. They are paired with Rates 'from'
 			//which are source terms for other states
-			iz_to_above[k]            = -ionisation_rate * Nzk[k];
-			iz_from_below[k+1]        = +ionisation_rate * Nzk[k];
-			rec_to_below[k_rec]       = -recombination_rate * Nzk[k_rec];
-			rec_from_above[k_rec-1]   = +recombination_rate * Nzk[k_rec];
+			iz_to_above[k]            = -ionisation_rate_factor * Nzk[k];
+			iz_from_below[k+1]        = +ionisation_rate_factor * Nzk[k];
+			rec_to_below[k_rec]       = -recombination_rate_factor * Nzk[k_rec];
+			rec_from_above[k_rec-1]   = +recombination_rate_factor * Nzk[k_rec];
 
-			iz_p_to_above[k]          = -ionisation_rate * mz * Vzk[k];
-			iz_p_from_below[k+1]      = +ionisation_rate * mz * Vzk[k+1];
-			rec_p_to_below[k_rec]     = -recombination_rate * mz * Vzk[k_rec];
-			rec_p_from_above[k_rec-1] = +recombination_rate * mz * Vzk[k_rec];
+			iz_p_to_above[k]          = -ionisation_rate_factor * mz * Vzk[k];
+			iz_p_from_below[k+1]      = +ionisation_rate_factor * mz * Vzk[k];
+			rec_p_to_below[k_rec]     = -recombination_rate_factor * mz * Vzk[k_rec];
+			rec_p_from_above[k_rec-1] = +recombination_rate_factor * mz * Vzk[k_rec];
 		}
 		// Otherwise, the rates stay as default = 0
 	}
@@ -320,51 +324,51 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	const std::pair<int, double>& Ne_interp
 	){
 	// Consider charge exchange after calculating Pcool
-	if (use_charge_exchange){
-		std::vector<double>     cx_rec_to_below(Z+1, 0.0); //Rate (m^-3 s^-1)
-		std::vector<double>   cx_rec_from_above(Z+1, 0.0);
-		std::vector<double>   cx_rec_p_to_below(Z+1, 0.0); //Momentum (kg m/s s^-1 = N)
-		std::vector<double> cx_rec_p_from_above(Z+1, 0.0);
+	
+	std::vector<double>     cx_rec_to_below(Z+1, 0.0); //Rate (m^-3 s^-1)
+	std::vector<double>   cx_rec_from_above(Z+1, 0.0);
+	std::vector<double>   cx_rec_p_to_below(Z+1, 0.0); //Momentum (kg m/s s^-1 = N)
+	std::vector<double> cx_rec_p_from_above(Z+1, 0.0);
 
-		std::shared_ptr<RateCoefficient> cx_recombination_coefficient = rate_coefficients["cx_rec"];
-		for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-			double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
-			
-			// Note that cx_recombination coefficients are indexed from 1 to Z
-			int k_rec = k + 1; //The target charge state for recombination -- makes it a bit easier to understand
-
-			double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn;
-
-			// Want both the target and source densities to be above the Nthres density threshold
-			if((Nzk[k_rec] > Nthres) and (Nzk[k_rec-1] > Nthres)){
-				cx_rec_to_below[k_rec]     = -cx_recombination_rate * Nzk[k_rec];
-				cx_rec_from_above[k_rec-1] = +cx_recombination_rate * Nzk[k_rec];
-
-				cx_rec_p_to_below[k_rec]     = -cx_recombination_rate * mz * Vzk[k_rec];
-				cx_rec_p_from_above[k_rec-1] = +cx_recombination_rate * mz * Vzk[k_rec];
-			}
-			// Otherwise, the rates stay as default = 0
-		}
-
-		//For Neumaier summation of the change in Nn from the different rates 
-		std::vector<double> dNn_from_stage(Z, 0.0);
-		for(int k=0; k <= Z; ++k){//Consider all states at once
-			std::vector<double> rates_for_stage          = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]}; //Add cx to the sum
-			std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
-			dNzk[k]                                      = neumaier_pair_dNzk.first;
-			dNzk_correction[k]                           = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
-
-			std::vector<double> momentum_for_stage           = {F_zk[k], cx_rec_p_to_below[k], cx_rec_p_from_above[k]}; //Add cx to the sum
-			std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage,F_zk_correction[k]);
-			F_zk[k]                                          = neumaier_pair_momentum.first; 
-			F_zk_correction[k]                               = neumaier_pair_momentum.second; //Overwrite compensation with updated value
-			
-			dNn_from_stage[k] = -cx_rec_from_above[k];
-		}
+	std::shared_ptr<RateCoefficient> cx_recombination_coefficient = rate_coefficients["cx_rec"];
+	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
+		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 		
-		std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
-		dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
+		// Note that cx_recombination coefficients are indexed from 1 to Z
+		int k_rec = k + 1; //The target charge state for recombination -- makes it a bit easier to understand
+
+		double cx_recombination_rate_factor = cx_recombination_coefficient_evaluated * Nn;
+
+		// Want both the target and source densities to be above the Nthres density threshold
+		if((Nzk[k_rec] > Nthres) and (Nzk[k_rec-1] > Nthres)){
+			cx_rec_to_below[k_rec]     = -cx_recombination_rate_factor * Nzk[k_rec];
+			cx_rec_from_above[k_rec-1] = +cx_recombination_rate_factor * Nzk[k_rec];
+
+			cx_rec_p_to_below[k_rec]     = -cx_recombination_rate_factor * mz * Vzk[k_rec];
+			cx_rec_p_from_above[k_rec-1] = +cx_recombination_rate_factor * mz * Vzk[k_rec];
+		}
+		// Otherwise, the rates stay as default = 0
 	}
+
+	//For Neumaier summation of the change in Nn from the different rates 
+	std::vector<double> dNn_from_stage(Z+1, 0.0); //Only need Z indices, but adding an extra to the end means that the calculation
+	// can be performed in a single loop
+	for(int k=0; k <= Z; ++k){//Consider all states at once
+		std::vector<double> rates_for_stage          = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]}; //Add cx to the sum
+		std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
+		dNzk[k]                                      = neumaier_pair_dNzk.first;
+		dNzk_correction[k]                           = neumaier_pair_dNzk.second; //Overwrite compensation with updated value
+
+		std::vector<double> momentum_for_stage           = {F_zk[k], cx_rec_p_to_below[k], cx_rec_p_from_above[k]}; //Add cx to the sum
+		std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage,F_zk_correction[k]);
+		F_zk[k]                                          = neumaier_pair_momentum.first; 
+		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Overwrite compensation with updated value
+		dNn_from_stage[k] = -cx_rec_from_above[k]; //N.b. cx_rec_from_above[Z] = 0.0 always, included so we can use a single loop
+	}
+	
+	std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
+	dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
+	
 };
 void RateEquations::verifyNeumaierSummation(){
 	// Verify that the sum over all elements equals zero (or very close to) 
@@ -535,7 +539,7 @@ std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_
 
     double correction = previous_correction;                 // A running compensation for lost low-order bits. Use previous result to restart summation
 
-    for(int i=0; i < list_to_sum.size(); ++i){
+    for(int i=0; i < (int)(list_to_sum.size()); ++i){
         double temporary_sum = sum + list_to_sum[i];
         if (abs(sum) >= abs(list_to_sum[i])){
             correction += (sum - temporary_sum) + list_to_sum[i]; // If sum is bigger, low-order digits of list_to_sum[i] are lost.

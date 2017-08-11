@@ -64,11 +64,11 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
 
 	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_Te == log_temperature.size()-1) or (low_Te == -1)){
+	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
 		// An easy error to make is supplying the function arguments already having taken the log10
 		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
 	};
-	if ((low_Ne == log_density.size()-1) or (low_Ne == -1)){
+	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
 		// An easy error to make is supplying the function arguments already having taken the log10
 		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
 	};
