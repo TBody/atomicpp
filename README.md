@@ -5,6 +5,8 @@
 1. [Acknowledgements](#acknowledgements)
 2. [Introduction](#introduction)
 3. [System requirements](#system-requirements)
+5. [Quick-start](#quick-start)
+4. [Program execution](#program-execution)
 
 ## Acknowledgements
 
@@ -32,7 +34,7 @@ For the core `atomicpp` library and the `Prad.cpp` C++ test suite
 * `gmake` to run the `Makefile` (tested with `GNU Make 3.81`)
 
 For the `Prad.py` Python3 verification suite
-* A [Python3](https://www.python.org/) installation with an installed SciPy(https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are included in [Anaconda](https://www.continuum.io/anaconda-overview) (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
+* A [Python3](https://www.python.org/) installation with an installed [SciPy](https://www.scipy.org/) stack and [Cython](http://cython.org/). Both the SciPy stack and Cython are included in [Anaconda](https://www.continuum.io/anaconda-overview) (tested with `Python 3.6.1 |Anaconda 4.4.0 (x86_64)`)
 
 To extend the `json_database` of OpenADAS rate-coefficients
 * The (OpenADAS_to_JSON)[https://github.com/TBody/OpenADAS_to_JSON] project. See [Modifying the impurity database](#modifying-the-impurity-database) and the OpenADAS_to_JSON `README` for more details.
@@ -41,7 +43,8 @@ To extend the `json_database` of OpenADAS rate-coefficients
 #### In the same file as the main program source (`Prad.cpp`) at time of compilation;  
 
 * The `atomicpp` module folder containing
-    - `ImpuritySpecies` (`.cpp` and `.hpp`): for storing the data of a specified plasma impurity.
+    - `RateEquations` (`.cpp` and `.hpp`): for evaluation of the population, power and momentum balance derivatives.
+    - `ImpuritySpecies` (`.cpp` and `.hpp`): Called by `RateEquations`, for storing the data of a specified plasma impurity.
     - `RateCoefficient` (`.cpp` and `.hpp`): called by `ImpuritySpecies`, for providing a callable interface to a set of OpenADAS density- and temperature-resolved rate coefficients.
     - `sharedFunctions` (`.cpp` and `.hpp`): for functions which are useful to all other modules - currently a JSON reader and a file checker.
     - `json.hpp`: header-only JSON reader from the [_nlohmann::json_](https://github.com/nlohmann/json) project. A copy of the header file is included, although it is recommended that users download an up-to-date version [here](https://github.com/nlohmann/json/blob/develop/src/json.hpp).
@@ -49,17 +52,25 @@ To extend the `json_database` of OpenADAS rate-coefficients
 * `impurity_user_input.json` (same directory as `Prad.cpp`): a plain-text file for providing hard-coded data relating to the impurity (such as year for OpenADAS data, etc). To modify, see the [JSON project](http://www.json.org) for nomenclature and follow the same style as the template.
 * `sd1d-case-*.json` (same directory as `Prad.cpp`): a json file created by `atomic1D/reference/data_dict_export.py`, for use with `SD1DData` for training the program (not needed if integrating into SD1D).
 
-### Understanding the code  
-Effort was made to ensure reasonably comprehensive code-commenting in the source -- however, this README will not describe the code function. Instead, see the README for `atomic1D` (which has almost identical functionality) since this will be more thoroughly commented.
+## Program execution
 
-#### Modifying the impurity database
-Will need to modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile` and then run `make json_update`, then copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite). The [`impurity_user_input.json`](https://github.com/TBody/atomicpp/blob/master/impurity_user_input.json) should be updated accordingly, and also the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93).
+#### Quick-start
 
-## Program execution  
+The `Makefile` provides most of the desired functionality of the project. It has 5 main commands;
+* `make cpp`: checks if the required source files have been built since they were last modified -- if not, compiles the `atomicpp` library and the `Prad.cpp` program into `.o` files and then links the `.o` files into an executable (`Prad`).
+* `make cpp_run`: (default for `make`) performs the `make cpp` functionality and also runs the `Prad` executable via `./Prad`
+* `make py`: checks if the required source files have been built since they were last modified -- if not, compiles the `atomicpp` library and generates a Python module `atomicpy` which is declared in `atomicpy.pyx` (Cython) and built with `setup.py build_ext --inplace`.
+* `make py_run`: performs the `make py` functionality and also runs the `Prad.py` script via `python Prad.py`
 
 #### Running `Prad.cpp` from terminal  
 
 To run the main power calculation code change to the directory containing `Prad.cpp` (and `Makefile`). In a terminal window type `make`. The makefile will compile the object code (`*.o`) for the module and for the main source (`Prad.o`), link the executables and then execute `./Prad` to run the executable. Compilation options can be controlled via the `flags` make variable in `Makefile`.
+
+
+#### Modifying the impurity database
+Will need to modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile` and then run `make json_update`, then copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite). The [`impurity_user_input.json`](https://github.com/TBody/atomicpp/blob/master/impurity_user_input.json) should be updated accordingly, and also the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93).
+
+
 
 #### Integrating the power function into SD1D  
 
