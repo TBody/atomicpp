@@ -65,7 +65,7 @@ The `Makefile` provides most of the desired functionality of the project. It has
 * `make clean`: reverts the project to a fresh install state.
 
 #### Modifying the impurity database
-A separate project is supplied at [OpenADAS_to_JSON]((https://github.com/TBody/OpenADAS_to_JSON). This project downloads ADF11 files for the specified impurity from [OpenADAS](http://open.adas.ac.uk/), uses Fortran helper functions to read the data and exports the data as JSON files. To change which species is being considered you'll need to do the following;
+A separate project is supplied at [OpenADAS_to_JSON](https://github.com/TBody/OpenADAS_to_JSON). This project downloads ADF11 files for the specified impurity from [OpenADAS](http://open.adas.ac.uk/), uses Fortran helper functions to read the data and exports the data as JSON files. To change which species is being considered you'll need to do the following;
 1. Modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile`
 2. Run `make json_update`
 3. Copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite)
