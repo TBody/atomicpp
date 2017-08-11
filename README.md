@@ -79,6 +79,9 @@ Sub-contents
 2. [Hydrogen rate equations](#hydrogen-rate-equations)
 3. [The `DerivStruct` data structure](#the-derivstruct-data-structure)
 4. [Print method for the data structure](#print-method-for-the-data-structure)
+5. [The `computeDerivs` function](#the-computederivs-function)
+6. [Shared interpolation](#shared-interpolation)
+7. [Kahan-Neumaier summation](#kahan-neumaier-summation)
 ---
 *N.b. the SD1DData (.hpp and .cpp) files of the atomicpp module directory are not required*
 
@@ -141,11 +144,66 @@ double dNn               = derivative_struct.dNn;   //Perturbation change in the
 double F_n               = derivative_struct.F_n;   //  perturbation force (in N) on the neutral population due to atomic processes
 ```
 #### Print method for the data structure
+The `RateEquations` class also includes a printing method for the `DerivStruct` data structure
 ```cpp
+impurity_derivatives.printDerivativeStruct(derivative_struct);
+```
+which returned a formatted result
 
+#### The `computeDerivs` function
+The core functionality of the `RateEquations` object is provided by the `computeDerivs` function. This is given as
+```cpp
+DerivStruct RateEquations::computeDerivs(
+    const double Te,
+    const double Ne,
+    const double Vi,
+    const double Nn,
+    const double Vn,
+    const std::vector<double>& Nzk,
+    const std::vector<double>& Vzk){
+
+    resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
+
+    // Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
+    std::pair<int, double> Te_interp, Ne_interp;
+    if (use_shared_interpolation){
+        Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
+        Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
+    } else {
+        throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
+        // //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
+        // double Te_interp = Te;
+        // double Ne_interp = Ne;
+    }
+
+    calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
+
+    calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+
+    //Apply neumairSum corrections
+    for(int k=0; k<=Z; ++k){
+        dNzk[k] += dNzk_correction[k];
+        F_zk[k] += F_zk_correction[k];
+    }
+
+    verifyNeumaierSummation();
+
+    calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
+    
+    calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
+
+    calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+
+    // auto derivative_tuple = makeDerivativeTuple();
+    // return derivative_tuple;
+    DerivStruct derivative_struct = makeDerivativeStruct();
+    return derivative_struct;
+};
 ```
 
-This function relies on the following sub-functions; to calculate the scaling factors for interpolation (since, if the grids are identical, this may be shared by all the rate-coefficient calls to interpolation)
+#### Shared interpolation
+`computeDerivs` relies 'shared interpolation' to calculate the scaling factors for interpolation, which requires that the underlying grids are identical
+
 ```cpp
 /**
  * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
@@ -171,7 +229,8 @@ std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_gr
 }
 ```
 
-and; to add the elements of a list with significantly varying orders of magnitude to very high precision (avoids floating point rounding error)
+#### Kahan-Neumaier summation
+To add the elements of a list with significantly varying orders of magnitude to very high precision (avoids floating point rounding error) the Kahan-Neumaier algorithm is implemented as follows;
 
 ```cpp
 /**
