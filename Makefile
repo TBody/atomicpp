@@ -16,6 +16,10 @@ run: $(objects)
 %.o: %.cpp
 	$(compiler) $(flags) -c $< -o $@
 
+py_run: $(objects) $(atomicpp)/setup.py $(atomicpp)/atomicpy.pyx
+	cd atomicpp; python setup.py build_ext --inplace --verbose
+	python 
+
 py: $(objects) $(atomicpp)/setup.py $(atomicpp)/atomicpy.pyx
 	cd atomicpp; python setup.py build_ext --inplace --verbose
 

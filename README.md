@@ -3,14 +3,29 @@
 ## Contents
 
 1. [Acknowledgements](#acknowledgements)
+2. [Introduction](#introduction)
+3. 
 
 ## Acknowledgements
 
-The majority of this code is based on the [_atomic1D_](https://github.com/TBody/atomic1D), which is in turn based on the excellent OpenADAS analysis tool provided at [_cfe316/atomic_](https://github.com/cfe316/atomic). The _atomic1D_ code translated the _atomic_ code into Python3 and used OpenADAS JSON reads rather than directly interfacing with the Fortran helper functions. The code to generate these OpenADAS JSON files is provided as [_OpenADAS\_to\_JSON_](https://github.com/TBody/OpenADAS_to_JSON).
+The majority of this code is based on the [_atomic1D_](https://github.com/TBody/atomic1D), which is in turn based on the excellent OpenADAS analysis tool provided at [_cfe316/atomic_](https://github.com/cfe316/atomic). 
 
-## Purpose of this code  
+The _atomic1D_ code translated the _atomic_ code into Python3 and used OpenADAS JSON reads rather than directly interfacing with the Fortran helper functions. The code to generate these OpenADAS JSON files is provided as [_OpenADAS\_to\_JSON_](https://github.com/TBody/OpenADAS_to_JSON).
 
-This code translates the [atomic1D] code into C++ so that it may be easily integrated into the BOUT++ [_SD1D_](https://github.com/boutproject/SD1D) project. It provides a subset of the functionality of the [atomic1D] code, and therefore it is recommended that [_atomic1D_](https://github.com/TBody/atomic1D) is used in preference to this code for standalone analysis.
+## Introduction
+
+This project provides a `C++` library for the analysis of atomic processes in a SOL/divertor plasma. It is primarily intended as a library for integration into the BOUT++ [_SD1D_](https://github.com/boutproject/SD1D) project, although the testing suites provided may be generally useful.
+
+The project consists of three main parts:
+
+1. The [`atomicpp`](https://github.com/TBody/atomicpp/tree/master/atomicpp)library -- provides all analysis code;
+2. `Prad.cpp` testing suite in `C++` -- tests basic functionality ;
+3. `Prad.py` verification suite in `Python3` -- uses a Python wrapper to the `atomicpp` library to check the results from the library.
+
+The project is built and run using a `Makefile` architecture
+
+
+This code translates the [atomic1D] code into C++ so that it may be easily integrated into the . It provides a subset of the functionality of the [atomic1D] code, and therefore it is recommended that [_atomic1D_](https://github.com/TBody/atomic1D) is used in preference to this code for standalone analysis.
 
 This program is built using a `Makefile` which controls compilation and linking of the required source files. The core development code is supplied in the main project directory as `Prad.cpp`, while the `atomicpp` folder contains contains the required header (`.hpp`) and corresponding source (`.cpp`) files which provide broadly applicable functions for storing and processing OpenADAS data. To run the `Prad.cpp` code requires
 
