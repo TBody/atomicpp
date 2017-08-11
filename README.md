@@ -5,8 +5,8 @@
 1. [Acknowledgements](#acknowledgements)
 2. [Introduction](#introduction)
 3. [System requirements](#system-requirements)
-5. [Quick-start](#quick-start)
-4. [Program execution](#program-execution)
+4. [Quick-start](#quick-start)
+5. [Modifying the impurity database](#modifying-the-impurity-database)
 
 ## Acknowledgements
 
@@ -61,14 +61,15 @@ The `Makefile` provides most of the desired functionality of the project. It has
 * `make cpp_run`: (default for `make`) performs the `make cpp` functionality and also runs the `Prad` executable via `./Prad`
 * `make py`: checks if the required source files have been built since they were last modified -- if not, compiles the `atomicpp` library and generates a Python module `atomicpy` which is declared in `atomicpy.pyx` (Cython) and built with `setup.py build_ext --inplace`.
 * `make py_run`: performs the `make py` functionality and also runs the `Prad.py` script via `python Prad.py`
-
-#### Running `Prad.cpp` from terminal  
-
-To run the main power calculation code change to the directory containing `Prad.cpp` (and `Makefile`). In a terminal window type `make`. The makefile will compile the object code (`*.o`) for the module and for the main source (`Prad.o`), link the executables and then execute `./Prad` to run the executable. Compilation options can be controlled via the `flags` make variable in `Makefile`.
-
+* `make clean`: reverts the project to a fresh install state.
 
 #### Modifying the impurity database
-Will need to modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile` and then run `make json_update`, then copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite). The [`impurity_user_input.json`](https://github.com/TBody/atomicpp/blob/master/impurity_user_input.json) should be updated accordingly, and also the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93).
+A separate project is supplied at [OpenADAS_to_JSON]((https://github.com/TBody/OpenADAS_to_JSON). This project downloads ADF11 files for the specified impurity from [OpenADAS](http://open.adas.ac.uk/), uses Fortran helper functions to read the data and exports the data as JSON files. To change which species is being considered you'll need to do the following;
+1. Modify the [`elements`](https://github.com/TBody/OpenADAS_to_JSON/blob/master/makefile#L35) tag of the `makefile`
+2. Run `make json_update`
+3. Copy the `OpenADAS_to_JSON/json_database` file from that project onto `atomicpp/json_database` (overwrite)
+4. Update [`impurity_user_input.json`](https://github.com/TBody/atomicpp/blob/master/impurity_user_input.json) to include the impurity data required by the program
+5. Update the `impurity_symbol_supplied` variable of [Python](https://github.com/TBody/atomicpp/blob/master/Prad.py#L11) and [C++](https://github.com/TBody/atomicpp/blob/master/Prad.cpp#L93) if using the supplied testing programs.
 
 
 
