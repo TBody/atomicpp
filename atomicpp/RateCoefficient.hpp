@@ -2,7 +2,6 @@
 #define RATECOEFFICIENT_H
 	#include <string>
 	#include <vector>
-	#include <fstream>
 	#include "json.hpp"
 	using json = nlohmann::json;
 	

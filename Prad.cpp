@@ -11,20 +11,7 @@
 
 // Include declarations
 #include <ostream>
-#include <map>
-#include <string>
-#include <vector>
-#include <tuple>
-#include <fstream>
-#include <set>
-#include <stdexcept> //For error-throwing
-#include <memory> //For smart pointers
 #include <cstdio> //For print formatting (printf, fprintf, sprintf, snprintf)
-#include <cmath> //For abs
-
-#include <limits>
-#include <cstdint>
-#include <cinttypes>
 
 #include "atomicpp/ImpuritySpecies.hpp"
 #include "atomicpp/RateCoefficient.hpp"

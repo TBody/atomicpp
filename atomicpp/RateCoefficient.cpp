@@ -9,7 +9,6 @@ using json = nlohmann::json;
 #include "sharedFunctions.hpp"
 
 #include <algorithm> //for upper/lower_bound
-#include <typeinfo>
 
 using namespace atomicpp;
 RateCoefficient::RateCoefficient(const std::string& filename){

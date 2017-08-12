@@ -78,7 +78,10 @@ if __name__ == "__main__":
 
 	import matplotlib.pyplot as plt
 	for k in range(Z+1):
-		plt.semilogx(Te_tests, Nz_results[:,k], label="{}".format(k))	
+		plt.loglog(Te_tests, Nz_results[:,k], label="{}".format(k))
+
+	plt.ylim([1e-5, 1])
+	plt.xlim([1e-1, 1e2])
 	plt.legend()
 	plt.show()
 

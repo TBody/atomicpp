@@ -1,19 +1,11 @@
 // Include declarations
 #include <ostream>
-#include <map>
-#include <string>
 #include <vector>
 #include <tuple>
-#include <fstream>
-#include <set>
 #include <stdexcept> //For error-throwing
 #include <memory> //For smart pointers
 #include <cstdio> //For print formatting (printf, fprintf, sprintf, snprintf)
-#include <cmath> //For abs
-
-#include <limits>
-#include <cstdint>
-#include <cinttypes>
+#include <cmath> //For std::fabs
 
 #include "ImpuritySpecies.hpp"
 #include "RateCoefficient.hpp"
@@ -374,13 +366,13 @@ void RateEquations::verifyNeumaierSummation(){
 	
 	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second); 
-	if(abs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 10){ 
+	if(std::fabs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 10){ 
 		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
 	}
 
 	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second); 
-	if(abs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 10){ 
+	if(std::fabs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 10){ 
 		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
 	}
 };
@@ -540,7 +532,7 @@ std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_
 
     for(int i=0; i < (int)(list_to_sum.size()); ++i){
         double temporary_sum = sum + list_to_sum[i];
-        if (abs(sum) >= abs(list_to_sum[i])){
+        if (std::fabs(sum) >= std::fabs(list_to_sum[i])){
             correction += (sum - temporary_sum) + list_to_sum[i]; // If sum is bigger, low-order digits of list_to_sum[i] are lost.
         } else {
             correction += (list_to_sum[i] - temporary_sum) + sum; // Else low-order digits of sum are lost
