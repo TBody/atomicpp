@@ -71,6 +71,29 @@ int main(){
 
 	std::printf("size of grid_coeff: (%d, %d, %d)\n", atomic_number, (int)(log_temperature.size()), (int)(log_density.size()));
 
+	int k = 0;
+	double _log10_Te = log10(50);
+	double _log10_Ne = log10(0.8e19);
+	
+	std::printf("Interpolation point: (%f, %f)\n", _log10_Te, _log10_Ne);
+
+	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), _log10_Te) - log_temperature.begin() - 1;
+	int low_Ne = lower_bound(log_density.begin(), log_density.end(), _log10_Ne) - log_density.begin() - 1;
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
+	};
+	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
+	};
+
+	std::printf("Grid point: (%d, %d)\n", low_Te, low_Ne);
+	std::printf("Check point on grid? (low < point < high)\n\t(%f < %f < %f)\n\t(%f < %f < %f)\n",
+		log_temperature[low_Te],_log10_Te,log_temperature[low_Te+1],
+		log_density[low_Ne],_log10_Ne,log_density[low_Ne+1]);
+
 	for (int k=0; k<atomic_number; ++k){
 		for(int iT=0; iT<(int)(log_temperature.size()); ++iT){
 			for(int iN=0; iN<(int)(log_density.size()); ++iN){
@@ -149,14 +172,14 @@ int main(){
 		}
 	}
 
-	//End initialisation of grid_coeffs f, fdT, fdN, fdTdN
+	std::printf("f_sub:\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n",
+		grid_coeff[k][low_Te+0][low_Ne+0].f,   grid_coeff[k][low_Te+0][low_Ne+1].f,   grid_coeff[k][low_Te+0][low_Ne+0].fdN,   grid_coeff[k][low_Te+0][low_Ne+1].fdN,
+		grid_coeff[k][low_Te+1][low_Ne+0].f,   grid_coeff[k][low_Te+1][low_Ne+1].f,   grid_coeff[k][low_Te+1][low_Ne+0].fdN,   grid_coeff[k][low_Te+1][low_Ne+1].fdN,
+		grid_coeff[k][low_Te+0][low_Ne+0].fdT, grid_coeff[k][low_Te+0][low_Ne+1].fdT, grid_coeff[k][low_Te+0][low_Ne+0].fdTdN, grid_coeff[k][low_Te+0][low_Ne+1].fdTdN,
+		grid_coeff[k][low_Te+1][low_Ne+0].fdT, grid_coeff[k][low_Te+1][low_Ne+1].fdT, grid_coeff[k][low_Te+1][low_Ne+0].fdTdN, grid_coeff[k][low_Te+1][low_Ne+1].fdTdN
+		);
 
-	// For storing the value and derivative data at each grid-point
-	// std::vector<std::vector<std::vector<double>>>
-	// alpha_coeff(log_coeff.size(),
-	// 	std::vector<std::vector<interp_data>>(log_coeff[0].size()-1,
-	// 		std::vector<interp_data>(log_coeff[0][0].size()-1,
-	// 			0.0)));
+
 
 	double alpha_coeff [atomic_number][(int)(log_temperature.size())-1][(int)(log_density.size())-1][4][4] = {0.0};
 	const double prematrix [4][4] = {
@@ -172,24 +195,18 @@ int main(){
 		{+0, +0, -1, +1},
 	};
 
-	std::printf("size of alpha_coeff: (%d, %d, %d, %d, %d)\n", atomic_number, (int)(log_temperature.size())-1, (int)(log_density.size())-1, 4, 4);
-	std::printf("(%d by %d) alpha matrix, for each charge state (%d) and each grid point (%d by %d)\n", 4, 4, atomic_number, (int)(log_temperature.size())-1, (int)(log_density.size())-1);
+	// std::printf("size of alpha_coeff: (%d, %d, %d, %d, %d)\n", atomic_number, (int)(log_temperature.size())-1, (int)(log_density.size())-1, 4, 4);
+	// std::printf("(%d by %d) alpha matrix, for each charge state (%d) and each grid point (%d by %d)\n", 4, 4, atomic_number, (int)(log_temperature.size())-1, (int)(log_density.size())-1);
 
 	for (int k=0; k<atomic_number; ++k){
 		for(int iT=0; iT<(int)(log_temperature.size())-1; ++iT){ //iterator over temperature dimension of grid, which is of length log_temperature.size()-1
 			for(int iN=0; iN<(int)(log_density.size())-1; ++iN){ //iterator over density dimension of grid, which is of length log_density.size()-1
 
-				// double f_sub[4][4] = {
-				// 	{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
-				// 	{grid_coeff[k][iT+1][iN+0].f,   grid_coeff[k][iT+1][iN+1].f,   grid_coeff[k][iT+1][iN+0].fdN,   grid_coeff[k][iT+1][iN+1].fdN},
-				// 	{grid_coeff[k][iT+0][iN+0].fdT, grid_coeff[k][iT+0][iN+1].fdT, grid_coeff[k][iT+0][iN+0].fdTdN, grid_coeff[k][iT+0][iN+1].fdTdN},
-				// 	{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
-				// };
 				double f_sub[4][4] = {
-					{ 1,     2,     3,     4},
-					{ 5,     6,     7,     8},
-					{ 9,    10,    11,    12},
-					{13,    14,    15,    16},
+					{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
+					{grid_coeff[k][iT+1][iN+0].f,   grid_coeff[k][iT+1][iN+1].f,   grid_coeff[k][iT+1][iN+0].fdN,   grid_coeff[k][iT+1][iN+1].fdN},
+					{grid_coeff[k][iT+0][iN+0].fdT, grid_coeff[k][iT+0][iN+1].fdT, grid_coeff[k][iT+0][iN+0].fdTdN, grid_coeff[k][iT+0][iN+1].fdTdN},
+					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
 				};
 
 				// std::printf("%+6.4e %+6.4e %+6.4e %+6.4e\n%+6.4e %+6.4e %+6.4e %+6.4e\n%+6.4e %+6.4e %+6.4e %+6.4e\n%+6.4e %+6.4e %+6.4e %+6.4e\n\n",
@@ -235,44 +252,46 @@ int main(){
 		}
 	}
 
-	double _log10_Te = log_temperature[4]+2.71;
-	double _log10_Ne = log_density[9]+0.213;
-	std::printf("Interpolation point: (%f, %f)\n", _log10_Te, _log10_Ne);
+	//Copy the required interpolation coefficients to alpha_sub
+	double alpha_sub[4][4];
+	memcpy(alpha_sub, alpha_coeff[k][low_Te][low_Ne], sizeof(double) * 4 * 4);
 
-	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), _log10_Te) - log_temperature.begin() - 1;
-	int low_Ne = lower_bound(log_density.begin(), log_density.end(), _log10_Ne) - log_density.begin() - 1;
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
-	};
-	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
-	};
+	std::printf("alpha_sub:\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n",
+		alpha_coeff[k][low_Te][low_Ne][0][0], alpha_coeff[k][low_Te][low_Ne][0][1], alpha_coeff[k][low_Te][low_Ne][0][2], alpha_coeff[k][low_Te][low_Ne][0][3],
+		alpha_coeff[k][low_Te][low_Ne][1][0], alpha_coeff[k][low_Te][low_Ne][1][1], alpha_coeff[k][low_Te][low_Ne][1][2], alpha_coeff[k][low_Te][low_Ne][1][3],
+		alpha_coeff[k][low_Te][low_Ne][2][0], alpha_coeff[k][low_Te][low_Ne][2][1], alpha_coeff[k][low_Te][low_Ne][2][2], alpha_coeff[k][low_Te][low_Ne][2][3],
+		alpha_coeff[k][low_Te][low_Ne][3][0], alpha_coeff[k][low_Te][low_Ne][3][1], alpha_coeff[k][low_Te][low_Ne][3][2], alpha_coeff[k][low_Te][low_Ne][3][3]		
+		);
+	std::printf("alpha_sub:\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n",
+		alpha_sub[0][0], alpha_sub[0][1], alpha_sub[0][2], alpha_sub[0][3],
+		alpha_sub[1][0], alpha_sub[1][1], alpha_sub[1][2], alpha_sub[1][3],
+		alpha_sub[2][0], alpha_sub[2][1], alpha_sub[2][2], alpha_sub[2][3],
+		alpha_sub[3][0], alpha_sub[3][1], alpha_sub[3][2], alpha_sub[3][3]		
+		);
 
-	std::printf("Grid point: (%d, %d)\n", low_Te, low_Ne);
-	std::printf("Check point on grid? (low < point < high)\n\t(%f < %f < %f)\n\t(%f < %f < %f)\n",
-		log_temperature[low_Te],_log10_Te,log_temperature[low_Te+1],
-		log_density[low_Ne],_log10_Ne,log_density[low_Ne+1]);
-
-	int k = 0;
+	// int k = 0;
 	double return_value = 0.0;
 	double x = (_log10_Te - log_temperature[low_Te])/(log_temperature[low_Te + 1] - log_temperature[low_Te]);
 	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	std::printf("x_vector:\n\t[%f, %f, %f, %f]\n",x_vector[0],x_vector[1],x_vector[2],x_vector[3]);
 	double y = (_log10_Ne - log_density[low_Ne])/(log_density[low_Ne + 1] - log_density[low_Ne]);
 	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
+	std::printf("y_vector:\n\t[%f, %f, %f, %f]\n",y_vector[0],y_vector[1],y_vector[2],y_vector[3]);
+
 	for(int i=0; i<4; ++i){
 		for(int j=0; j<4; ++j){
-			std::printf("x^%d * alpha[%d][%d] * y^%d = %+.2e * %+.2e * %+.2e = %+.2e \n", i, i, j, j, x_vector[i], alpha_coeff[k][low_Te][low_Ne][i][j], y_vector[j], x_vector[i] * alpha_coeff[k][low_Te][low_Ne][i][j] * y_vector[j]);
-			return_value += x_vector[i] * alpha_coeff[k][low_Te][low_Ne][i][j] * y_vector[j];
+			// std::printf("x^%d * alpha[%d][%d] * y^%d = %+.2e * %+.2e * %+.2e = %+.2e \n", i, i, j, j, x_vector[i], alpha_coeff[k][low_Te][low_Ne][i][j], y_vector[j], x_vector[i] * alpha_coeff[k][low_Te][low_Ne][i][j] * y_vector[j]);
+			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
 		}
 	}
-	std::printf("Surrounding values:\n\t[%f, %f]\n\t[%f, %f]\n",
-		log_coeff[k][low_Te][low_Ne+1],
-		log_coeff[k][low_Te+1][low_Ne+1],
-		log_coeff[k][low_Te][low_Ne],
-		log_coeff[k][low_Te+1][low_Ne]);
+	// std::printf("Surrounding values:\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n\t[%f, %f, %f, %f]\n",
+	// 	log_coeff[k][low_Te-1][low_Ne+2],log_coeff[k][low_Te][low_Ne+2],log_coeff[k][low_Te+1][low_Ne+2],log_coeff[k][low_Te+2][low_Ne+2],
+	// 	log_coeff[k][low_Te-1][low_Ne+1],log_coeff[k][low_Te][low_Ne+1],log_coeff[k][low_Te+1][low_Ne+1],log_coeff[k][low_Te+2][low_Ne+1],
+	// 	log_coeff[k][low_Te-1][low_Ne+0],log_coeff[k][low_Te][low_Ne+0],log_coeff[k][low_Te+1][low_Ne+0],log_coeff[k][low_Te+2][low_Ne+0],
+	// 	log_coeff[k][low_Te-1][low_Ne-1],log_coeff[k][low_Te][low_Ne-1],log_coeff[k][low_Te+1][low_Ne-1],log_coeff[k][low_Te+2][low_Ne-1]
+	// 	);
+	// std::printf("Surrounding Te: \n\t[%f, %f, %f, %f]\n", log_temperature[low_Te-1], log_temperature[low_Te], log_temperature[low_Te+1], log_temperature[low_Te+2]);
+	// std::printf("Surrounding Ne: \n\t[%f, %f, %f, %f]\n", log_density[low_Ne-1], log_density[low_Ne], log_density[low_Ne+1], log_density[low_Ne+2]);
 	std::printf("Return value: %f\n", return_value);
 
 }
