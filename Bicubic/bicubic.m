@@ -2,7 +2,7 @@ load('acd96_c.mat')
 
 log_coeff = reshape(log_coeff_json, [24, 30, 6]);
 
-log_coeff(12, 15, 1) = -4;
+% log_coeff(12, 15, 1) = -4;
 
 Te_sample = linspace(min(log_temperature), max(log_temperature), 100);
 Ne_sample = linspace(min(log_density), max(log_density), 100);
