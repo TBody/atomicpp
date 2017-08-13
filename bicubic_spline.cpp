@@ -15,6 +15,8 @@
 #include "atomicpp/json.hpp"
 using json = nlohmann::json;
 
+#include <algorithm> //for upper/lower_bound
+
 json retrieveFromJSON(std::string path_to_file){
 	// Do not pass path_to_file by reference - results in error!
 	// Reads a .json file given at path_to_file
@@ -47,7 +49,7 @@ int main(){
 	std::vector<double> log_temperature = extract_log_temperature;
 	std::vector<double> log_density = extract_log_density;
 
-	std::printf("size of log_coeff: (%d, %d, %d)\n", log_coeff.size(), log_coeff[0].size(), log_coeff[0][0].size());
+	std::printf("size of log_coeff: (%d, %d, %d)\n", (int)(log_coeff.size()), (int)(log_coeff[0].size()), (int)(log_coeff[0][0].size()));
 
 	struct interp_data{
 		// std::pair<double, double> coord; //(T,N) coordinate of point
@@ -76,8 +78,8 @@ int main(){
 				// Set the function value
 				grid_coeff[k][iT][iN].f = log_coeff[k][iT][iN];
 
-				double dT_difference;
-				double dT_spacing;
+				double dT_difference = 0.0;
+				double dT_spacing = 0.0;
 				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
 					// Central difference for dT
 					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT-1][iN];
@@ -96,8 +98,8 @@ int main(){
 				}
 				grid_coeff[k][iT][iN].fdT = dT_difference/dT_spacing;
 
-				double dN_difference;
-				double dN_spacing;
+				double dN_difference = 0.0;
+				double dN_spacing = 0.0;
 				if((iN != 0) and (iN != (int)(log_density.size()-1))){
 					// Central difference for dN
 					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN-1];
@@ -123,8 +125,8 @@ int main(){
 
 		for(int iT=0; iT<(int)(log_temperature.size()); ++iT){
 			for(int iN=0; iN<(int)(log_density.size()); ++iN){
-				double dTN_difference;
-				double dTN_spacing;
+				double dTN_difference = 0.0;
+				double dTN_spacing = 0.0;
 				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
 					// Central difference for dTN
 					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
@@ -232,6 +234,46 @@ int main(){
 			}
 		}
 	}
+
+	double _log10_Te = log_temperature[4]+2.71;
+	double _log10_Ne = log_density[9]+0.213;
+	std::printf("Interpolation point: (%f, %f)\n", _log10_Te, _log10_Ne);
+
+	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), _log10_Te) - log_temperature.begin() - 1;
+	int low_Ne = lower_bound(log_density.begin(), log_density.end(), _log10_Ne) - log_density.begin() - 1;
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
+	};
+	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
+	};
+
+	std::printf("Grid point: (%d, %d)\n", low_Te, low_Ne);
+	std::printf("Check point on grid? (low < point < high)\n\t(%f < %f < %f)\n\t(%f < %f < %f)\n",
+		log_temperature[low_Te],_log10_Te,log_temperature[low_Te+1],
+		log_density[low_Ne],_log10_Ne,log_density[low_Ne+1]);
+
+	int k = 0;
+	double return_value = 0.0;
+	double x = (_log10_Te - log_temperature[low_Te])/(log_temperature[low_Te + 1] - log_temperature[low_Te]);
+	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	double y = (_log10_Ne - log_density[low_Ne])/(log_density[low_Ne + 1] - log_density[low_Ne]);
+	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
+	for(int i=0; i<4; ++i){
+		for(int j=0; j<4; ++j){
+			std::printf("x^%d * alpha[%d][%d] * y^%d = %+.2e * %+.2e * %+.2e = %+.2e \n", i, i, j, j, x_vector[i], alpha_coeff[k][low_Te][low_Ne][i][j], y_vector[j], x_vector[i] * alpha_coeff[k][low_Te][low_Ne][i][j] * y_vector[j]);
+			return_value += x_vector[i] * alpha_coeff[k][low_Te][low_Ne][i][j] * y_vector[j];
+		}
+	}
+	std::printf("Surrounding values:\n\t[%f, %f]\n\t[%f, %f]\n",
+		log_coeff[k][low_Te][low_Ne+1],
+		log_coeff[k][low_Te+1][low_Ne+1],
+		log_coeff[k][low_Te][low_Ne],
+		log_coeff[k][low_Te+1][low_Ne]);
+	std::printf("Return value: %f\n", return_value);
 
 }
 
