@@ -4,6 +4,8 @@
 	#include <vector>
 	#include "json.hpp"
 	using json = nlohmann::json;
+
+	#include "BilinearSpline.hpp"
 	
 	namespace atomicpp{
 	class RateCoefficient{
@@ -52,6 +54,7 @@
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
+			BilinearSpline get_interpolator();
 			std::vector<std::vector< std::vector<double> > > get_log_coeff();
 			std::vector<double> get_log_temperature();
 			std::vector<double> get_log_density();
@@ -59,9 +62,10 @@
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			std::vector<std::vector< std::vector<double> > > log_coeff;
-			std::vector<double> log_temperature;
-			std::vector<double> log_density;
+			BilinearSpline interpolator;
+			// std::vector<std::vector< std::vector<double> > > log_coeff;
+			// std::vector<double> log_temperature;
+			// std::vector<double> log_density;
 		};
 	}
 #endif
