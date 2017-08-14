@@ -58,6 +58,7 @@
 			// std::vector<std::vector< std::vector<double> > > get_log_coeff();
 			std::vector<double> get_log_temperature();
 			std::vector<double> get_log_density();
+			void zero_interpolator();
 		private:
 			int atomic_number;
 			std::string element;

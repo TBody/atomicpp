@@ -96,3 +96,10 @@ void BilinearSpline::set_x_values(std::vector<double>& _x_values){
 void BilinearSpline::set_y_values(std::vector<double>& _y_values){
 	y_values = _y_values;
 };
+void BilinearSpline::zero_z_values(){
+	for(int i = 0; i<(int)(z_values.size()); ++i){
+		for(int j = 0; j<(int)(z_values[0].size()); ++j){
+			z_values[i][j] = 0.0;
+		}
+	}
+}

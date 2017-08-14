@@ -16,6 +16,7 @@
 		std::vector<double> get_y_values();
 		void set_x_values(std::vector<double>& _x_values);
 		void set_y_values(std::vector<double>& _y_values);
+		void zero_z_values();
 	private:
 		std::vector<double> x_values;
 		std::vector<double> y_values;

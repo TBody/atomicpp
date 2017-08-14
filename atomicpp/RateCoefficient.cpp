@@ -30,22 +30,14 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	}
 
 };
-RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
+RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_RC){
 	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
 
-	atomic_number   = source_rc->get_atomic_number();
-	element         = source_rc->get_element();
-	adf11_file      = source_rc->get_adf11_file();
+	atomic_number   = source_RC->get_atomic_number();
+	element         = source_RC->get_element();
+	adf11_file      = source_RC->get_adf11_file();
 
-	// std::vector<double> temp_values = source_rc->get_interpolator()[0].get_temp_values();
-	// std::vector<double> dens_values = source_rc->get_interpolator()[0].get_dens_values();
-
-	// interpolator[0].set_temp_values(temp_values);
-	// interpolator[0].set_dens_values(dens_values);
-
-	interpolator = source_rc->get_interpolator();
-
-	//Don't copy the coef_values
+	interpolator = source_RC->get_interpolator();
 };
 double RateCoefficient::call0D(const int k, const double eval_Te, const double eval_Ne){
 
@@ -55,7 +47,6 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 	double eval_log_coeff = interpolator[k].call0D(eval_log_Te, eval_log_Ne);
 
 	return pow(10, eval_log_coeff);
-
 };
 //Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that Te_interp and Ne_interp
 //contain which point for which to return the coefficient - saves reevaluating)
@@ -83,4 +74,9 @@ std::vector<double> RateCoefficient::get_log_temperature(){
 };
 std::vector<double> RateCoefficient::get_log_density(){
 	return interpolator[0].get_y_values();
+};
+void RateCoefficient::zero_interpolator(){
+	for(int k=0; k < (int)(interpolator.size()); ++k){
+		interpolator[k].zero_z_values();
+	}
 };
