@@ -52,23 +52,23 @@ std::tuple< int, std::vector<double>, std::vector<double>, std::vector<std::vect
 	// std::string element         = data_dict["element"];
 	// std::string adf11_file      = filename;
 
-	std::vector< std::vector< std::vector<double> > > extract_log_coeff = data_dict["log_coeff"];
-	std::vector<double> extract_log_temperature = data_dict["log_temperature"];
-	std::vector<double> extract_log_density = data_dict["log_density"];
+	std::vector< std::vector< std::vector<double> > > extract_z_values = data_dict["log_coeff"];
+	std::vector<double> extract_x_values = data_dict["log_temperature"];
+	std::vector<double> extract_y_values = data_dict["log_density"];
 	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
 	// The second copies the value to the corresponding RateCoefficient attribute
-	std::vector<std::vector< std::vector<double> > > log_coeff = extract_log_coeff;
-	std::vector<double> log_temperature = extract_log_temperature;
-	std::vector<double> log_density = extract_log_density;
+	std::vector<std::vector< std::vector<double> > > z_values = extract_z_values;
+	std::vector<double> x_values = extract_x_values;
+	std::vector<double> y_values = extract_y_values;
 
-	return std::make_tuple(atomic_number, log_temperature, log_density, log_coeff);
+	return std::make_tuple(atomic_number, x_values, y_values, z_values);
 }
 
-std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector<std::vector< std::vector<double> > >& z_values){
 
-	int L_k = (int)(log_coeff.size());
-	int L_t = log_temperature.size();
-	int L_n = log_density.size();
+	int L_k = (int)(z_values.size());
+	int L_t = x_values.size();
+	int L_n = y_values.size();
 
 	std::vector<std::vector<std::vector<interp_data>>>
 	grid_coeff(L_k,std::vector<std::vector<interp_data>>(L_t,std::vector<interp_data>(L_n,default_interp_data)));
@@ -78,44 +78,44 @@ std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vec
 			for(int iN=0; iN<L_n; ++iN){
 
 				// Set the function value
-				grid_coeff[k][iT][iN].f = log_coeff[k][iT][iN];
+				grid_coeff[k][iT][iN].f = z_values[k][iT][iN];
 
 				double dT_difference = 0.0;
 				double dT_spacing = 0.0;
-				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
+				if((iT != 0) and (iT != (int)(x_values.size()-1))){
 					// Central difference for dT
-					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT-1][iN];
-					dT_spacing = log_temperature[iT+1] - log_temperature[iT-1];
+					dT_difference = z_values[k][iT+1][iN] - z_values[k][iT-1][iN];
+					dT_spacing = x_values[iT+1] - x_values[iT-1];
 
 				} else if (iT == 0) {
 					// Forward difference for dT
-					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT][iN];
-					dT_spacing = log_temperature[iT+1] - log_temperature[iT];
+					dT_difference = z_values[k][iT+1][iN] - z_values[k][iT][iN];
+					dT_spacing = x_values[iT+1] - x_values[iT];
 
-				} else if (iT == (int)(log_temperature.size()-1)){
+				} else if (iT == (int)(x_values.size()-1)){
 					// Backward difference for dT
-					dT_difference = log_coeff[k][iT][iN] - log_coeff[k][iT-1][iN];
-					dT_spacing = log_temperature[iT] - log_temperature[iT-1];
+					dT_difference = z_values[k][iT][iN] - z_values[k][iT-1][iN];
+					dT_spacing = x_values[iT] - x_values[iT-1];
 					
 				}
 				grid_coeff[k][iT][iN].fdT = dT_difference/dT_spacing;
 
 				double dN_difference = 0.0;
 				double dN_spacing = 0.0;
-				if((iN != 0) and (iN != (int)(log_density.size()-1))){
+				if((iN != 0) and (iN != (int)(y_values.size()-1))){
 					// Central difference for dN
-					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN-1];
-					dN_spacing = log_density[iN+1] - log_density[iN-1];
+					dN_difference = z_values[k][iT][iN+1] - z_values[k][iT][iN-1];
+					dN_spacing = y_values[iN+1] - y_values[iN-1];
 
 				} else if (iN == 0) {
 					// Forward difference for dN
-					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN];
-					dN_spacing = log_density[iN+1] - log_density[iN];
+					dN_difference = z_values[k][iT][iN+1] - z_values[k][iT][iN];
+					dN_spacing = y_values[iN+1] - y_values[iN];
 
-				} else if (iN == (int)(log_density.size()-1)){
+				} else if (iN == (int)(y_values.size()-1)){
 					// Backward difference for dN
-					dN_difference = log_coeff[k][iT][iN] - log_coeff[k][iT][iN-1];
-					dN_spacing = log_density[iN] - log_density[iN-1];
+					dN_difference = z_values[k][iT][iN] - z_values[k][iT][iN-1];
+					dN_spacing = y_values[iN] - y_values[iN-1];
 					
 				}
 				grid_coeff[k][iT][iN].fdN = dN_difference/dN_spacing;
@@ -129,20 +129,20 @@ std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vec
 			for(int iN=0; iN<L_n; ++iN){
 				double dTN_difference = 0.0;
 				double dTN_spacing = 0.0;
-				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
+				if((iT != 0) and (iT != (int)(x_values.size()-1))){
 					// Central difference for dTN
 					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-					dTN_spacing = log_temperature[iT+1] - log_temperature[iT-1];
+					dTN_spacing = x_values[iT+1] - x_values[iT-1];
 
 				} else if (iT == 0) {
 					// Forward difference for dTN
 					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT][iN].fdN;
-					dTN_spacing = log_temperature[iT+1] - log_temperature[iT];
+					dTN_spacing = x_values[iT+1] - x_values[iT];
 
-				} else if (iT == (int)(log_temperature.size()-1)){
+				} else if (iT == (int)(x_values.size()-1)){
 					// Backward difference for dTN
 					dTN_difference = grid_coeff[k][iT][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-					dTN_spacing = log_temperature[iT] - log_temperature[iT-1];
+					dTN_spacing = x_values[iT] - x_values[iT-1];
 					
 				}
 				grid_coeff[k][iT][iN].fdTdN = dTN_difference/dTN_spacing;
@@ -153,15 +153,15 @@ std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vec
 	return grid_coeff;
 };
 
-std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector<std::vector< std::vector<double> > >& z_values){
 	// For storing the value and derivative data at each grid-point
 	// Have to use vector since the array size is non-constant
-	int L_k = (int)(log_coeff.size());
-	int L_t = log_temperature.size();
-	int L_n = log_density.size();
+	int L_k = (int)(z_values.size());
+	int L_t = x_values.size();
+	int L_n = y_values.size();
 
 	std::vector<std::vector<std::vector<interp_data>>>
-	grid_coeff = calculate_grid_coeff(log_temperature, log_density, log_coeff);
+	grid_coeff = calculate_grid_coeff(x_values, y_values, z_values);
 	
 	grid_matrix default_alpha_coeff = {0.0};
 
@@ -182,8 +182,8 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 		}};
 
 	for (int k=0; k<L_k; ++k){
-		for(int iT=0; iT<L_t - 1; ++iT){ //iterator over temperature dimension of grid, which is of length log_temperature.size()-1
-			for(int iN=0; iN<L_n - 1; ++iN){ //iterator over density dimension of grid, which is of length log_density.size()-1
+		for(int iT=0; iT<L_t - 1; ++iT){ //iterator over temperature dimension of grid, which is of length x_values.size()-1
+			for(int iN=0; iN<L_n - 1; ++iN){ //iterator over density dimension of grid, which is of length y_values.size()-1
 
 				grid_matrix f_sub = {{
 					{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
@@ -215,33 +215,37 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 int main(){
 
 	auto json_tuple = extract_from_json();
-	std::vector<double> log_temperature = std::get<1>(json_tuple);
-	std::vector<double> log_density = std::get<2>(json_tuple);
-	std::vector<std::vector< std::vector<double> > > log_coeff = std::get<3>(json_tuple);
+	std::vector<double> x_values = std::get<1>(json_tuple);
+	std::vector<double> y_values = std::get<2>(json_tuple);
+	std::vector<std::vector<std::vector<double>>> z_values = std::get<3>(json_tuple);
+	// std::vector<double> x_values = x_values;
+	// std::vector<double> y_values = y_values;
+	// std::vector<std::vector<double> > z_values = z_values;
 
-	std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff = calculate_alpha_coeff(log_temperature, log_density, log_coeff);
+
+	std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff = calculate_alpha_coeff(x_values, y_values, z_values);
 
 	int k = 0;
 	double eval_log10_Te = log10(50);
 	double eval_log10_Ne = log10(0.8e19);
 
-	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
-	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
+	int low_Te = lower_bound(x_values.begin(), x_values.end(), eval_log10_Te) - x_values.begin() - 1;
+	int low_Ne = lower_bound(y_values.begin(), y_values.end(), eval_log10_Ne) - y_values.begin() - 1;
 	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
+	if ((low_Te == (int)(x_values.size())-1) or (low_Te == -1)){
 		// An easy error to make is supplying the function arguments already having taken the log10
 		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
 	};
-	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
+	if ((low_Ne == (int)(y_values.size()-1)) or (low_Ne == -1)){
 		// An easy error to make is supplying the function arguments already having taken the log10
 		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
 	};
 
 	grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
 
-	double x = (eval_log10_Te - log_temperature[low_Te])/(log_temperature[low_Te + 1] - log_temperature[low_Te]);
+	double x = (eval_log10_Te - x_values[low_Te])/(x_values[low_Te + 1] - x_values[low_Te]);
 	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
-	double y = (eval_log10_Ne - log_density[low_Ne])/(log_density[low_Ne + 1] - log_density[low_Ne]);
+	double y = (eval_log10_Ne - y_values[low_Ne])/(y_values[low_Ne + 1] - y_values[low_Ne]);
 	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
 
 	double return_value = 0.0;

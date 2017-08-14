@@ -5,7 +5,17 @@
 #include <stdexcept> //For error-throwing
 #include "BicubicSpline.hpp"
 
+#include <iostream>
+
 using namespace atomicpp;
+interp_data default_interp_data;
+grid_matrix default_alpha_coeff = {{
+		{0.0, 0.0, 0.0, 0.0},
+		{0.0, 0.0, 0.0, 0.0},
+		{0.0, 0.0, 0.0, 0.0},
+		{0.0, 0.0, 0.0, 0.0},
+}};
+
 BicubicSpline::BicubicSpline(){//Default constructor
 };
 BicubicSpline::BicubicSpline(
@@ -103,4 +113,4 @@ void BicubicSpline::zero_z_values(){
 			z_values[i][j] = 0.0;
 		}
 	}
-}
+};

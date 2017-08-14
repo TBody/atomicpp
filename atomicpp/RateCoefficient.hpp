@@ -5,7 +5,7 @@
 	#include "json.hpp"
 	using json = nlohmann::json;
 
-	#include "BilinearSpline.hpp"
+	#include "BicubicSpline.hpp"
 	
 	namespace atomicpp{
 	class RateCoefficient{
@@ -38,7 +38,7 @@
 			RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc);
 			/**
 			 * @brief Returns the rate coefficient for a (scalar) Te and Ne supplied
-			 * @details Performs a simple bivariate (multilinear) interpolation to return the rate coefficient
+			 * @details Performs a simple bivariate (multicubic) interpolation to return the rate coefficient
 			 * at the supplied Te and Ne values. N.b. will throw a std::runtime_error if the supplied Te or Ne
 			 * value are not on the interpolating grid (otherwise you'll get a seg fault)
 			 * 
@@ -54,7 +54,7 @@
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
-			std::vector<BilinearSpline> get_interpolator();
+			std::vector<BicubicSpline> get_interpolator();
 			// std::vector<std::vector< std::vector<double> > > get_log_rate();
 			std::vector<double> get_log_temp();
 			std::vector<double> get_log_dens();
@@ -63,7 +63,7 @@
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			std::vector<BilinearSpline> interpolator;
+			std::vector<BicubicSpline> interpolator;
 		};
 	}
 #endif

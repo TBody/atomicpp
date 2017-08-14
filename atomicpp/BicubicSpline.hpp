@@ -3,12 +3,6 @@
 	namespace atomicpp{
 	
 	typedef std::array<std::array<double, 4>, 4> grid_matrix;
-	grid_matrix default_alpha_coeff = {{
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-	}};
 
 	struct interp_data{
 		// std::pair<double, double> coord; //(T,N) coordinate of point
@@ -16,7 +10,7 @@
 		double fdT = 0.0; //Derivative in temperature axis
 		double fdN = 0.0; //Derivative in density axis
 		double fdTdN = 0.0; //Cross derivative
-	} default_interp_data;
+	};
 
 	class BicubicSpline{
 	public:
