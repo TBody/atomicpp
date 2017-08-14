@@ -44,13 +44,13 @@ std::vector<double> computeIonisationDistribution(atomicpp::ImpuritySpecies& imp
 		// Get the atomicpp::RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
 		std::shared_ptr<atomicpp::RateCoefficient> iz_rate_coefficient = impurity.get_rate_coefficient("ionisation");
 		// Evaluate the atomicpp::RateCoefficient at the point
-		double k_iz_evaluated = iz_rate_coefficient->call0D_bilinear(k, Te, Ne);
+		double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
 
 		// Recombination
 		// Get the atomicpp::RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
 		std::shared_ptr<atomicpp::RateCoefficient> rec_rate_coefficient = impurity.get_rate_coefficient("recombination");
 		// Evaluate the atomicpp::RateCoefficient at the point
-		double k_rec_evaluated = rec_rate_coefficient->call0D_bilinear(k, Te, Ne);
+		double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
 
 		// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
 		// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
@@ -189,11 +189,11 @@ int main(){
 
 	// 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
 	// 		// m^-3 s^-1
-	// 		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+	// 		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 	// 		double cx_recombination_rate = cx_recombination_coefficient_evaluated * Nn * Nzk[k+1];
 
 	// 		// W m^-3
-	// 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+	// 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
 	// 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1] / eV_to_J;
 
 	// 		std::printf("cx: %e [m^-3 s^-1], cx_power: %e [eV m^-3 s^-1], per transition: %e [eV] \n", cx_recombination_rate, cx_power_rate, cx_power_rate/cx_recombination_rate);

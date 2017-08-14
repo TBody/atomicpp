@@ -236,8 +236,8 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 	
 	//N.b. iterating over all data indices of the rate coefficient, hence the <
 	for(int k=0; k < Z; ++k){
-		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
-		double recombination_coefficient_evaluated = recombination_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D(k, Te_interp, Ne_interp);
+		double recombination_coefficient_evaluated = recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 		
 		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -288,7 +288,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		F_zk[k]                                          = neumaier_pair_momentum.first;
 		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
 
-		double ionisation_potential_evaluated            = ionisation_potential->call0D_bilinear(k, Te_interp, Ne_interp);
+		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te_interp, Ne_interp);
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
@@ -324,7 +324,7 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 
 	std::shared_ptr<RateCoefficient> cx_recombination_coefficient = rate_coefficients["cx_rec"];
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
 		
 		// Note that cx_recombination coefficients are indexed from 1 to Z
 		int k_rec = k + 1; //The target charge state for recombination -- makes it a bit easier to understand
@@ -408,8 +408,8 @@ void RateEquations::calculateElectronImpactPowerEquation(
 	std::shared_ptr<RateCoefficient> line_power_coefficient = rate_coefficients["line_power"];
 	std::shared_ptr<RateCoefficient> continuum_power_coefficient = rate_coefficients["continuum_power"];
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double line_power_coefficient_evaluated = line_power_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
-		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+		double line_power_coefficient_evaluated = line_power_coefficient->call0D(k, Te_interp, Ne_interp);
+		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D(k, Te_interp, Ne_interp);
 		
 		// Note that continuum_power coefficients are indexed from 1 to Z, while line_power is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -431,7 +431,7 @@ void RateEquations::calculateChargeExchangePowerEquation(
 	
 	std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients["cx_power"];
 	for(int k=0; k < Z; ++k){
-		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D_bilinear(k, Te_interp, Ne_interp);
+		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
 	}

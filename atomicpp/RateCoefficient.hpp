@@ -49,10 +49,10 @@
 			 * @param eval_Ne electron density (Ne) at a point (in m^-3)
 			 * @return eval_coeff evaluated rate coefficient in m^3/s
 			 */
-			double call0D_bilinear(const int k, const double eval_Te, const double eval_Ne);
+			double call0D(const int k, const double eval_Te, const double eval_Ne);
 			//Overloaded onto call0D - if the input is an int and two <int, double> pairs then use the SharedInterpolation method
 			//(i.e. assume that Te_interp and Ne_interp contain which point for which to return the coefficient - saves reevaluating)
-			double call0D_bilinear(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp);
+			double call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp);
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();

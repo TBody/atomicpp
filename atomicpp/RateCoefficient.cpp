@@ -41,7 +41,7 @@ RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_R
 
 	interpolator = source_RC->get_interpolator();
 };
-double RateCoefficient::call0D_bilinear(const int k, const double eval_Te, const double eval_Ne){
+double RateCoefficient::call0D(const int k, const double eval_Te, const double eval_Ne){
 
 	double eval_log_Te = log10(eval_Te);
 	double eval_log_Ne = log10(eval_Ne);
