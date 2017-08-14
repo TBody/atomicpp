@@ -112,7 +112,7 @@
 	 * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
 	 * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
 	 * regardless of which process is called (since the underlying log_temperature and log_density grids are the same).
-	 * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D such that,
+	 * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D_bilinear such that,
 	 * if a <int, double> pair is supplied as an argument then the shared interpolation method will be called
 	 *
 	 * @param log_grid grid-points for which data is given
