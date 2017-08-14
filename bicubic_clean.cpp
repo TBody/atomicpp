@@ -19,7 +19,9 @@ using json = nlohmann::json;
 
 #include <algorithm> //for upper/lower_bound
 
-typedef std::array<std::array<double, 4>, 4> grid_matrix;
+// typedef std::array<std::array<double, 4>, 4> grid_matrix;
+typedef std::vector<std::vector<double>> grid_matrix;
+grid_matrix default_grid_matrix(4, std::vector<double>(4, 0.0));
 struct interp_data{
 	// std::pair<double, double> coord; //(T,N) coordinate of point
 	double f = 0.0; //Value at point
@@ -158,11 +160,9 @@ std::vector<std::vector<grid_matrix>> calculate_alpha_coeff(std::vector<double>&
 
 	std::vector<std::vector<interp_data>>
 	grid_coeff = calculate_grid_coeff(x_values, y_values, z_values);
-	
-	grid_matrix default_alpha_coeff = {0.0};
 
 	std::vector<std::vector<grid_matrix>>
-	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1,default_alpha_coeff));
+	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1, default_grid_matrix));
 
 	const grid_matrix prematrix = {{
 			{+1, +0, +0, +0},
@@ -187,7 +187,7 @@ std::vector<std::vector<grid_matrix>> calculate_alpha_coeff(std::vector<double>&
 				{grid_coeff[x+1][y+0].fdx, grid_coeff[x+1][y+1].fdx, grid_coeff[x+1][y+0].fdxdy, grid_coeff[x+1][y+1].fdxdy},
 			}};
 			// grid_coeff submatrix
-			grid_matrix alpha_sub = {0.0};
+			grid_matrix alpha_sub = default_grid_matrix;
 			
 			//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
 			//As per https://en.wikipedia.org/wiki/Bicubic_interpolation

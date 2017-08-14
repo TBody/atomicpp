@@ -2,7 +2,7 @@
 #define BICUBICSPLINE_H
 	namespace atomicpp{
 	
-	typedef std::array<std::array<double, 4>, 4> grid_matrix;
+	typedef std::vector<std::vector<double>> grid_matrix;
 
 	struct interp_data{
 		// std::pair<double, double> coord; //(T,N) coordinate of point

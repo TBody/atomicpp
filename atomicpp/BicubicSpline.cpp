@@ -9,25 +9,22 @@
 
 using namespace atomicpp;
 interp_data default_interp_data;
-grid_matrix default_alpha_coeff = {{
-		{0.0, 0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0, 0.0},
-}};
+grid_matrix default_grid_matrix(4, std::vector<double>(4, 0.0));
 
 BicubicSpline::BicubicSpline(){//Default constructor
 };
 BicubicSpline::BicubicSpline(
-	std::vector<double>& _x_values,
-	std::vector<double>& _y_values,
-	std::vector< std::vector<double> > & _z_values
-	){
+		std::vector<double>& _x_values,
+		std::vector<double>& _y_values,
+		std::vector< std::vector<double> > & _z_values
+	) :
+	alpha_coeff((int)(_x_values.size()), std::vector<grid_matrix>((int)(_y_values.size()), default_grid_matrix))
+	{
 	x_values = _x_values;
 	y_values = _y_values;
 	z_values = _z_values;
 
-	alpha_coeff = calculate_alpha_coeff();	
+	alpha_coeff = calculate_alpha_coeff();
 };
 double BicubicSpline::call0D(const double eval_x, const double eval_y){
 
@@ -200,18 +197,17 @@ std::vector<std::vector<interp_data>> BicubicSpline::calculate_grid_coeff(){
 	return grid_coeff;
 };
 
-std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff(){
+std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff()
+	{
 	// For storing the value and derivative data at each grid-point
 	// Have to use vector since the array size is non-constant
 	int Lx = x_values.size();
 	int Ly = y_values.size();
 
 	std::vector<std::vector<interp_data>> grid_coeff = calculate_grid_coeff();
-	
-	grid_matrix default_alpha_coeff = {0.0};
 
 	std::vector<std::vector<grid_matrix>>
-	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1,default_alpha_coeff));
+	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1,default_grid_matrix));
 
 	const grid_matrix prematrix = {{
 			{+1, +0, +0, +0},
@@ -236,7 +232,7 @@ std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff(){
 				{grid_coeff[x+1][y+0].fdx, grid_coeff[x+1][y+1].fdx, grid_coeff[x+1][y+0].fdxdy, grid_coeff[x+1][y+1].fdxdy},
 			}};
 			// grid_coeff submatrix
-			grid_matrix alpha_sub = {0.0};
+			grid_matrix alpha_sub = default_grid_matrix;
 			
 			//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
 			//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
