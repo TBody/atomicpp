@@ -31,7 +31,7 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	log_temperature = extract_log_temperature;
 	log_density = extract_log_density;
 
-	Interpolator = BicubicSpline(log_temperature, log_density, log_coeff);
+	// Interpolator = BicubicSpline(log_temperature, log_density, log_coeff);
 };
 RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
 	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
