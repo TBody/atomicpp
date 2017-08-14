@@ -23,9 +23,9 @@ typedef std::array<std::array<double, 4>, 4> grid_matrix;
 struct interp_data{
 	// std::pair<double, double> coord; //(T,N) coordinate of point
 	double f = 0.0; //Value at point
-	double fdT = 0.0; //Derivative in temperature axis
-	double fdN = 0.0; //Derivative in density axis
-	double fdTdN = 0.0; //Cross derivative
+	double fdx = 0.0; //Derivative in temperature axis
+	double fdy = 0.0; //Derivative in density axis
+	double fdxdy = 0.0; //Cross derivative
 } default_interp_data;
 
 json retrieveFromJSON(std::string path_to_file){
@@ -42,7 +42,7 @@ json retrieveFromJSON(std::string path_to_file){
 	return j_object;
 };
 
-std::tuple< int, std::vector<double>, std::vector<double>, std::vector<std::vector< std::vector<double> > > > extract_from_json(){
+std::tuple< int, std::vector<double>, std::vector<double>, std::vector< std::vector<double> > > extract_from_json(){
 
 	std::string filename("json_database/json_data/acd96_c.json");
 
@@ -57,116 +57,112 @@ std::tuple< int, std::vector<double>, std::vector<double>, std::vector<std::vect
 	std::vector<double> extract_y_values = data_dict["log_density"];
 	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
 	// The second copies the value to the corresponding RateCoefficient attribute
-	std::vector<std::vector< std::vector<double> > > z_values = extract_z_values;
+	std::vector< std::vector<double> > z_values = extract_z_values[0];
 	std::vector<double> x_values = extract_x_values;
 	std::vector<double> y_values = extract_y_values;
 
 	return std::make_tuple(atomic_number, x_values, y_values, z_values);
 }
 
-std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector<std::vector< std::vector<double> > >& z_values){
+std::vector<std::vector<interp_data>> calculate_grid_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector< std::vector<double> >& z_values){
 
-	int L_k = (int)(z_values.size());
-	int L_t = x_values.size();
-	int L_n = y_values.size();
+	int Lx = x_values.size();
+	int Ly = y_values.size();
 
-	std::vector<std::vector<std::vector<interp_data>>>
-	grid_coeff(L_k,std::vector<std::vector<interp_data>>(L_t,std::vector<interp_data>(L_n,default_interp_data)));
+	std::vector<std::vector<interp_data>>
+	grid_coeff(Lx,std::vector<interp_data>(Ly,default_interp_data));
 
-	for (int k=0; k<L_k; ++k){
-		for(int iT=0; iT<L_t; ++iT){
-			for(int iN=0; iN<L_n; ++iN){
+	for(int x=0; x<Lx; ++x){
+		for(int y=0; y<Ly; ++y){
 
-				// Set the function value
-				grid_coeff[k][iT][iN].f = z_values[k][iT][iN];
+			// Set the function value
+			grid_coeff[x][y].f = z_values[x][y];
 
-				double dT_difference = 0.0;
-				double dT_spacing = 0.0;
-				if((iT != 0) and (iT != (int)(x_values.size()-1))){
-					// Central difference for dT
-					dT_difference = z_values[k][iT+1][iN] - z_values[k][iT-1][iN];
-					dT_spacing = x_values[iT+1] - x_values[iT-1];
+			double dx_difference = 0.0;
+			double dx_spacing = 0.0;
+			if((x != 0) and (x != (int)(x_values.size()-1))){
+				// Central difference for dx
+				dx_difference = z_values[x+1][y] - z_values[x-1][y];
+				dx_spacing = x_values[x+1] - x_values[x-1];
 
-				} else if (iT == 0) {
-					// Forward difference for dT
-					dT_difference = z_values[k][iT+1][iN] - z_values[k][iT][iN];
-					dT_spacing = x_values[iT+1] - x_values[iT];
+			} else if (x == 0) {
+				// Forward difference for dx
+				dx_difference = z_values[x+1][y] - z_values[x][y];
+				dx_spacing = x_values[x+1] - x_values[x];
 
-				} else if (iT == (int)(x_values.size()-1)){
-					// Backward difference for dT
-					dT_difference = z_values[k][iT][iN] - z_values[k][iT-1][iN];
-					dT_spacing = x_values[iT] - x_values[iT-1];
-					
-				}
-				grid_coeff[k][iT][iN].fdT = dT_difference/dT_spacing;
-
-				double dN_difference = 0.0;
-				double dN_spacing = 0.0;
-				if((iN != 0) and (iN != (int)(y_values.size()-1))){
-					// Central difference for dN
-					dN_difference = z_values[k][iT][iN+1] - z_values[k][iT][iN-1];
-					dN_spacing = y_values[iN+1] - y_values[iN-1];
-
-				} else if (iN == 0) {
-					// Forward difference for dN
-					dN_difference = z_values[k][iT][iN+1] - z_values[k][iT][iN];
-					dN_spacing = y_values[iN+1] - y_values[iN];
-
-				} else if (iN == (int)(y_values.size()-1)){
-					// Backward difference for dN
-					dN_difference = z_values[k][iT][iN] - z_values[k][iT][iN-1];
-					dN_spacing = y_values[iN] - y_values[iN-1];
-					
-				}
-				grid_coeff[k][iT][iN].fdN = dN_difference/dN_spacing;
-
+			} else if (x == (int)(x_values.size()-1)){
+				// Backward difference for dx
+				dx_difference = z_values[x][y] - z_values[x-1][y];
+				dx_spacing = x_values[x] - x_values[x-1];
+				
 			}
+			grid_coeff[x][y].fdx = dx_difference/dx_spacing;
+
+			double dy_difference = 0.0;
+			double dy_spacing = 0.0;
+			if((y != 0) and (y != (int)(y_values.size()-1))){
+				// Central difference for dy
+				dy_difference = z_values[x][y+1] - z_values[x][y-1];
+				dy_spacing = y_values[y+1] - y_values[y-1];
+
+			} else if (y == 0) {
+				// Forward difference for dy
+				dy_difference = z_values[x][y+1] - z_values[x][y];
+				dy_spacing = y_values[y+1] - y_values[y];
+
+			} else if (y == (int)(y_values.size()-1)){
+				// Backward difference for dy
+				dy_difference = z_values[x][y] - z_values[x][y-1];
+				dy_spacing = y_values[y] - y_values[y-1];
+				
+			}
+			grid_coeff[x][y].fdy = dy_difference/dy_spacing;
+
 		}
+	}
 
-		//Now that all axial derivatives have been calculated, use these results to calculate the mixed derivatives
+	//Now that all axial derivatives have been calculated, use these results to calculate the mixed derivatives
 
-		for(int iT=0; iT<L_t; ++iT){
-			for(int iN=0; iN<L_n; ++iN){
-				double dTN_difference = 0.0;
-				double dTN_spacing = 0.0;
-				if((iT != 0) and (iT != (int)(x_values.size()-1))){
-					// Central difference for dTN
-					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-					dTN_spacing = x_values[iT+1] - x_values[iT-1];
+	for(int x=0; x<Lx; ++x){
+		for(int y=0; y<Ly; ++y){
+			double dxy_difference = 0.0;
+			double dxy_spacing = 0.0;
+			if((x != 0) and (x != (int)(x_values.size()-1))){
+				// Central difference for dxy
+				dxy_difference = grid_coeff[x+1][y].fdy - grid_coeff[x-1][y].fdy;
+				dxy_spacing = x_values[x+1] - x_values[x-1];
 
-				} else if (iT == 0) {
-					// Forward difference for dTN
-					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT][iN].fdN;
-					dTN_spacing = x_values[iT+1] - x_values[iT];
+			} else if (x == 0) {
+				// Forward difference for dxy
+				dxy_difference = grid_coeff[x+1][y].fdy - grid_coeff[x][y].fdy;
+				dxy_spacing = x_values[x+1] - x_values[x];
 
-				} else if (iT == (int)(x_values.size()-1)){
-					// Backward difference for dTN
-					dTN_difference = grid_coeff[k][iT][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-					dTN_spacing = x_values[iT] - x_values[iT-1];
-					
-				}
-				grid_coeff[k][iT][iN].fdTdN = dTN_difference/dTN_spacing;
+			} else if (x == (int)(x_values.size()-1)){
+				// Backward difference for dxy
+				dxy_difference = grid_coeff[x][y].fdy - grid_coeff[x-1][y].fdy;
+				dxy_spacing = x_values[x] - x_values[x-1];
+				
 			}
+			grid_coeff[x][y].fdxdy = dxy_difference/dxy_spacing;
 		}
 	}
 
 	return grid_coeff;
 };
 
-std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector<std::vector< std::vector<double> > >& z_values){
+std::vector<std::vector<grid_matrix>> calculate_alpha_coeff(std::vector<double>& x_values, std::vector<double>& y_values, std::vector< std::vector<double> >& z_values){
 	// For storing the value and derivative data at each grid-point
 	// Have to use vector since the array size is non-constant
-	int L_k = (int)(z_values.size());
-	int L_t = x_values.size();
-	int L_n = y_values.size();
+	int Lx = x_values.size();
+	int Ly = y_values.size();
 
-	std::vector<std::vector<std::vector<interp_data>>>
+	std::vector<std::vector<interp_data>>
 	grid_coeff = calculate_grid_coeff(x_values, y_values, z_values);
 	
 	grid_matrix default_alpha_coeff = {0.0};
 
-	std::vector<std::vector<std::vector<grid_matrix>>>
-	alpha_coeff(L_k,std::vector<std::vector<grid_matrix>>(L_t-1,std::vector<grid_matrix>(L_n-1,default_alpha_coeff)));
+	std::vector<std::vector<grid_matrix>>
+	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1,default_alpha_coeff));
 
 	const grid_matrix prematrix = {{
 			{+1, +0, +0, +0},
@@ -181,32 +177,30 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 			{+0, +0, -1, +1},
 		}};
 
-	for (int k=0; k<L_k; ++k){
-		for(int iT=0; iT<L_t - 1; ++iT){ //iterator over temperature dimension of grid, which is of length x_values.size()-1
-			for(int iN=0; iN<L_n - 1; ++iN){ //iterator over density dimension of grid, which is of length y_values.size()-1
+	for(int x=0; x<Lx - 1; ++x){ //iterator over temperature dimension of grid, which is of length x_values.size()-1
+		for(int y=0; y<Ly - 1; ++y){ //iterator over density dimension of grid, which is of length y_values.size()-1
 
-				grid_matrix f_sub = {{
-					{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
-					{grid_coeff[k][iT+1][iN+0].f,   grid_coeff[k][iT+1][iN+1].f,   grid_coeff[k][iT+1][iN+0].fdN,   grid_coeff[k][iT+1][iN+1].fdN},
-					{grid_coeff[k][iT+0][iN+0].fdT, grid_coeff[k][iT+0][iN+1].fdT, grid_coeff[k][iT+0][iN+0].fdTdN, grid_coeff[k][iT+0][iN+1].fdTdN},
-					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
-				}};
-				// grid_coeff submatrix
-				grid_matrix alpha_sub = {0.0};
-				
-				//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
-				//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
-				for (int i=0; i<4; ++i){
-					for(int j=0; j<4; ++j){
-						for(int k=0; k<4; ++k){
-							for(int l=0; l<4; ++l){
-								alpha_sub[i][j] += prematrix[i][l] * f_sub[l][k] * postmatrix[k][j];
-							}
+			grid_matrix f_sub = {{
+				{grid_coeff[x+0][y+0].f,   grid_coeff[x+0][y+1].f,   grid_coeff[x+0][y+0].fdy,   grid_coeff[x+0][y+1].fdy},
+				{grid_coeff[x+1][y+0].f,   grid_coeff[x+1][y+1].f,   grid_coeff[x+1][y+0].fdy,   grid_coeff[x+1][y+1].fdy},
+				{grid_coeff[x+0][y+0].fdx, grid_coeff[x+0][y+1].fdx, grid_coeff[x+0][y+0].fdxdy, grid_coeff[x+0][y+1].fdxdy},
+				{grid_coeff[x+1][y+0].fdx, grid_coeff[x+1][y+1].fdx, grid_coeff[x+1][y+0].fdxdy, grid_coeff[x+1][y+1].fdxdy},
+			}};
+			// grid_coeff submatrix
+			grid_matrix alpha_sub = {0.0};
+			
+			//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
+			//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
+			for (int i=0; i<4; ++i){
+				for(int j=0; j<4; ++j){
+					for(int k=0; k<4; ++k){
+						for(int l=0; l<4; ++l){
+							alpha_sub[i][j] += prematrix[i][l] * f_sub[l][k] * postmatrix[k][j];
 						}
 					}
 				}
-				alpha_coeff[k][iT][iN] = alpha_sub;
 			}
+			alpha_coeff[x][y] = alpha_sub;
 		}
 	}
 	return alpha_coeff;
@@ -217,15 +211,15 @@ int main(){
 	auto json_tuple = extract_from_json();
 	std::vector<double> x_values = std::get<1>(json_tuple);
 	std::vector<double> y_values = std::get<2>(json_tuple);
-	std::vector<std::vector<std::vector<double>>> z_values = std::get<3>(json_tuple);
+	std::vector<std::vector<double>> z_values = std::get<3>(json_tuple);
 	// std::vector<double> x_values = x_values;
 	// std::vector<double> y_values = y_values;
 	// std::vector<std::vector<double> > z_values = z_values;
 
 
-	std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff = calculate_alpha_coeff(x_values, y_values, z_values);
+	std::vector<std::vector<grid_matrix>> alpha_coeff = calculate_alpha_coeff(x_values, y_values, z_values);
 
-	int k = 0;
+	
 	double eval_log10_Te = log10(50);
 	double eval_log10_Ne = log10(0.8e19);
 
@@ -241,7 +235,7 @@ int main(){
 		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
 	};
 
-	grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
+	grid_matrix alpha_sub = alpha_coeff[low_Te][low_Ne];
 
 	double x = (eval_log10_Te - x_values[low_Te])/(x_values[low_Te + 1] - x_values[low_Te]);
 	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
