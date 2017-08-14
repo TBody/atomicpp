@@ -19,7 +19,7 @@ using json = nlohmann::json;
 
 #include <algorithm> //for upper/lower_bound
 
-typedef std::array<std::array<double, 4>, 4> grid_matrix;
+typedef std::vector<std::vector<double>> grid_matrix;
 struct interp_data{
 	// std::pair<double, double> coord; //(T,N) coordinate of point
 	double f = 0.0; //Value at point
@@ -163,7 +163,12 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 	std::vector<std::vector<std::vector<interp_data>>>
 	grid_coeff = calculate_grid_coeff(log_temperature, log_density, log_coeff);
 	
-	grid_matrix default_alpha_coeff = {0.0};
+	grid_matrix default_alpha_coeff = {{
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+	}};
 
 	std::vector<std::vector<std::vector<grid_matrix>>>
 	alpha_coeff(L_k,std::vector<std::vector<grid_matrix>>(L_t-1,std::vector<grid_matrix>(L_n-1,default_alpha_coeff)));
@@ -192,8 +197,14 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
 				}};
 				// grid_coeff submatrix
-				grid_matrix alpha_sub = {0.0};
-				
+				grid_matrix alpha_sub = {{
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+				}};
+
+					
 				//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
 				//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
 				for (int i=0; i<4; ++i){
