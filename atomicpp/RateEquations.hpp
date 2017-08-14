@@ -111,7 +111,7 @@
 	/**
 	 * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
 	 * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
-	 * regardless of which process is called (since the underlying log_temperature and log_density grids are the same).
+	 * regardless of which process is called (since the underlying log_temp and log_dens grids are the same).
 	 * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D such that,
 	 * if a <int, double> pair is supplied as an argument then the shared interpolation method will be called
 	 *
@@ -215,7 +215,7 @@
 	private:
 	//Map of RateCoefficient objects, copied from an ImpuritySpecies object
 	std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
-	//If all the rate coefficients have the same log_temperature and log_density then can use the same scaling...
+	//If all the rate coefficients have the same log_temp and log_dens then can use the same scaling...
 	//...values from a single bilinear interpolation, to save shared computation. Copied from an ImpuritySpecies object.
 	bool use_shared_interpolation;
 	//Whether charge exchange should be considered

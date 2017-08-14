@@ -1,257 +1,106 @@
-#include "BicubicSpline.hpp"
 #include <vector>
 #include <array>
-#include <math.h> //For log10
-
+#include <math.h>
 #include <algorithm> //for upper/lower_bound
+#include <stdexcept> //For error-throwing
+#include "BicubicSpline.hpp"
 
 using namespace atomicpp;
-BicubicSpline::BicubicSpline(){
-
+BicubicSpline::BicubicSpline(){//Default constructor
 };
-// BicubicSpline::BicubicSpline(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff):
-// 	alpha_coeff((int)(log_coeff.size()),std::vector<std::vector<grid_matrix>>((int)(log_temperature.size())-1,std::vector<grid_matrix>((int)(log_density.size())-1,default_alpha_coeff)))
-// {
-// 	alpha_coeff = calculate_alpha_coeff(log_temperature, log_density, log_coeff);
-// };
-// double BicubicSpline::call0D(const int k, const double eval_Te, const double eval_Ne){
-// 	// """Evaluate the ionisation/recombination coefficients of
-// 	// 	k'th atomic state at a given temperature and density.
-// 	// 	Args:
-// 	// 		k  (int): Ionising or recombined ion stage,
-// 	// 			between 0 and k=Z-1, where Z is atomic number.
-// 	// 		Te (double): Temperature in [eV].
-// 	// 		ne (double): Density in [m-3].
-// 	// 	Returns:
-// 	// 		c (double): Rate coefficent in [m3/s].
+BicubicSpline::BicubicSpline(
+	std::vector<double>& _x_values,
+	std::vector<double>& _y_values,
+	std::vector< std::vector<double> > & _z_values
+	){
+	x_values = _x_values;
+	y_values = _y_values;
+	z_values = _z_values;
 
-// 	// Perform a basic interpolation based on linear distance
-// 	// values to search for
-// 	double eval_log10_Te = log10(eval_Te);
-// 	double eval_log10_Ne = log10(eval_Ne);
-// 	// Look through the log_temperature and log_density attributes of BicubicSpline to find nearest (strictly lower)
-// 	// Subtract 1 from answer to account for indexing from 0
-// 	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
-// 	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
-
-// 	// Bounds checking -- make sure you haven't dropped off the end of the array
-// 	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
-// 		// An easy error to make is supplying the function arguments already having taken the log10
-// 		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
-// 	};
-// 	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
-// 		// An easy error to make is supplying the function arguments already having taken the log10
-// 		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
-// 	};
-
-// 	int high_Te = low_Te + 1;
-// 	int high_Ne = low_Ne + 1;
-
-// 	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-// 	double Ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
-
-// 	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
-// 	double y = (eval_log10_Ne - log_density[low_Ne])*Ne_norm;
-
-// 	// grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
-// 	grid_matrix alpha_sub = {{
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 	}};
-// 	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
-// 	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
-
-// 	double return_value = 0.0;
-// 	for(int i=0; i<4; ++i){
-// 		for(int j=0; j<4; ++j){
-// 			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
-// 		}
-// 	}
-// 	std::printf("Return value: %f\n", return_value);
-// };
-// double BicubicSpline::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
-// 	int low_Te = Te_interp.first;
-// 	int high_Te = low_Te+1;
-// 	int low_Ne = Ne_interp.first;
-// 	int high_Ne = low_Ne+1;
-
-// 	double x = Te_interp.second;
-// 	double y = Ne_interp.second;
-
-// 	// grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
-// 	grid_matrix alpha_sub = {{
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 		{1, 1, 1, 1},
-// 	}};
-// 	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
-// 	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
-
-// 	double return_value = 0.0;
-// 	for(int i=0; i<4; ++i){
-// 		for(int j=0; j<4; ++j){
-// 			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
-// 		}
-// 	}
-// 	std::printf("Return value: %f\n", return_value);
-// };
-// std::vector<std::vector<std::vector<interp_data>>> BicubicSpline::calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
-
-// 	int L_k = (int)(log_coeff.size());
-// 	int L_t = log_temperature.size();
-// 	int L_n = log_density.size();
-
-// 	std::vector<std::vector<std::vector<interp_data>>>
-// 	grid_coeff(L_k,std::vector<std::vector<interp_data>>(L_t,std::vector<interp_data>(L_n,default_interp_data)));
-
-// 	for (int k=0; k<L_k; ++k){
-// 		for(int iT=0; iT<L_t; ++iT){
-// 			for(int iN=0; iN<L_n; ++iN){
-
-// 				// Set the function value
-// 				grid_coeff[k][iT][iN].f = log_coeff[k][iT][iN];
-
-// 				double dT_difference = 0.0;
-// 				double dT_spacing = 0.0;
-// 				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
-// 					// Central difference for dT
-// 					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT-1][iN];
-// 					dT_spacing = log_temperature[iT+1] - log_temperature[iT-1];
-
-// 				} else if (iT == 0) {
-// 					// Forward difference for dT
-// 					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT][iN];
-// 					dT_spacing = log_temperature[iT+1] - log_temperature[iT];
-
-// 				} else if (iT == (int)(log_temperature.size()-1)){
-// 					// Backward difference for dT
-// 					dT_difference = log_coeff[k][iT][iN] - log_coeff[k][iT-1][iN];
-// 					dT_spacing = log_temperature[iT] - log_temperature[iT-1];
-					
-// 				}
-// 				grid_coeff[k][iT][iN].fdT = dT_difference/dT_spacing;
-
-// 				double dN_difference = 0.0;
-// 				double dN_spacing = 0.0;
-// 				if((iN != 0) and (iN != (int)(log_density.size()-1))){
-// 					// Central difference for dN
-// 					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN-1];
-// 					dN_spacing = log_density[iN+1] - log_density[iN-1];
-
-// 				} else if (iN == 0) {
-// 					// Forward difference for dN
-// 					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN];
-// 					dN_spacing = log_density[iN+1] - log_density[iN];
-
-// 				} else if (iN == (int)(log_density.size()-1)){
-// 					// Backward difference for dN
-// 					dN_difference = log_coeff[k][iT][iN] - log_coeff[k][iT][iN-1];
-// 					dN_spacing = log_density[iN] - log_density[iN-1];
-					
-// 				}
-// 				grid_coeff[k][iT][iN].fdN = dN_difference/dN_spacing;
-
-// 			}
-// 		}
-
-// 		//Now that all axial derivatives have been calculated, use these results to calculate the mixed derivatives
-
-// 		for(int iT=0; iT<L_t; ++iT){
-// 			for(int iN=0; iN<L_n; ++iN){
-// 				double dTN_difference = 0.0;
-// 				double dTN_spacing = 0.0;
-// 				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
-// 					// Central difference for dTN
-// 					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-// 					dTN_spacing = log_temperature[iT+1] - log_temperature[iT-1];
-
-// 				} else if (iT == 0) {
-// 					// Forward difference for dTN
-// 					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT][iN].fdN;
-// 					dTN_spacing = log_temperature[iT+1] - log_temperature[iT];
-
-// 				} else if (iT == (int)(log_temperature.size()-1)){
-// 					// Backward difference for dTN
-// 					dTN_difference = grid_coeff[k][iT][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
-// 					dTN_spacing = log_temperature[iT] - log_temperature[iT-1];
-					
-// 				}
-// 				grid_coeff[k][iT][iN].fdTdN = dTN_difference/dTN_spacing;
-// 			}
-// 		}
-// 	}
-
-// 	return grid_coeff;
-// };
-// std::vector<std::vector<std::vector<grid_matrix>>> BicubicSpline::calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
-// 	// For storing the value and derivative data at each grid-point
-// 	// Have to use vector since the array size is non-constant
-// 	int L_k = (int)(log_coeff.size());
-// 	int L_t = log_temperature.size();
-// 	int L_n = log_density.size();
-
-// 	std::vector<std::vector<std::vector<interp_data>>>
-// 	grid_coeff = calculate_grid_coeff(log_temperature, log_density, log_coeff);
 	
-// 	grid_matrix default_alpha_coeff = {{
-// 		{0, 0, 0, 0},
-// 		{0, 0, 0, 0},
-// 		{0, 0, 0, 0},
-// 		{0, 0, 0, 0},
-// 	}};
+};
+double BicubicSpline::call0D(const double eval_x, const double eval_y){
 
-// 	std::vector<std::vector<std::vector<grid_matrix>>>
-// 	alpha_coeff(L_k,std::vector<std::vector<grid_matrix>>(L_t-1,std::vector<grid_matrix>(L_n-1,default_alpha_coeff)));
+	// Perform a basic interpolation based on linear distance
+	// values to search for
+	// Look through the x_values and y_values attributes of RateCoefficient to find nearest (strictly lower)
+	// Subtract 1 from answer to account for indexing from 0
+	int low_x = lower_bound(x_values.begin(), x_values.end(), eval_x) - x_values.begin() - 1;
+	int low_y = lower_bound(y_values.begin(), y_values.end(), eval_y) - y_values.begin() - 1;
 
-// 	const grid_matrix prematrix = {{
-// 			{+1, +0, +0, +0},
-// 			{+0, +0, +1, +0},
-// 			{-3, +3, -2, -1},
-// 			{+2, -2, +1, +1},
-// 		}};
-// 	const grid_matrix postmatrix = {{
-// 			{+1, +0, -3, +2},
-// 			{+0, +0, +3, -2},
-// 			{+0, +1, -2, +1},
-// 			{+0, +0, -1, +1},
-// 		}};
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((low_x == (int)(x_values.size())-1) or (low_x == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on x called to point off the grid for which it was defined (will give seg fault)");
+	};
+	if ((low_y == (int)(y_values.size()-1)) or (low_y == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on y called to point off the grid for which it was defined (will give seg fault)");
+	};
 
-// 	for (int k=0; k<L_k; ++k){
-// 		for(int iT=0; iT<L_t - 1; ++iT){ //iterator over temperature dimension of grid, which is of length log_temperature.size()-1
-// 			for(int iN=0; iN<L_n - 1; ++iN){ //iterator over density dimension of grid, which is of length log_density.size()-1
+	double x_norm = 1/(x_values[low_x+1] - x_values[low_x+0]); //Spacing between grid points
+	double y_norm = 1/(y_values[low_y+1] - y_values[low_y+0]); //Spacing between grid points
 
-// 				grid_matrix f_sub = {{
-// 					{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
-// 					{grid_coeff[k][iT+1][iN+0].f,   grid_coeff[k][iT+1][iN+1].f,   grid_coeff[k][iT+1][iN+0].fdN,   grid_coeff[k][iT+1][iN+1].fdN},
-// 					{grid_coeff[k][iT+0][iN+0].fdT, grid_coeff[k][iT+0][iN+1].fdT, grid_coeff[k][iT+0][iN+0].fdTdN, grid_coeff[k][iT+0][iN+1].fdTdN},
-// 					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
-// 				}};
-// 				// grid_coeff submatrix
-// 				grid_matrix alpha_sub = {{
-// 					{0, 0, 0, 0},
-// 					{0, 0, 0, 0},
-// 					{0, 0, 0, 0},
-// 					{0, 0, 0, 0},
-// 				}};
+	double x = (eval_x - x_values[low_x+0])*x_norm;
+	double y = (eval_y - y_values[low_y+0])*y_norm;
 
-					
-// 				//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
-// 				//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
-// 				for (int i=0; i<4; ++i){
-// 					for(int j=0; j<4; ++j){
-// 						for(int k=0; k<4; ++k){
-// 							for(int l=0; l<4; ++l){
-// 								alpha_sub[i][j] += prematrix[i][l] * f_sub[l][k] * postmatrix[k][j];
-// 							}
-// 						}
-// 					}
-// 				}
-// 				alpha_coeff[k][iT][iN] = alpha_sub;
-// 			}
-// 		}
-// 	}
-// 	return alpha_coeff;
-// };
+	// // Construct the simple interpolation grid
+	// // Find weightings based on linear distance
+	// // w01 ------ w11    y
+	// //  | \     / |      |
+	// //  |  w(x,y) |    --/--x
+	// //  | /     \ |      |
+	// // w00 ------ w10
+
+	double eval_coeff =
+	 (z_values[low_x+0][low_y+0]*(1-y) + z_values[low_x+0][low_y+1]*y)*(1-x)
+	+(z_values[low_x+1][low_y+0]*(1-y) + z_values[low_x+1][low_y+1]*y)*x;
+
+	return eval_coeff;
+};
+//Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that x_interp and y_interp
+//contain which point for which to return the coefficient - saves reevaluating)
+double BicubicSpline::call0D_shared(const std::pair<int, double> x_interp, const std::pair<int, double> y_interp){
+
+	int low_x = x_interp.first;
+	int low_y = y_interp.first;
+
+	double x = x_interp.second;
+	double y = y_interp.second;
+
+	// // Construct the simple interpolation grid
+	// // Find weightings based on linear distance
+	// // w01 ------ w11    y
+	// //  | \     / |      |
+	// //  |  w(x,y) |    --/--x
+	// //  | /     \ |      |
+	// // w00 ------ w10
+
+	double eval_coeff =
+	 (z_values[low_x+0][low_y+0]*(1-y) + z_values[low_x+0][low_y+1]*y)*(1-x)
+	+(z_values[low_x+1][low_y+0]*(1-y) + z_values[low_x+1][low_y+1]*y)*x;
+
+	return eval_coeff;
+};
+std::vector< std::vector<double> > BicubicSpline::get_z_values(){
+	return z_values;
+};
+std::vector<double> BicubicSpline::get_x_values(){
+	return x_values;
+};
+std::vector<double> BicubicSpline::get_y_values(){
+	return y_values;
+};
+void BicubicSpline::set_x_values(std::vector<double>& _x_values){
+	x_values = _x_values;
+};
+void BicubicSpline::set_y_values(std::vector<double>& _y_values){
+	y_values = _y_values;
+};
+void BicubicSpline::zero_z_values(){
+	for(int i = 0; i<(int)(z_values.size()); ++i){
+		for(int j = 0; j<(int)(z_values[0].size()); ++j){
+			z_values[i][j] = 0.0;
+		}
+	}
+}

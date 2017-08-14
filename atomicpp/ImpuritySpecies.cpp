@@ -77,7 +77,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Uses the same keys as .adas_file_dict
 	makeRateCoefficients();
 
-	// Checks to see whether shared interpolation can be used - i.e. whether log_temperature and log_density are the same for all
+	// Checks to see whether shared interpolation can be used - i.e. whether log_temp and log_dens are the same for all
 	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::has_shared_interpolation accordingly.
 	initialiseSharedInterpolation();
 
@@ -175,12 +175,12 @@ void ImpuritySpecies::makeRateCoefficients(){
 			std::string physics_process = kv.first;
 			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
 			// Seems to implicitly compare based on a small tolerance -- works for now
-			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
-				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			if (not(blank_RC->get_log_temp() == RC_to_compare->get_log_temp())){
+				std::cout << "\n Warning: log_temp doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
 				has_shared_interpolation = false;
 			}
-			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
-				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			if (not(blank_RC->get_log_dens() == RC_to_compare->get_log_dens())){
+				std::cout << "\n Warning: log_dens doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
 				has_shared_interpolation = false;
 			}
 		}

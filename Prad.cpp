@@ -173,8 +173,8 @@ int main(){
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// std::pair<int, double> Te_interp, Ne_interp;
-	// Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temperature(), Te);
-	// Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_density(), Ne);
+	// Te_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_temp(), Te);
+	// Ne_interp = findSharedInterpolation(impurity.get_rate_coefficient("blank")->get_log_dens(), Ne);
 
 	// int Z = impurity.get_atomic_number();
 	// const double eV_to_J = 1.60217662e-19; //J per eV
