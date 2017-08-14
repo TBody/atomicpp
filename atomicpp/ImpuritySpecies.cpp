@@ -164,25 +164,29 @@ void ImpuritySpecies::makeRateCoefficients(){
 		//   (Choose ionisation as source since this is one of the processes always included in the model)
 		//   (Might consider pushing this into seperate method and constructor, but this works for now)
 		// Create a smart pointer 'RC' that points to this object
-		std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(rate_coefficients["ionisation"]));
-		// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
-		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
-		rate_coefficients["blank"] = blank_RC;
+		// std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(rate_coefficients["ionisation"]));
+		// // Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
+		// // (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
+		// rate_coefficients["blank"] = blank_RC;
 
 		has_shared_interpolation = true;
-		for (auto& kv : rate_coefficients) {
-			std::string physics_process = kv.first;
-			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
-			// Seems to implicitly compare based on a small tolerance -- works for now
-			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
-				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				has_shared_interpolation = false;
-			}
-			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
-				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				has_shared_interpolation = false;
-			}
-		}
+		// for (auto& kv : rate_coefficients) {
+		// 	std::string physics_process = kv.first;
+		// 	std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
+		// 	// Seems to implicitly compare based on a small tolerance -- works for now
+		// 	for(int k=0; k<atomic_number; ++k){
+		// 	if (not(blank_RC->get_log_temperature(k) == RC_to_compare->get_log_temperature(k))){
+		// 		std::printf("\nWarning: log_temperature doesn't match between ionisation and %s[%d]. Can't use shared interpolation.", physics_process.c_str(),k);
+		// 		// std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+		// 		has_shared_interpolation = false;
+		// 	}
+		// 	if (not(blank_RC->get_log_density(k) == RC_to_compare->get_log_density(k))){
+		// 		std::printf("\nWarning: log_density doesn't match between ionisation and %s[%d]. Can't use shared interpolation.", physics_process.c_str(),k);
+		// 		// std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+		// 		has_shared_interpolation = false;
+		// 	}}
+
+		// }
 	}
 // Accessing environment variables (shared by any function which calls the ImpuritySpecies.hpp header) -- shared functions
 	// std::string atomicpp::get_json_database_path() {

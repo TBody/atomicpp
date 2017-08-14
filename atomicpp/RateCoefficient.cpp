@@ -22,33 +22,35 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	std::vector<std::vector< std::vector<double> > > log_coeff = data_dict["log_coeff"];
 	std::vector<double> log_temperature = data_dict["log_temperature"];
 	std::vector<double> log_density = data_dict["log_density"];
-	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
-	// The second copies the value to the corresponding RateCoefficient attribute
-	
-	interpolator = BilinearSpline(log_temperature, log_density, log_coeff);
 
+	std::vector<BilinearSpline> interpolator(atomic_number, BilinearSpline());
+	for(int k=0; k<atomic_number; k++){
+		interpolator[k] = BilinearSpline(log_temperature, log_density, log_coeff[k]);
+	}
 };
-RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
+RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_RC){
 	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
 
-	atomic_number   = source_rc->get_atomic_number();
-	element         = source_rc->get_element();
-	adf11_file      = source_rc->get_adf11_file();
+	atomic_number   = source_RC->get_atomic_number();
+	element         = source_RC->get_element();
+	adf11_file      = source_RC->get_adf11_file();
 
-	std::vector<double> temp_values = source_rc->get_interpolator().get_temp_values();
-	std::vector<double> dens_values = source_rc->get_interpolator().get_dens_values();
+	// std::vector<BilinearSpline> interpolator(1, BilinearSpline());
+	// std::vector<double> temp_values = source_RC->get_log_temperature(0);
+	// std::vector<double> dens_values = source_RC->get_log_density(0);
+	// interpolator[0].set_temp_values(temp_values);
+	// interpolator[0].set_dens_values(dens_values);
 
-	interpolator.set_temp_values(temp_values);
-	interpolator.set_dens_values(dens_values);
+
 	//Don't copy the coef_values
 };
 double RateCoefficient::call0D(const int k, const double Te, const double Ne){
-	return interpolator.call0D(k, Te, Ne);
+	return interpolator[k].call0D(Te, Ne);
 };
 //Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that Te_interp and Ne_interp
 //contain which point for which to return the coefficient - saves reevaluating)
 double RateCoefficient::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
-	return interpolator.call0D_shared(k, Te_interp, Ne_interp);
+	return interpolator[k].call0D_shared(Te_interp, Ne_interp);
 };
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;
@@ -59,15 +61,15 @@ std::string RateCoefficient::get_element(){
 std::string RateCoefficient::get_adf11_file(){
 	return adf11_file;
 };
-BilinearSpline RateCoefficient::get_interpolator(){
-	return interpolator;
+BilinearSpline RateCoefficient::get_interpolator(int k){
+	return interpolator[k];
 };
-std::vector<std::vector< std::vector<double> > > RateCoefficient::get_log_coeff(){
-	return interpolator.get_coef_values();
+std::vector< std::vector<double> > RateCoefficient::get_log_coeff(int k){
+	return interpolator[k].get_coef_values();
 };
-std::vector<double> RateCoefficient::get_log_temperature(){
-	return interpolator.get_temp_values();
+std::vector<double> RateCoefficient::get_log_temperature(int k){
+	return interpolator[k].get_temp_values();
 };
-std::vector<double> RateCoefficient::get_log_density(){
-	return interpolator.get_dens_values();
+std::vector<double> RateCoefficient::get_log_density(int k){
+	return interpolator[k].get_dens_values();
 };

@@ -54,15 +54,16 @@
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
-			BilinearSpline get_interpolator();
-			std::vector<std::vector< std::vector<double> > > get_log_coeff();
-			std::vector<double> get_log_temperature();
-			std::vector<double> get_log_density();
+			BilinearSpline get_interpolator(int k);
+			std::vector< std::vector<double> > get_log_coeff(int k);
+			std::vector<double> get_log_temperature(int k);
+			std::vector<double> get_log_density(int k);
 		private:
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			BilinearSpline interpolator;
+			std::vector<BilinearSpline> interpolator;
+			// BilinearSpline interpolator;
 			// std::vector<std::vector< std::vector<double> > > log_coeff;
 			// std::vector<double> log_temperature;
 			// std::vector<double> log_density;
