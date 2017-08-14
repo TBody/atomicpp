@@ -48,8 +48,8 @@ double BicubicSpline::call0D(const double eval_x, const double eval_y){
 	double x_norm = 1/(x_values[low_x+1] - x_values[low_x+0]); //Spacing between grid points
 	double y_norm = 1/(y_values[low_y+1] - y_values[low_y+0]); //Spacing between grid points
 
-	double x = (eval_x - x_values[low_x+0])*x_norm;
-	double y = (eval_y - y_values[low_y+0])*y_norm;
+	double x = (eval_x - x_values[low_x])*x_norm;
+	double y = (eval_y - y_values[low_y])*y_norm;
 
 	// // Construct the simple interpolation grid
 	// // Find weightings based on linear distance
@@ -59,11 +59,19 @@ double BicubicSpline::call0D(const double eval_x, const double eval_y){
 	// //  | /     \ |      |
 	// // w00 ------ w10
 
-	double eval_coeff =
-	 (z_values[low_x+0][low_y+0]*(1-y) + z_values[low_x+0][low_y+1]*y)*(1-x)
-	+(z_values[low_x+1][low_y+0]*(1-y) + z_values[low_x+1][low_y+1]*y)*x;
+	grid_matrix alpha_sub = alpha_coeff[low_x][low_y];
 
-	return eval_coeff;
+	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
+
+	double return_value = 0.0;
+	for(int i=0; i<4; ++i){
+		for(int j=0; j<4; ++j){
+			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
+		}
+	}
+
+	return return_value;
 };
 //Overloaded onto callOD - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that x_interp and y_interp
 //contain which point for which to return the coefficient - saves reevaluating)
@@ -83,11 +91,19 @@ double BicubicSpline::call0D_shared(const std::pair<int, double> x_interp, const
 	// //  | /     \ |      |
 	// // w00 ------ w10
 
-	double eval_coeff =
-	 (z_values[low_x+0][low_y+0]*(1-y) + z_values[low_x+0][low_y+1]*y)*(1-x)
-	+(z_values[low_x+1][low_y+0]*(1-y) + z_values[low_x+1][low_y+1]*y)*x;
+	grid_matrix alpha_sub = alpha_coeff[low_x][low_y];
 
-	return eval_coeff;
+	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
+
+	double return_value = 0.0;
+	for(int i=0; i<4; ++i){
+		for(int j=0; j<4; ++j){
+			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
+		}
+	}
+
+	return return_value;
 };
 std::vector< std::vector<double> > BicubicSpline::get_z_values(){
 	return z_values;
