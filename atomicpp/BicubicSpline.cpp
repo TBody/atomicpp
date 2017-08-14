@@ -1,70 +1,101 @@
-// https://shiftedbits.org/2011/01/30/cubic-spline-interpolation/
-// https://en.wikipedia.org/wiki/Bicubic_interpolation
-// http://www.iue.tuwien.ac.at/phd/heinzl/node27.html
-// https://en.wikipedia.org/wiki/Matrix_multiplication
-
-#include <string>
+#include "BicubicSpline.hpp"
 #include <vector>
-#include <fstream>
-#include <stdexcept> //For error-throwing
 #include <array>
-
-#include <tuple> //Not for RateCoefficient
-
-#include <ostream>
-#include <cstdio> //For print formatting (printf, fprintf, sprintf, snprintf)
-
-#include "atomicpp/json.hpp"
-using json = nlohmann::json;
+#include <math.h> //For log10
 
 #include <algorithm> //for upper/lower_bound
 
-typedef std::array<std::array<double, 4>, 4> grid_matrix;
-struct interp_data{
-	// std::pair<double, double> coord; //(T,N) coordinate of point
-	double f = 0.0; //Value at point
-	double fdT = 0.0; //Derivative in temperature axis
-	double fdN = 0.0; //Derivative in density axis
-	double fdTdN = 0.0; //Cross derivative
-} default_interp_data;
-
-json retrieveFromJSON(std::string path_to_file){
-	// Do not pass path_to_file by reference - results in error!
-	// Reads a .json file given at path_to_file
-	// Uses the json module at https://github.com/nlohmann/json/
-	// This relies upon the "json.hpp" header which must be included in the same folder as the source
-
-	// Open a file-stream at path_to_file
-	std::ifstream json_file(path_to_file);
-	// Initialise a json file object at j_object
-	json j_object;
-	json_file >> j_object;
-	return j_object;
+using namespace atomicpp;
+BicubicSpline::BicubicSpline(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff):
+	alpha_coeff((int)(log_coeff.size()),std::vector<std::vector<grid_matrix>>((int)(log_temperature.size())-1,std::vector<grid_matrix>((int)(log_density.size())-1,default_alpha_coeff)))
+{
+	alpha_coeff = calculate_alpha_coeff(log_temperature, log_density, log_coeff);
 };
+double BicubicSpline::call0D(const int k, const double eval_Te, const double eval_Ne){
+	// """Evaluate the ionisation/recombination coefficients of
+	// 	k'th atomic state at a given temperature and density.
+	// 	Args:
+	// 		k  (int): Ionising or recombined ion stage,
+	// 			between 0 and k=Z-1, where Z is atomic number.
+	// 		Te (double): Temperature in [eV].
+	// 		ne (double): Density in [m-3].
+	// 	Returns:
+	// 		c (double): Rate coefficent in [m3/s].
 
-std::tuple< int, std::vector<double>, std::vector<double>, std::vector<std::vector< std::vector<double> > > > extract_from_json(){
+	// Perform a basic interpolation based on linear distance
+	// values to search for
+	double eval_log10_Te = log10(eval_Te);
+	double eval_log10_Ne = log10(eval_Ne);
+	// Look through the log_temperature and log_density attributes of BicubicSpline to find nearest (strictly lower)
+	// Subtract 1 from answer to account for indexing from 0
+	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
+	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
 
-	std::string filename("json_database/json_data/acd96_c.json");
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
+	};
+	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
+	};
 
-	json data_dict = retrieveFromJSON(filename);
+	int high_Te = low_Te + 1;
+	int high_Ne = low_Ne + 1;
 
-	int atomic_number   		= data_dict["charge"];
-	// std::string element         = data_dict["element"];
-	// std::string adf11_file      = filename;
+	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
+	double Ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
 
-	std::vector< std::vector< std::vector<double> > > extract_log_coeff = data_dict["log_coeff"];
-	std::vector<double> extract_log_temperature = data_dict["log_temperature"];
-	std::vector<double> extract_log_density = data_dict["log_density"];
-	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
-	// The second copies the value to the corresponding RateCoefficient attribute
-	std::vector<std::vector< std::vector<double> > > log_coeff = extract_log_coeff;
-	std::vector<double> log_temperature = extract_log_temperature;
-	std::vector<double> log_density = extract_log_density;
+	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
+	double y = (eval_log10_Ne - log_density[low_Ne])*Ne_norm;
 
-	return std::make_tuple(atomic_number, log_temperature, log_density, log_coeff);
-}
+	// grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
+	grid_matrix alpha_sub = {{
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+	}};
+	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
 
-std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+	double return_value = 0.0;
+	for(int i=0; i<4; ++i){
+		for(int j=0; j<4; ++j){
+			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
+		}
+	}
+	std::printf("Return value: %f\n", return_value);
+};
+double BicubicSpline::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
+	int low_Te = Te_interp.first;
+	int high_Te = low_Te+1;
+	int low_Ne = Ne_interp.first;
+	int high_Ne = low_Ne+1;
+
+	double x = Te_interp.second;
+	double y = Ne_interp.second;
+
+	// grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
+	grid_matrix alpha_sub = {{
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+		{1, 1, 1, 1},
+	}};
+	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
+	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
+
+	double return_value = 0.0;
+	for(int i=0; i<4; ++i){
+		for(int j=0; j<4; ++j){
+			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
+		}
+	}
+	std::printf("Return value: %f\n", return_value);
+};
+std::vector<std::vector<std::vector<interp_data>>> BicubicSpline::calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
 
 	int L_k = (int)(log_coeff.size());
 	int L_t = log_temperature.size();
@@ -152,8 +183,7 @@ std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vec
 
 	return grid_coeff;
 };
-
-std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+std::vector<std::vector<std::vector<grid_matrix>>> BicubicSpline::calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
 	// For storing the value and derivative data at each grid-point
 	// Have to use vector since the array size is non-constant
 	int L_k = (int)(log_coeff.size());
@@ -163,16 +193,12 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 	std::vector<std::vector<std::vector<interp_data>>>
 	grid_coeff = calculate_grid_coeff(log_temperature, log_density, log_coeff);
 	
-<<<<<<< Updated upstream
-	grid_matrix default_alpha_coeff = {0.0};
-=======
 	grid_matrix default_alpha_coeff = {{
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-			{0.0, 0.0, 0.0, 0.0},
-		}};
->>>>>>> Stashed changes
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+		{0, 0, 0, 0},
+	}};
 
 	std::vector<std::vector<std::vector<grid_matrix>>>
 	alpha_coeff(L_k,std::vector<std::vector<grid_matrix>>(L_t-1,std::vector<grid_matrix>(L_n-1,default_alpha_coeff)));
@@ -201,8 +227,14 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
 				}};
 				// grid_coeff submatrix
-				grid_matrix alpha_sub = {0.0};
-				
+				grid_matrix alpha_sub = {{
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0},
+				}};
+
+					
 				//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
 				//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
 				for (int i=0; i<4; ++i){
@@ -220,64 +252,3 @@ std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::ve
 	}
 	return alpha_coeff;
 };
-
-int main(){
-
-	auto json_tuple = extract_from_json();
-	std::vector<double> log_temperature = std::get<1>(json_tuple);
-	std::vector<double> log_density = std::get<2>(json_tuple);
-	std::vector<std::vector< std::vector<double> > > log_coeff = std::get<3>(json_tuple);
-
-	std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff = calculate_alpha_coeff(log_temperature, log_density, log_coeff);
-
-	int k = 0;
-	double eval_log10_Te = log10(50);
-	double eval_log10_Ne = log10(0.8e19);
-
-	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
-	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
-	};
-	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
-	};
-
-	grid_matrix alpha_sub = alpha_coeff[k][low_Te][low_Ne];
-
-	double x = (eval_log10_Te - log_temperature[low_Te])/(log_temperature[low_Te + 1] - log_temperature[low_Te]);
-	double x_vector[4] = {1, x, x*x, x*x*x}; //Row vector
-	double y = (eval_log10_Ne - log_density[low_Ne])/(log_density[low_Ne + 1] - log_density[low_Ne]);
-	double y_vector[4] = {1, y, y*y, y*y*y}; //Column vector
-
-	double return_value = 0.0;
-	for(int i=0; i<4; ++i){
-		for(int j=0; j<4; ++j){
-			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
-		}
-	}
-	std::printf("Return value: %f\n", return_value);
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
