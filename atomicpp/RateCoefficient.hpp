@@ -20,10 +20,10 @@
 		// #     atomic_number (int) : The element's Z.
 		// #     element (str)       : Short element name like 'c'
 		// #     adf11_file (str)    : The /full/filename it came from (link to .json, not .dat)
-		// #     log_temperature     : std::vector<double> of log10 of temperature values for building interpolation grid
-		// #     log_density         : std::vector<double> of log10 of density values for building interpolation grid
-		// #     log_coeff           : nested 3D std::vector<double> with shape (Z, temp, dens)
-		// #         The list has length Z and is interpolations of log_coeff.
+		// #     log_temp     : std::vector<double> of log10 of temperature values for building interpolation grid
+		// #     log_dens         : std::vector<double> of log10 of density values for building interpolation grid
+		// #     log_rate           : nested 3D std::vector<double> with shape (Z, temp, dens)
+		// #         The list has length Z and is interpolations of log_rate.
 		public:
 			/**
 			 * @brief RateCoefficient constructor
@@ -33,14 +33,14 @@
 			RateCoefficient(const std::string& filename);
 			/**
 			 * @brief blank RateCoefficient constructor
-			 * @details Copies all characteristics except log_coeff
+			 * @details Copies all characteristics except log_rate
 			 * 
 			 * @param source_rc a smart pointer to a sample RateCoefficent object to source from
 			 */
 			RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc);
 			/**
 			 * @brief Returns the rate coefficient for a (scalar) Te and Ne supplied
-			 * @details Performs a simple bivariate (multilinear) interpolation to return the rate coefficient
+			 * @details Performs a simple bivariate (multicubic) interpolation to return the rate coefficient
 			 * at the supplied Te and Ne values. N.b. will throw a std::runtime_error if the supplied Te or Ne
 			 * value are not on the interpolating grid (otherwise you'll get a seg fault)
 			 * 
@@ -56,17 +56,16 @@
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
-			std::vector<std::vector< std::vector<double> > > get_log_coeff();
-			std::vector<double> get_log_temperature();
-			std::vector<double> get_log_density();
+			std::vector<BicubicSpline> get_interpolator();
+			// std::vector<std::vector< std::vector<double> > > get_log_rate();
+			std::vector<double> get_log_temp();
+			std::vector<double> get_log_dens();
+			void zero_interpolator();
 		private:
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			std::vector<std::vector< std::vector<double> > > log_coeff;
-			std::vector<double> log_temperature;
-			std::vector<double> log_density;
-			atomicpp::BicubicSpline Interpolator;
-	};
-	} //end namespace
+			std::vector<BicubicSpline> interpolator;
+		};
+	}
 #endif

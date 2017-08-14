@@ -69,7 +69,7 @@
 		std::shared_ptr<RateCoefficient> get_rate_coefficient(const std::string& key);
 		/**
 		 * @brief Check that shared interpolation (for speed) can be used
-		 * @details Checks that the log_temperature and log_density attributes of the 
+		 * @details Checks that the log_temp and log_dens attributes of the 
 		 * RateCoefficients in the impurity.rate_coefficient map are identical. Also
 		 * adds a "blank" RateCoefficient object that doesn't have any coefficients - 
 		 * hopefully throws an error if you try to do something incorrectly.
@@ -85,11 +85,9 @@
 		double mass; //in amu
 		std::map<std::string,std::string> adas_files_dict;
 		std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
-		bool has_shared_interpolation; //If all the rate coefficients have the same log_temperature and log_density then can use the same scaling 
+		bool has_shared_interpolation; //If all the rate coefficients have the same log_temp and log_dens then can use the same scaling 
 		//values from a single bilinear interpolation, to save shared computation. Set by a pre-evaluation check.
 	};
-	// std::string get_json_database_path();
-	// std::string get_impurity_user_input();
 
 	const double eV_to_J = 1.60217662e-19; //Conversion factor between electron-volts and joules (effective units J/eV)
 	const double amu_to_kg = 1.66054e-27; ////Conversion factor between atomic-mass-units and kilograms (effective units kg/amu)

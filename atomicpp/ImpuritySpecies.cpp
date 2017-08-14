@@ -77,7 +77,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Uses the same keys as .adas_file_dict
 	makeRateCoefficients();
 
-	// Checks to see whether shared interpolation can be used - i.e. whether log_temperature and log_density are the same for all
+	// Checks to see whether shared interpolation can be used - i.e. whether log_temp and log_dens are the same for all
 	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::has_shared_interpolation accordingly.
 	initialiseSharedInterpolation();
 
@@ -167,45 +167,21 @@ void ImpuritySpecies::makeRateCoefficients(){
 		std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(rate_coefficients["ionisation"]));
 		// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
 		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
-		rate_coefficients["blank"] = blank_RC;
+		blank_RC->zero_interpolator();
+		rate_coefficients["blank"] = blank_RC;//Zero the grid values, so that it should be reasonably obvious if the ["blank"] rate-coefficient is accessed
 
 		has_shared_interpolation = true;
 		for (auto& kv : rate_coefficients) {
 			std::string physics_process = kv.first;
 			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
 			// Seems to implicitly compare based on a small tolerance -- works for now
-			if (not(blank_RC->get_log_temperature() == RC_to_compare->get_log_temperature())){
-				std::cout << "\n Warning: log_temperature doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			if (not(blank_RC->get_log_temp() == RC_to_compare->get_log_temp())){
+				std::cout << "\n Warning: log_temp doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
 				has_shared_interpolation = false;
 			}
-			if (not(blank_RC->get_log_density() == RC_to_compare->get_log_density())){
-				std::cout << "\n Warning: log_density doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
+			if (not(blank_RC->get_log_dens() == RC_to_compare->get_log_dens())){
+				std::cout << "\n Warning: log_dens doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
 				has_shared_interpolation = false;
 			}
 		}
 	}
-// Accessing environment variables (shared by any function which calls the ImpuritySpecies.hpp header) -- shared functions
-	// std::string atomicpp::get_json_database_path() {
-	// 	std::string json_database_env = "ADAS_JSON_PATH";
-	// 	char * environment_variable;
-	// 	environment_variable = getenv( json_database_env.c_str() );
-
-	// 	if (environment_variable != NULL) {
-	// 	    return environment_variable;
-	// 	} else {
-	// 		std::cout << "ADAS_JSON_PATH not found. std::setting to default (= json_database/json_data)" << std::endl;
-	// 		return "json_database/json_data";
-	// 	}
-	// }
-	// std::string atomicpp::get_impurity_user_input() {
-	// 	std::string json_database_env = "ADAS_JSON_IMPURITY";
-	// 	char * environment_variable;
-	// 	environment_variable = getenv( json_database_env.c_str() );
-
-	// 	if (environment_variable != NULL) {
-	// 	    return environment_variable;
-	// 	} else {
-	// 		std::cout << "ADAS_JSON_IMPURITY not found. std::setting to default (= c)" << std::endl;
-	// 		return "json_database/json_data";
-	// 	}
-	// }

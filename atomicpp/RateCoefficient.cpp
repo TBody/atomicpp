@@ -8,8 +8,7 @@ using json = nlohmann::json;
 
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
-
-#include <algorithm> //for upper/lower_bound
+#include "BicubicSpline.hpp"
 
 using namespace atomicpp;
 
@@ -22,109 +21,40 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	element         = data_dict["element"];
 	adf11_file      = filename;
 
-	std::vector<std::vector< std::vector<double> > > extract_log_coeff = data_dict["log_coeff"];
-	std::vector<double> extract_log_temperature = data_dict["log_temperature"];
-	std::vector<double> extract_log_density = data_dict["log_density"];
+	std::vector<std::vector< std::vector<double> > > log_rate = data_dict["log_coeff"];
+	std::vector<double> log_temp = data_dict["log_temperature"];
+	std::vector<double> log_dens = data_dict["log_density"];
 	// Doing this as a two-step process - since the first is casting JSON data into the stated type.
 	// The second copies the value to the corresponding RateCoefficient attribute
-	log_coeff = extract_log_coeff;
-	log_temperature = extract_log_temperature;
-	log_density = extract_log_density;
 
-	// Interpolator = BicubicSpline(log_temperature, log_density, log_coeff);
+	for(int k=0; k<atomic_number; ++k){
+		interpolator.push_back(BicubicSpline(log_temp, log_dens, log_rate[k]));
+	}
+
 };
-RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
+RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_RC){
 	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
 
-	atomic_number   = source_rc->get_atomic_number();
-	element         = source_rc->get_element();
-	adf11_file      = source_rc->get_adf11_file();
+	atomic_number   = source_RC->get_atomic_number();
+	element         = source_RC->get_element();
+	adf11_file      = source_RC->get_adf11_file();
 
-	log_temperature = source_rc->get_log_temperature();
-	log_density = source_rc->get_log_density();
+	interpolator = source_RC->get_interpolator();
 };
 double RateCoefficient::call0D_bilinear(const int k, const double eval_Te, const double eval_Ne){
 
-	// """Evaluate the ionisation/recombination coefficients of
-	// 	k'th atomic state at a given temperature and density.
-	// 	Args:
-	// 		k  (int): Ionising or recombined ion stage,
-	// 			between 0 and k=Z-1, where Z is atomic number.
-	// 		Te (double): Temperature in [eV].
-	// 		ne (double): Density in [m-3].
-	// 	Returns:
-	// 		c (double): Rate coefficent in [m3/s].
+	double eval_log_Te = log10(eval_Te);
+	double eval_log_Ne = log10(eval_Ne);
 
-	// Perform a basic interpolation based on linear distance
-	// values to search for
-	double eval_log10_Te = log10(eval_Te);
-	double eval_log10_Ne = log10(eval_Ne);
-	// Look through the log_temperature and log_density attributes of RateCoefficient to find nearest (strictly lower)
-	// Subtract 1 from answer to account for indexing from 0
-	int low_Te = lower_bound(log_temperature.begin(), log_temperature.end(), eval_log10_Te) - log_temperature.begin() - 1;
-	int low_Ne = lower_bound(log_density.begin(), log_density.end(), eval_log10_Ne) - log_density.begin() - 1;
+	double eval_log_rate = interpolator[k].call0D(eval_log_Te, eval_log_Ne);
 
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_Te == (int)(log_temperature.size())-1) or (low_Te == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
-	};
-	if ((low_Ne == (int)(log_density.size()-1)) or (low_Ne == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Ne called to point off the grid for which it was defined (will give seg fault)");
-	};
-
-	int high_Te = low_Te + 1;
-	int high_Ne = low_Ne + 1;
-
-	double Te_norm = 1/(log_temperature[high_Te] - log_temperature[low_Te]); //Spacing between grid points
-	double Ne_norm = 1/(log_density[high_Ne] - log_density[low_Ne]); //Spacing between grid points
-
-	double x = (eval_log10_Te - log_temperature[low_Te])*Te_norm;
-	double y = (eval_log10_Ne - log_density[low_Ne])*Ne_norm;
-
-	// // Construct the simple interpolation grid
-	// // Find weightings based on linear distance
-	// // w01 ------ w11    ne -> y
-	// //  | \     / |      |
-	// //  |  w(x,y) |    --/--Te -> x
-	// //  | /     \ |      |
-	// // w00 ------ w10
-
-	double eval_log10_coeff =
-	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_Ne]*y)*(1-x)
-	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_Ne]*y)*x;
-	double eval_coeff = pow(10,eval_log10_coeff);
-
-	return eval_coeff;
+	return pow(10, eval_log_rate);
 };
 //Overloaded onto call0D - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that Te_interp and Ne_interp
 //contain which point for which to return the coefficient - saves reevaluating)
-double RateCoefficient::call0D_bilinear(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
-
-	int low_Te = Te_interp.first;
-	int high_Te = low_Te+1;
-	int low_Ne = Ne_interp.first;
-	int high_Ne = low_Ne+1;
-
-	double x = Te_interp.second;
-	double y = Ne_interp.second;
-
-	// // Construct the simple interpolation grid
-	// // Find weightings based on linear distance
-	// // w01 ------ w11    Ne -> y
-	// //  | \     / |      |
-	// //  |  w(x,y) |    --/--Te -> x
-	// //  | /     \ |      |
-	// // w00 ------ w10
-
-	double eval_log10_coeff =
-	(log_coeff[k][low_Te][low_Ne]*(1-y) + log_coeff[k][low_Te][high_Ne]*y)*(1-x)
-	+(log_coeff[k][high_Te][low_Ne]*(1-y) + log_coeff[k][high_Te][high_Ne]*y)*x;
-	
-	double eval_coeff = pow(10,eval_log10_coeff);
-
-	return eval_coeff;
+double RateCoefficient::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
+	double eval_log_rate = interpolator[k].call0D_shared(Te_interp, Ne_interp);
+	return pow(10, eval_log_rate);
 };
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;
@@ -135,12 +65,17 @@ std::string RateCoefficient::get_element(){
 std::string RateCoefficient::get_adf11_file(){
 	return adf11_file;
 };
-std::vector<std::vector< std::vector<double> > > RateCoefficient::get_log_coeff(){
-	return log_coeff;
+std::vector<BicubicSpline> RateCoefficient::get_interpolator(){
+	return interpolator;
 };
-std::vector<double> RateCoefficient::get_log_temperature(){
-	return log_temperature;
+std::vector<double> RateCoefficient::get_log_temp(){
+	return interpolator[0].get_x_values();
 };
-std::vector<double> RateCoefficient::get_log_density(){
-	return log_density;
+std::vector<double> RateCoefficient::get_log_dens(){
+	return interpolator[0].get_y_values();
+};
+void RateCoefficient::zero_interpolator(){
+	for(int k=0; k < (int)(interpolator.size()); ++k){
+		interpolator[k].zero_z_values();
+	}
 };
