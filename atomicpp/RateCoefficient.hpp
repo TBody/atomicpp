@@ -6,7 +6,7 @@
 	using json = nlohmann::json;
 	
 	namespace atomicpp{
-	typedef std::vector<std::vector<double>> grid_matrix;
+	typedef std::array<std::array<double, 4>, 4> grid_matrix;
 	struct interp_data{
 		// std::pair<double, double> coord; //(T,N) coordinate of point
 		double f = 0.0; //Value at point
@@ -87,7 +87,7 @@
 			std::vector<std::vector< std::vector<double> > > log_coeff;
 			std::vector<double> log_temperature;
 			std::vector<double> log_density;
-			std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff;
+			// std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff;
 		};
 	}
 #endif
