@@ -2,8 +2,8 @@ compiler     = g++
 atomicpp     = atomicpp
 warn_flags   = -g -O0 -Wall -fno-inline
 run_flags    = -O3
-flags        = $(warn_flags) -std=c++11
-# flags        = -std=c++11
+# flags        = $(warn_flags) -std=c++11
+flags        = -std=c++11
 # flags        = -Og -std=c++11
 
 objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/BilinearSpline.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 

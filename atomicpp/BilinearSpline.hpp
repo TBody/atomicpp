@@ -5,22 +5,21 @@
 	public:
 		BilinearSpline(); //Default constructor
 		BilinearSpline(
-			std::vector<double>& _temp_values,
-			std::vector<double>& _dens_values,
-			std::vector< std::vector<double> >& _coef_values
+			std::vector<double>& _x_values,
+			std::vector<double>& _y_values,
+			std::vector< std::vector<double> >& _z_values
 			);
-		double call0D(const double eval_temp, const double eval_dens);
-		double call0D_shared(const std::pair<int, double> temp_interp, const std::pair<int, double> dens_interp);
-		std::vector< std::vector<double> > get_coef_values();
-		std::vector<double> get_temp_values();
-		std::vector<double> get_dens_values();
-		void set_temp_values(std::vector<double>& _temp_values);
-		void set_dens_values(std::vector<double>& _dens_values);
+		double call0D(const double eval_x, const double eval_y);
+		double call0D_shared(const std::pair<int, double> x_interp, const std::pair<int, double> y_interp);
+		std::vector< std::vector<double> > get_z_values();
+		std::vector<double> get_x_values();
+		std::vector<double> get_y_values();
+		void set_x_values(std::vector<double>& _x_values);
+		void set_y_values(std::vector<double>& _y_values);
 	private:
-		int abc;
-		std::vector<double> temp_values;
-		std::vector<double> dens_values;
-		std::vector< std::vector<double> > coef_values;
+		std::vector<double> x_values;
+		std::vector<double> y_values;
+		std::vector< std::vector<double> > z_values;
 	};
 	}
 #endif

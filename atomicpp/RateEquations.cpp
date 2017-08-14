@@ -98,8 +98,8 @@ DerivStruct RateEquations::computeDerivs(
 	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
 	std::pair<int, double> Te_interp, Ne_interp;
 	if (use_shared_interpolation){
-		Te_interp = findSharedInterpolation(rate_coefficients["ionisation"]->get_log_temperature(0), Te);
-		Ne_interp = findSharedInterpolation(rate_coefficients["ionisation"]->get_log_density(0), Ne);
+		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
+		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
 	} else {
 		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
 		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
@@ -145,8 +145,8 @@ DerivStruct RateEquations::computeDerivsHydrogen(
 	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
 	std::pair<int, double> Te_interp, Ne_interp;
 	if (use_shared_interpolation){
-		Te_interp = findSharedInterpolation(rate_coefficients["ionisation"]->get_log_temperature(0), Te);
-		Ne_interp = findSharedInterpolation(rate_coefficients["ionisation"]->get_log_density(0), Ne);
+		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temperature(), Te);
+		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_density(), Ne);
 	} else {
 		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
 		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
