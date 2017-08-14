@@ -29,6 +29,9 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	log_temperature = extract_log_temperature;
 	log_density = extract_log_density;
 
+	// std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff_init = calculate_alpha_coeff(log_temperature, log_density, log_coeff);
+	// alpha_coeff = alpha_coeff_init;
+
 };
 RateCoefficient::RateCoefficient(const std::shared_ptr<RateCoefficient> source_rc){
 	// # Create an instance of a blank RateCoefficient by copying from another RateCoefficient object
@@ -225,4 +228,150 @@ std::vector<double> RateCoefficient::get_log_temperature(){
 };
 std::vector<double> RateCoefficient::get_log_density(){
 	return log_density;
+};
+std::vector<std::vector<std::vector<interp_data>>> RateCoefficient::calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+
+	int L_k = (int)(log_coeff.size());
+	int L_t = log_temperature.size();
+	int L_n = log_density.size();
+
+	std::vector<std::vector<std::vector<interp_data>>>
+	grid_coeff(L_k,std::vector<std::vector<interp_data>>(L_t,std::vector<interp_data>(L_n,default_interp_data)));
+
+	for (int k=0; k<L_k; ++k){
+		for(int iT=0; iT<L_t; ++iT){
+			for(int iN=0; iN<L_n; ++iN){
+
+				// Set the function value
+				grid_coeff[k][iT][iN].f = log_coeff[k][iT][iN];
+
+				double dT_difference = 0.0;
+				double dT_spacing = 0.0;
+				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
+					// Central difference for dT
+					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT-1][iN];
+					dT_spacing = log_temperature[iT+1] - log_temperature[iT-1];
+
+				} else if (iT == 0) {
+					// Forward difference for dT
+					dT_difference = log_coeff[k][iT+1][iN] - log_coeff[k][iT][iN];
+					dT_spacing = log_temperature[iT+1] - log_temperature[iT];
+
+				} else if (iT == (int)(log_temperature.size()-1)){
+					// Backward difference for dT
+					dT_difference = log_coeff[k][iT][iN] - log_coeff[k][iT-1][iN];
+					dT_spacing = log_temperature[iT] - log_temperature[iT-1];
+					
+				}
+				grid_coeff[k][iT][iN].fdT = dT_difference/dT_spacing;
+
+				double dN_difference = 0.0;
+				double dN_spacing = 0.0;
+				if((iN != 0) and (iN != (int)(log_density.size()-1))){
+					// Central difference for dN
+					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN-1];
+					dN_spacing = log_density[iN+1] - log_density[iN-1];
+
+				} else if (iN == 0) {
+					// Forward difference for dN
+					dN_difference = log_coeff[k][iT][iN+1] - log_coeff[k][iT][iN];
+					dN_spacing = log_density[iN+1] - log_density[iN];
+
+				} else if (iN == (int)(log_density.size()-1)){
+					// Backward difference for dN
+					dN_difference = log_coeff[k][iT][iN] - log_coeff[k][iT][iN-1];
+					dN_spacing = log_density[iN] - log_density[iN-1];
+					
+				}
+				grid_coeff[k][iT][iN].fdN = dN_difference/dN_spacing;
+
+			}
+		}
+
+		//Now that all axial derivatives have been calculated, use these results to calculate the mixed derivatives
+
+		for(int iT=0; iT<L_t; ++iT){
+			for(int iN=0; iN<L_n; ++iN){
+				double dTN_difference = 0.0;
+				double dTN_spacing = 0.0;
+				if((iT != 0) and (iT != (int)(log_temperature.size()-1))){
+					// Central difference for dTN
+					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
+					dTN_spacing = log_temperature[iT+1] - log_temperature[iT-1];
+
+				} else if (iT == 0) {
+					// Forward difference for dTN
+					dTN_difference = grid_coeff[k][iT+1][iN].fdN - grid_coeff[k][iT][iN].fdN;
+					dTN_spacing = log_temperature[iT+1] - log_temperature[iT];
+
+				} else if (iT == (int)(log_temperature.size()-1)){
+					// Backward difference for dTN
+					dTN_difference = grid_coeff[k][iT][iN].fdN - grid_coeff[k][iT-1][iN].fdN;
+					dTN_spacing = log_temperature[iT] - log_temperature[iT-1];
+					
+				}
+				grid_coeff[k][iT][iN].fdTdN = dTN_difference/dTN_spacing;
+			}
+		}
+	}
+
+	return grid_coeff;
+};
+std::vector<std::vector<std::vector<grid_matrix>>> RateCoefficient::calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff){
+	// For storing the value and derivative data at each grid-point
+	// Have to use vector since the array size is non-constant
+	int L_k = (int)(log_coeff.size());
+	int L_t = log_temperature.size();
+	int L_n = log_density.size();
+
+	std::vector<std::vector<std::vector<interp_data>>>
+	grid_coeff = calculate_grid_coeff(log_temperature, log_density, log_coeff);
+	
+	grid_matrix default_alpha_coeff = {0.0};
+
+	std::vector<std::vector<std::vector<grid_matrix>>>
+	alpha_coeff(L_k,std::vector<std::vector<grid_matrix>>(L_t-1,std::vector<grid_matrix>(L_n-1,default_alpha_coeff)));
+
+	const grid_matrix prematrix = {{
+			{+1, +0, +0, +0},
+			{+0, +0, +1, +0},
+			{-3, +3, -2, -1},
+			{+2, -2, +1, +1},
+		}};
+	const grid_matrix postmatrix = {{
+			{+1, +0, -3, +2},
+			{+0, +0, +3, -2},
+			{+0, +1, -2, +1},
+			{+0, +0, -1, +1},
+		}};
+
+	for (int k=0; k<L_k; ++k){
+		for(int iT=0; iT<L_t - 1; ++iT){ //iterator over temperature dimension of grid, which is of length log_temperature.size()-1
+			for(int iN=0; iN<L_n - 1; ++iN){ //iterator over density dimension of grid, which is of length log_density.size()-1
+
+				grid_matrix f_sub = {{
+					{grid_coeff[k][iT+0][iN+0].f,   grid_coeff[k][iT+0][iN+1].f,   grid_coeff[k][iT+0][iN+0].fdN,   grid_coeff[k][iT+0][iN+1].fdN},
+					{grid_coeff[k][iT+1][iN+0].f,   grid_coeff[k][iT+1][iN+1].f,   grid_coeff[k][iT+1][iN+0].fdN,   grid_coeff[k][iT+1][iN+1].fdN},
+					{grid_coeff[k][iT+0][iN+0].fdT, grid_coeff[k][iT+0][iN+1].fdT, grid_coeff[k][iT+0][iN+0].fdTdN, grid_coeff[k][iT+0][iN+1].fdTdN},
+					{grid_coeff[k][iT+1][iN+0].fdT, grid_coeff[k][iT+1][iN+1].fdT, grid_coeff[k][iT+1][iN+0].fdTdN, grid_coeff[k][iT+1][iN+1].fdTdN},
+				}};
+				// grid_coeff submatrix
+				grid_matrix alpha_sub = {0.0};
+				
+				//Matrix multiply prematrix * f_sub * postmatrix to find alpha_sub
+				//As per https://en.wikipedia.org/wiki/Bicubic_interpolation
+				for (int i=0; i<4; ++i){
+					for(int j=0; j<4; ++j){
+						for(int k=0; k<4; ++k){
+							for(int l=0; l<4; ++l){
+								alpha_sub[i][j] += prematrix[i][l] * f_sub[l][k] * postmatrix[k][j];
+							}
+						}
+					}
+				}
+				alpha_coeff[k][iT][iN] = alpha_sub;
+			}
+		}
+	}
+	return alpha_coeff;
 };

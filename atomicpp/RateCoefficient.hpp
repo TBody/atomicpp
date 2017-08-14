@@ -78,6 +78,8 @@
 			std::vector<std::vector< std::vector<double> > > get_log_coeff();
 			std::vector<double> get_log_temperature();
 			std::vector<double> get_log_density();
+			std::vector<std::vector<std::vector<interp_data>>> calculate_grid_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff);
+			std::vector<std::vector<std::vector<grid_matrix>>> calculate_alpha_coeff(std::vector<double>& log_temperature, std::vector<double>& log_density, std::vector<std::vector< std::vector<double> > >& log_coeff);
 		private:
 			int atomic_number;
 			std::string element;
@@ -85,6 +87,7 @@
 			std::vector<std::vector< std::vector<double> > > log_coeff;
 			std::vector<double> log_temperature;
 			std::vector<double> log_density;
+			// std::vector<std::vector<std::vector<grid_matrix>>> alpha_coeff;
 		};
 	}
 #endif
