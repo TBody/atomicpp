@@ -13,7 +13,7 @@ impurity_symbol = b'c' #need to include b (bytes) before the string for it to be
 impurity = atomicpy.PyImpuritySpecies(impurity_symbol)
 
 impurity_derivatives = atomicpy.PyRateEquations(impurity);
-impurity_derivatives.setThresholdDensity(1e9);
+impurity_derivatives.setThresholdDensity(0.0);
 impurity_derivatives.setDominantIonMass(1.0);
 
 Te = 50; #eV
@@ -80,8 +80,8 @@ if __name__ == "__main__":
 	for k in range(Z+1):
 		plt.loglog(Te_tests, Nz_results[:,k], label="{}".format(k))
 
-	plt.ylim([1e-5, 1])
-	plt.xlim([1e-1, 1e2])
+	plt.ylim([1e-3, 1])
+	# plt.xlim([1e-1, 1e2])
 	plt.legend()
 	plt.show()
 
