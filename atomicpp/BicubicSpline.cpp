@@ -3,6 +3,7 @@
 #include <math.h>
 #include <algorithm> //for upper/lower_bound
 #include <stdexcept> //For error-throwing
+#include <sstream>
 #include "BicubicSpline.hpp"
 
 #include <iostream>
@@ -18,7 +19,8 @@ BicubicSpline::BicubicSpline(
 		std::vector<double>& _y_values,
 		std::vector< std::vector<double> > & _z_values
 	) :
-	alpha_coeff((int)(_x_values.size()), std::vector<grid_matrix>((int)(_y_values.size()), default_grid_matrix))
+	alpha_coeff((int)(_x_values.size()), std::vector<grid_matrix>((int)(_y_values.size()), default_grid_matrix)),
+	grid_coeff((int)(_x_values.size()), std::vector<interp_data>((int)(_y_values.size()), default_interp_data))
 	{
 	x_values = _x_values;
 	y_values = _y_values;
@@ -27,6 +29,20 @@ BicubicSpline::BicubicSpline(
 	alpha_coeff = calculate_alpha_coeff();
 };
 double BicubicSpline::call0D(const double eval_x, const double eval_y){
+	
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((eval_x <= x_values[0]) or (eval_x >= x_values[x_values.size()-1])){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		std::stringstream errMsg;
+		errMsg << "X value off grid - require (" << x_values[0] << " < " << eval_x << " < " << x_values[x_values.size()-1] << ")";
+		throw std::runtime_error(errMsg.str());
+	};
+	if ((eval_y <= y_values[0]) or (eval_y >= y_values[y_values.size()-1])){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		std::stringstream errMsg;
+		errMsg << "Y value off grid - require (" << y_values[0] << " < " << eval_y << " < " << y_values[y_values.size()-1] << ")";
+		throw std::runtime_error(errMsg.str());
+	};
 
 	// Perform a basic interpolation based on linear distance
 	// values to search for
@@ -34,16 +50,6 @@ double BicubicSpline::call0D(const double eval_x, const double eval_y){
 	// Subtract 1 from answer to account for indexing from 0
 	int low_x = lower_bound(x_values.begin(), x_values.end(), eval_x) - x_values.begin() - 1;
 	int low_y = lower_bound(y_values.begin(), y_values.end(), eval_y) - y_values.begin() - 1;
-
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_x == (int)(x_values.size())-1) or (low_x == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on x called to point off the grid for which it was defined (will give seg fault)");
-	};
-	if ((low_y == (int)(y_values.size()-1)) or (low_y == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on y called to point off the grid for which it was defined (will give seg fault)");
-	};
 
 	double x_norm = 1/(x_values[low_x+1] - x_values[low_x+0]); //Spacing between grid points
 	double y_norm = 1/(y_values[low_y+1] - y_values[low_y+0]); //Spacing between grid points
@@ -220,7 +226,7 @@ std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff()
 	int Lx = x_values.size();
 	int Ly = y_values.size();
 
-	std::vector<std::vector<interp_data>> grid_coeff = calculate_grid_coeff();
+	grid_coeff = calculate_grid_coeff();
 
 	std::vector<std::vector<grid_matrix>>
 	alpha_coeff(Lx-1,std::vector<grid_matrix>(Ly-1,default_grid_matrix));

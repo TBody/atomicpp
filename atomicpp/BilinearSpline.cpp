@@ -2,6 +2,7 @@
 #include <math.h>
 #include <algorithm> //for upper/lower_bound
 #include <stdexcept> //For error-throwing
+#include <sstream>
 #include "BilinearSpline.hpp"
 
 using namespace atomicpp;
@@ -19,6 +20,20 @@ BilinearSpline::BilinearSpline(
 	//Doesn't require initialisation
 };
 double BilinearSpline::call0D(const double eval_x, const double eval_y){
+	
+	// Bounds checking -- make sure you haven't dropped off the end of the array
+	if ((eval_x <= x_values[0]) or (eval_x >= x_values[x_values.size()-1])){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		std::stringstream errMsg;
+		errMsg << "X value off grid - require (" << x_values[0] << " < " << eval_x << " < " << x_values[x_values.size()-1] << ")";
+		throw std::runtime_error(errMsg.str());
+	};
+	if ((eval_y <= y_values[0]) or (eval_y >= y_values[y_values.size()-1])){
+		// An easy error to make is supplying the function arguments already having taken the log10
+		std::stringstream errMsg;
+		errMsg << "Y value off grid - require (" << y_values[0] << " < " << eval_y << " < " << y_values[y_values.size()-1] << ")";
+		throw std::runtime_error(errMsg.str());
+	};
 
 	// Perform a basic interpolation based on linear distance
 	// values to search for
@@ -26,16 +41,6 @@ double BilinearSpline::call0D(const double eval_x, const double eval_y){
 	// Subtract 1 from answer to account for indexing from 0
 	int low_x = lower_bound(x_values.begin(), x_values.end(), eval_x) - x_values.begin() - 1;
 	int low_y = lower_bound(y_values.begin(), y_values.end(), eval_y) - y_values.begin() - 1;
-
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((low_x == (int)(x_values.size())-1) or (low_x == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on x called to point off the grid for which it was defined (will give seg fault)");
-	};
-	if ((low_y == (int)(y_values.size()-1)) or (low_y == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on y called to point off the grid for which it was defined (will give seg fault)");
-	};
 
 	double x_norm = 1/(x_values[low_x+1] - x_values[low_x+0]); //Spacing between grid points
 	double y_norm = 1/(y_values[low_y+1] - y_values[low_y+0]); //Spacing between grid points

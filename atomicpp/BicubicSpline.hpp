@@ -39,6 +39,7 @@
 		std::vector<double> y_values;
 		std::vector< std::vector<double> > z_values;
 		std::vector<std::vector<grid_matrix>> alpha_coeff;
+		std::vector<std::vector<interp_data>> grid_coeff; //For debugging
 	};
 	}
 #endif

@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = BicubicSpline.cpp
+# distutils: sources = [BicubicSpline.cpp, BilinearSpline.cpp]
 
 # Cython interface file for wrapping the object
 #
@@ -16,9 +16,8 @@ from cython.operator cimport dereference as deref
 
 cdef extern from "BicubicSpline.hpp" namespace "atomicpp":
 	cdef cppclass BicubicSpline:
-		# BicubicSpline()
 		BicubicSpline( vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values )
-		double call0D(double eval_x, double eval_y)
+		double call0D(double eval_x, double eval_y) except +RuntimeError
 		vector[ vector[double] ] get_z_values()
 		vector[double] get_x_values()
 		vector[double] get_y_values()
@@ -29,3 +28,18 @@ cdef class PyBicubicSpline:
 		self.BicubicSplinePtr.reset(new BicubicSpline(_x_values, _y_values, _z_values))
 	def call0D(self, double eval_x, double eval_y):
 		return deref(self.BicubicSplinePtr).call0D(eval_x, eval_y)
+
+cdef extern from "BilinearSpline.hpp" namespace "atomicpp":
+	cdef cppclass BilinearSpline:
+		BilinearSpline( vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values )
+		double call0D(double eval_x, double eval_y) except +RuntimeError
+		vector[ vector[double] ] get_z_values()
+		vector[double] get_x_values()
+		vector[double] get_y_values()
+
+cdef class PyBilinearSpline:
+	cdef unique_ptr[BilinearSpline] BilinearSplinePtr
+	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
+		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+	def call0D(self, double eval_x, double eval_y):
+		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)

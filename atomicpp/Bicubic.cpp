@@ -4,7 +4,8 @@
 {
     "distutils": {
         "depends": [
-            "BicubicSpline.hpp"
+            "BicubicSpline.hpp",
+            "BilinearSpline.hpp"
         ],
         "extra_compile_args": [
             "-std=c++11"
@@ -14,7 +15,8 @@
         ],
         "language": "c++",
         "sources": [
-            "BicubicSpline.cpp"
+            "BicubicSpline.cpp",
+            "BilinearSpline.cpp"
         ]
     },
     "module_name": "Bicubic"
@@ -471,6 +473,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "typeinfo"
 #include <memory>
 #include "BicubicSpline.hpp"
+#include "BilinearSpline.hpp"
 #ifdef _OPENMP
 #include <omp.h>
 #endif /* _OPENMP */
@@ -672,8 +675,9 @@ static const char *__pyx_f[] = {
 
 /*--- Type declarations ---*/
 struct __pyx_obj_7Bicubic_PyBicubicSpline;
+struct __pyx_obj_7Bicubic_PyBilinearSpline;
 
-/* "Bicubic.pyx":26
+/* "Bicubic.pyx":25
  * 		vector[double] get_y_values()
  * 
  * cdef class PyBicubicSpline:             # <<<<<<<<<<<<<<
@@ -683,6 +687,19 @@ struct __pyx_obj_7Bicubic_PyBicubicSpline;
 struct __pyx_obj_7Bicubic_PyBicubicSpline {
   PyObject_HEAD
   std::unique_ptr<atomicpp::BicubicSpline>  BicubicSplinePtr;
+};
+
+
+/* "Bicubic.pyx":40
+ * 		vector[double] get_y_values()
+ * 
+ * cdef class PyBilinearSpline:             # <<<<<<<<<<<<<<
+ * 	cdef unique_ptr[BilinearSpline] BilinearSplinePtr
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
+ */
+struct __pyx_obj_7Bicubic_PyBilinearSpline {
+  PyObject_HEAD
+  std::unique_ptr<atomicpp::BilinearSpline>  BilinearSplinePtr;
 };
 
 
@@ -750,6 +767,25 @@ struct __pyx_obj_7Bicubic_PyBicubicSpline {
 #define __Pyx_CLEAR(r)    do { PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);} while(0)
 #define __Pyx_XCLEAR(r)   do { if((r) != NULL) {PyObject* tmp = ((PyObject*)(r)); r = NULL; __Pyx_DECREF(tmp);}} while(0)
 
+/* PyObjectGetAttrStr.proto */
+#if CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PyObject* __Pyx_PyObject_GetAttrStr(PyObject* obj, PyObject* attr_name) {
+    PyTypeObject* tp = Py_TYPE(obj);
+    if (likely(tp->tp_getattro))
+        return tp->tp_getattro(obj, attr_name);
+#if PY_MAJOR_VERSION < 3
+    if (likely(tp->tp_getattr))
+        return tp->tp_getattr(obj, PyString_AS_STRING(attr_name));
+#endif
+    return PyObject_GetAttr(obj, attr_name);
+}
+#else
+#define __Pyx_PyObject_GetAttrStr(o,n) PyObject_GetAttr(o,n)
+#endif
+
+/* GetBuiltinName.proto */
+static PyObject *__Pyx_GetBuiltinName(PyObject *name);
+
 /* RaiseArgTupleInvalid.proto */
 static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
     Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found);
@@ -808,12 +844,14 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
 /* Module declarations from 'Bicubic' */
 static PyTypeObject *__pyx_ptype_7Bicubic_PyBicubicSpline = 0;
+static PyTypeObject *__pyx_ptype_7Bicubic_PyBilinearSpline = 0;
 static std::vector<double>  __pyx_convert_vector_from_py_double(PyObject *); /*proto*/
 static std::vector<std::vector<double> >  __pyx_convert_vector_from_py_std_3a__3a_vector_3c_double_3e___(PyObject *); /*proto*/
 #define __Pyx_MODULE_NAME "Bicubic"
 int __pyx_module_is_main_Bicubic = 0;
 
 /* Implementation of 'Bicubic' */
+static PyObject *__pyx_builtin_RuntimeError;
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_eval_x[] = "eval_x";
@@ -821,6 +859,8 @@ static const char __pyx_k_eval_y[] = "eval_y";
 static const char __pyx_k_x_values[] = "_x_values";
 static const char __pyx_k_y_values[] = "_y_values";
 static const char __pyx_k_z_values[] = "_z_values";
+static const char __pyx_k_RuntimeError[] = "RuntimeError";
+static PyObject *__pyx_n_s_RuntimeError;
 static PyObject *__pyx_n_s_eval_x;
 static PyObject *__pyx_n_s_eval_y;
 static PyObject *__pyx_n_s_main;
@@ -830,9 +870,12 @@ static PyObject *__pyx_n_s_y_values;
 static PyObject *__pyx_n_s_z_values;
 static int __pyx_pf_7Bicubic_15PyBicubicSpline___init__(struct __pyx_obj_7Bicubic_PyBicubicSpline *__pyx_v_self, std::vector<double>  __pyx_v__x_values, std::vector<double>  __pyx_v__y_values, std::vector<std::vector<double> >  __pyx_v__z_values); /* proto */
 static PyObject *__pyx_pf_7Bicubic_15PyBicubicSpline_2call0D(struct __pyx_obj_7Bicubic_PyBicubicSpline *__pyx_v_self, double __pyx_v_eval_x, double __pyx_v_eval_y); /* proto */
+static int __pyx_pf_7Bicubic_16PyBilinearSpline___init__(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, std::vector<double>  __pyx_v__x_values, std::vector<double>  __pyx_v__y_values, std::vector<std::vector<double> >  __pyx_v__z_values); /* proto */
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, double __pyx_v_eval_x, double __pyx_v_eval_y); /* proto */
 static PyObject *__pyx_tp_new_7Bicubic_PyBicubicSpline(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
+static PyObject *__pyx_tp_new_7Bicubic_PyBilinearSpline(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 
-/* "Bicubic.pyx":28
+/* "Bicubic.pyx":27
  * cdef class PyBicubicSpline:
  * 	cdef unique_ptr[BicubicSpline] BicubicSplinePtr
  * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):             # <<<<<<<<<<<<<<
@@ -870,16 +913,16 @@ static int __pyx_pw_7Bicubic_15PyBicubicSpline_1__init__(PyObject *__pyx_v_self,
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_y_values)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 1); __PYX_ERR(0, 28, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 1); __PYX_ERR(0, 27, __pyx_L3_error)
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_z_values)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); __PYX_ERR(0, 28, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); __PYX_ERR(0, 27, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(0, 28, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(0, 27, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -888,13 +931,13 @@ static int __pyx_pw_7Bicubic_15PyBicubicSpline_1__init__(PyObject *__pyx_v_self,
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v__x_values = __pyx_convert_vector_from_py_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 28, __pyx_L3_error)
-    __pyx_v__y_values = __pyx_convert_vector_from_py_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 28, __pyx_L3_error)
-    __pyx_v__z_values = __pyx_convert_vector_from_py_std_3a__3a_vector_3c_double_3e___(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 28, __pyx_L3_error)
+    __pyx_v__x_values = __pyx_convert_vector_from_py_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v__y_values = __pyx_convert_vector_from_py_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
+    __pyx_v__z_values = __pyx_convert_vector_from_py_std_3a__3a_vector_3c_double_3e___(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 28, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 27, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("Bicubic.PyBicubicSpline.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -912,7 +955,7 @@ static int __pyx_pf_7Bicubic_15PyBicubicSpline___init__(struct __pyx_obj_7Bicubi
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "Bicubic.pyx":29
+  /* "Bicubic.pyx":28
  * 	cdef unique_ptr[BicubicSpline] BicubicSplinePtr
  * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
  * 		self.BicubicSplinePtr.reset(new BicubicSpline(_x_values, _y_values, _z_values))             # <<<<<<<<<<<<<<
@@ -921,7 +964,7 @@ static int __pyx_pf_7Bicubic_15PyBicubicSpline___init__(struct __pyx_obj_7Bicubi
  */
   __pyx_v_self->BicubicSplinePtr.reset(new atomicpp::BicubicSpline(__pyx_v__x_values, __pyx_v__y_values, __pyx_v__z_values));
 
-  /* "Bicubic.pyx":28
+  /* "Bicubic.pyx":27
  * cdef class PyBicubicSpline:
  * 	cdef unique_ptr[BicubicSpline] BicubicSplinePtr
  * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):             # <<<<<<<<<<<<<<
@@ -935,11 +978,12 @@ static int __pyx_pf_7Bicubic_15PyBicubicSpline___init__(struct __pyx_obj_7Bicubi
   return __pyx_r;
 }
 
-/* "Bicubic.pyx":30
+/* "Bicubic.pyx":29
  * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
  * 		self.BicubicSplinePtr.reset(new BicubicSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
  * 		return deref(self.BicubicSplinePtr).call0D(eval_x, eval_y)
+ * 
  */
 
 /* Python wrapper */
@@ -970,11 +1014,11 @@ static PyObject *__pyx_pw_7Bicubic_15PyBicubicSpline_3call0D(PyObject *__pyx_v_s
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_eval_y)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, 1); __PYX_ERR(0, 30, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, 1); __PYX_ERR(0, 29, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "call0D") < 0)) __PYX_ERR(0, 30, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "call0D") < 0)) __PYX_ERR(0, 29, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -982,12 +1026,12 @@ static PyObject *__pyx_pw_7Bicubic_15PyBicubicSpline_3call0D(PyObject *__pyx_v_s
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_eval_x = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_eval_x == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
-    __pyx_v_eval_y = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_eval_y == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 30, __pyx_L3_error)
+    __pyx_v_eval_x = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_eval_x == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L3_error)
+    __pyx_v_eval_y = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_eval_y == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 30, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 29, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("Bicubic.PyBicubicSpline.call0D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1003,32 +1047,253 @@ static PyObject *__pyx_pw_7Bicubic_15PyBicubicSpline_3call0D(PyObject *__pyx_v_s
 static PyObject *__pyx_pf_7Bicubic_15PyBicubicSpline_2call0D(struct __pyx_obj_7Bicubic_PyBicubicSpline *__pyx_v_self, double __pyx_v_eval_x, double __pyx_v_eval_y) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
+  double __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("call0D", 0);
 
-  /* "Bicubic.pyx":31
+  /* "Bicubic.pyx":30
  * 		self.BicubicSplinePtr.reset(new BicubicSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):
  * 		return deref(self.BicubicSplinePtr).call0D(eval_x, eval_y)             # <<<<<<<<<<<<<<
+ * 
+ * cdef extern from "BilinearSpline.hpp" namespace "atomicpp":
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble((*__pyx_v_self->BicubicSplinePtr).call0D(__pyx_v_eval_x, __pyx_v_eval_y)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
+  try {
+    __pyx_t_1 = (*__pyx_v_self->BicubicSplinePtr).call0D(__pyx_v_eval_x, __pyx_v_eval_y);
+  } catch(...) {
+    try { throw; } catch(const std::exception& exn) { PyErr_SetString(__pyx_builtin_RuntimeError, exn.what()); } catch(...) { PyErr_SetNone(__pyx_builtin_RuntimeError); }
+    __PYX_ERR(0, 30, __pyx_L1_error)
+  }
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "Bicubic.pyx":30
+  /* "Bicubic.pyx":29
  * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
  * 		self.BicubicSplinePtr.reset(new BicubicSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
  * 		return deref(self.BicubicSplinePtr).call0D(eval_x, eval_y)
+ * 
  */
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
   __Pyx_AddTraceback("Bicubic.PyBicubicSpline.call0D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "Bicubic.pyx":42
+ * cdef class PyBilinearSpline:
+ * 	cdef unique_ptr[BilinearSpline] BilinearSplinePtr
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):             # <<<<<<<<<<<<<<
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+ * 	def call0D(self, double eval_x, double eval_y):
+ */
+
+/* Python wrapper */
+static int __pyx_pw_7Bicubic_16PyBilinearSpline_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_7Bicubic_16PyBilinearSpline_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  std::vector<double>  __pyx_v__x_values;
+  std::vector<double>  __pyx_v__y_values;
+  std::vector<std::vector<double> >  __pyx_v__z_values;
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_x_values,&__pyx_n_s_y_values,&__pyx_n_s_z_values,0};
+    PyObject* values[3] = {0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_x_values)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_y_values)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 1); __PYX_ERR(0, 42, __pyx_L3_error)
+        }
+        case  2:
+        if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_z_values)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); __PYX_ERR(0, 42, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(0, 42, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+      values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+    }
+    __pyx_v__x_values = __pyx_convert_vector_from_py_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
+    __pyx_v__y_values = __pyx_convert_vector_from_py_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
+    __pyx_v__z_values = __pyx_convert_vector_from_py_std_3a__3a_vector_3c_double_3e___(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 42, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("Bicubic.PyBilinearSpline.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return -1;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7Bicubic_16PyBilinearSpline___init__(((struct __pyx_obj_7Bicubic_PyBilinearSpline *)__pyx_v_self), __pyx_v__x_values, __pyx_v__y_values, __pyx_v__z_values);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static int __pyx_pf_7Bicubic_16PyBilinearSpline___init__(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, std::vector<double>  __pyx_v__x_values, std::vector<double>  __pyx_v__y_values, std::vector<std::vector<double> >  __pyx_v__z_values) {
+  int __pyx_r;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__init__", 0);
+
+  /* "Bicubic.pyx":43
+ * 	cdef unique_ptr[BilinearSpline] BilinearSplinePtr
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))             # <<<<<<<<<<<<<<
+ * 	def call0D(self, double eval_x, double eval_y):
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ */
+  __pyx_v_self->BilinearSplinePtr.reset(new atomicpp::BilinearSpline(__pyx_v__x_values, __pyx_v__y_values, __pyx_v__z_values));
+
+  /* "Bicubic.pyx":42
+ * cdef class PyBilinearSpline:
+ * 	cdef unique_ptr[BilinearSpline] BilinearSplinePtr
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):             # <<<<<<<<<<<<<<
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+ * 	def call0D(self, double eval_x, double eval_y):
+ */
+
+  /* function exit code */
+  __pyx_r = 0;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "Bicubic.pyx":44
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+ * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_3call0D(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_3call0D(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  double __pyx_v_eval_x;
+  double __pyx_v_eval_y;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("call0D (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_eval_x,&__pyx_n_s_eval_y,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_eval_x)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        case  1:
+        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_eval_y)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, 1); __PYX_ERR(0, 44, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "call0D") < 0)) __PYX_ERR(0, 44, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+    }
+    __pyx_v_eval_x = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_eval_x == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 44, __pyx_L3_error)
+    __pyx_v_eval_y = __pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_eval_y == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 44, __pyx_L3_error)
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("call0D", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 44, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("Bicubic.PyBilinearSpline.call0D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(((struct __pyx_obj_7Bicubic_PyBilinearSpline *)__pyx_v_self), __pyx_v_eval_x, __pyx_v_eval_y);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, double __pyx_v_eval_x, double __pyx_v_eval_y) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  double __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  __Pyx_RefNannySetupContext("call0D", 0);
+
+  /* "Bicubic.pyx":45
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+ * 	def call0D(self, double eval_x, double eval_y):
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  try {
+    __pyx_t_1 = (*__pyx_v_self->BilinearSplinePtr).call0D(__pyx_v_eval_x, __pyx_v_eval_y);
+  } catch(...) {
+    try { throw; } catch(const std::exception& exn) { PyErr_SetString(__pyx_builtin_RuntimeError, exn.what()); } catch(...) { PyErr_SetNone(__pyx_builtin_RuntimeError); }
+    __PYX_ERR(0, 45, __pyx_L1_error)
+  }
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "Bicubic.pyx":44
+ * 	def __init__(self, vector[double]& _x_values, vector[double]& _y_values, vector[ vector[double] ]& _z_values ):
+ * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
+ * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_AddTraceback("Bicubic.PyBilinearSpline.call0D", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1360,6 +1625,94 @@ static PyTypeObject __pyx_type_7Bicubic_PyBicubicSpline = {
   #endif
 };
 
+static PyObject *__pyx_tp_new_7Bicubic_PyBilinearSpline(PyTypeObject *t, CYTHON_UNUSED PyObject *a, CYTHON_UNUSED PyObject *k) {
+  struct __pyx_obj_7Bicubic_PyBilinearSpline *p;
+  PyObject *o;
+  if (likely((t->tp_flags & Py_TPFLAGS_IS_ABSTRACT) == 0)) {
+    o = (*t->tp_alloc)(t, 0);
+  } else {
+    o = (PyObject *) PyBaseObject_Type.tp_new(t, __pyx_empty_tuple, 0);
+  }
+  if (unlikely(!o)) return 0;
+  p = ((struct __pyx_obj_7Bicubic_PyBilinearSpline *)o);
+  new((void*)&(p->BilinearSplinePtr)) std::unique_ptr<atomicpp::BilinearSpline> ();
+  return o;
+}
+
+static void __pyx_tp_dealloc_7Bicubic_PyBilinearSpline(PyObject *o) {
+  struct __pyx_obj_7Bicubic_PyBilinearSpline *p = (struct __pyx_obj_7Bicubic_PyBilinearSpline *)o;
+  #if PY_VERSION_HEX >= 0x030400a1
+  if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
+    if (PyObject_CallFinalizerFromDealloc(o)) return;
+  }
+  #endif
+  __Pyx_call_destructor(p->BilinearSplinePtr);
+  (*Py_TYPE(o)->tp_free)(o);
+}
+
+static PyMethodDef __pyx_methods_7Bicubic_PyBilinearSpline[] = {
+  {"call0D", (PyCFunction)__pyx_pw_7Bicubic_16PyBilinearSpline_3call0D, METH_VARARGS|METH_KEYWORDS, 0},
+  {0, 0, 0, 0}
+};
+
+static PyTypeObject __pyx_type_7Bicubic_PyBilinearSpline = {
+  PyVarObject_HEAD_INIT(0, 0)
+  "Bicubic.PyBilinearSpline", /*tp_name*/
+  sizeof(struct __pyx_obj_7Bicubic_PyBilinearSpline), /*tp_basicsize*/
+  0, /*tp_itemsize*/
+  __pyx_tp_dealloc_7Bicubic_PyBilinearSpline, /*tp_dealloc*/
+  0, /*tp_print*/
+  0, /*tp_getattr*/
+  0, /*tp_setattr*/
+  #if PY_MAJOR_VERSION < 3
+  0, /*tp_compare*/
+  #endif
+  #if PY_MAJOR_VERSION >= 3
+  0, /*tp_as_async*/
+  #endif
+  0, /*tp_repr*/
+  0, /*tp_as_number*/
+  0, /*tp_as_sequence*/
+  0, /*tp_as_mapping*/
+  0, /*tp_hash*/
+  0, /*tp_call*/
+  0, /*tp_str*/
+  0, /*tp_getattro*/
+  0, /*tp_setattro*/
+  0, /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
+  0, /*tp_doc*/
+  0, /*tp_traverse*/
+  0, /*tp_clear*/
+  0, /*tp_richcompare*/
+  0, /*tp_weaklistoffset*/
+  0, /*tp_iter*/
+  0, /*tp_iternext*/
+  __pyx_methods_7Bicubic_PyBilinearSpline, /*tp_methods*/
+  0, /*tp_members*/
+  0, /*tp_getset*/
+  0, /*tp_base*/
+  0, /*tp_dict*/
+  0, /*tp_descr_get*/
+  0, /*tp_descr_set*/
+  0, /*tp_dictoffset*/
+  __pyx_pw_7Bicubic_16PyBilinearSpline_1__init__, /*tp_init*/
+  0, /*tp_alloc*/
+  __pyx_tp_new_7Bicubic_PyBilinearSpline, /*tp_new*/
+  0, /*tp_free*/
+  0, /*tp_is_gc*/
+  0, /*tp_bases*/
+  0, /*tp_mro*/
+  0, /*tp_cache*/
+  0, /*tp_subclasses*/
+  0, /*tp_weaklist*/
+  0, /*tp_del*/
+  0, /*tp_version_tag*/
+  #if PY_VERSION_HEX >= 0x030400a1
+  0, /*tp_finalize*/
+  #endif
+};
+
 static PyMethodDef __pyx_methods[] = {
   {0, 0, 0, 0}
 };
@@ -1383,6 +1736,7 @@ static struct PyModuleDef __pyx_moduledef = {
 #endif
 
 static __Pyx_StringTabEntry __pyx_string_tab[] = {
+  {&__pyx_n_s_RuntimeError, __pyx_k_RuntimeError, sizeof(__pyx_k_RuntimeError), 0, 0, 1, 1},
   {&__pyx_n_s_eval_x, __pyx_k_eval_x, sizeof(__pyx_k_eval_x), 0, 0, 1, 1},
   {&__pyx_n_s_eval_y, __pyx_k_eval_y, sizeof(__pyx_k_eval_y), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
@@ -1393,7 +1747,10 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
+  __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(0, 20, __pyx_L1_error)
   return 0;
+  __pyx_L1_error:;
+  return -1;
 }
 
 static int __Pyx_InitCachedConstants(void) {
@@ -1494,10 +1851,14 @@ PyMODINIT_FUNC PyInit_Bicubic(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  if (PyType_Ready(&__pyx_type_7Bicubic_PyBicubicSpline) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_7Bicubic_PyBicubicSpline) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
   __pyx_type_7Bicubic_PyBicubicSpline.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "PyBicubicSpline", (PyObject *)&__pyx_type_7Bicubic_PyBicubicSpline) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
+  if (PyObject_SetAttrString(__pyx_m, "PyBicubicSpline", (PyObject *)&__pyx_type_7Bicubic_PyBicubicSpline) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
   __pyx_ptype_7Bicubic_PyBicubicSpline = &__pyx_type_7Bicubic_PyBicubicSpline;
+  if (PyType_Ready(&__pyx_type_7Bicubic_PyBilinearSpline) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_type_7Bicubic_PyBilinearSpline.tp_print = 0;
+  if (PyObject_SetAttrString(__pyx_m, "PyBilinearSpline", (PyObject *)&__pyx_type_7Bicubic_PyBilinearSpline) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_ptype_7Bicubic_PyBilinearSpline = &__pyx_type_7Bicubic_PyBilinearSpline;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
@@ -1508,7 +1869,7 @@ PyMODINIT_FUNC PyInit_Bicubic(void)
 
   /* "Bicubic.pyx":1
  * # distutils: language = c++             # <<<<<<<<<<<<<<
- * # distutils: sources = BicubicSpline.cpp
+ * # distutils: sources = [BicubicSpline.cpp, BilinearSpline.cpp]
  * 
  */
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -1563,6 +1924,20 @@ end:
     return (__Pyx_RefNannyAPIStruct *)r;
 }
 #endif
+
+/* GetBuiltinName */
+static PyObject *__Pyx_GetBuiltinName(PyObject *name) {
+    PyObject* result = __Pyx_PyObject_GetAttrStr(__pyx_b, name);
+    if (unlikely(!result)) {
+        PyErr_Format(PyExc_NameError,
+#if PY_MAJOR_VERSION >= 3
+            "name '%U' is not defined", name);
+#else
+            "name '%.200s' is not defined", PyString_AS_STRING(name));
+#endif
+    }
+    return result;
+}
 
 /* RaiseArgTupleInvalid */
 static void __Pyx_RaiseArgtupleInvalid(
