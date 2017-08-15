@@ -1,5 +1,9 @@
 #ifndef BICUBICSPLINE_H
 #define BICUBICSPLINE_H
+	
+	#include <vector>
+	#include <array>
+
 	namespace atomicpp{
 	
 	typedef std::vector<std::vector<double>> grid_matrix;

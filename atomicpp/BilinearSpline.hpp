@@ -1,5 +1,7 @@
 #ifndef BILINEARSPLINE_H
 #define BILINEARSPLINE_H
+	#include <vector>
+
 	namespace atomicpp{
 	class BilinearSpline{
 	public:

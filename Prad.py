@@ -64,26 +64,50 @@ if __name__ == "__main__":
 	# 	print("{:>5}^{}: {:.2e}".format("Ni",k,result[-1,k]))
 	# 	print("{:>5}^{}: {:.2e}".format("Ni",k,eq[k]))
 
-	Te_tests = np.logspace(-0.6, 3.8, 500);
-	
-	Nz_results = np.zeros((len(Te_tests),Z+1))
+	if True:
+		Te_tests = np.logspace(-0.6, 3.8, 500);
+		
+		Nz_results = np.zeros((len(Te_tests),Z+1))
 
-	# Nz_results = np.zeroslike()
+		# Nz_results = np.zeroslike()
 
-	for Te_index in range(len(Te_tests)):
-		Te = Te_tests[Te_index]
-		print("{:.2e}".format(Te))
-		eq = fsolve(evolve_density_TI,Nzk_init, args=(Te, Ne, Vi, Nn, Vn, Vzk))
-		Nz_results[Te_index,:] = eq/sum(eq)
+		for Te_index in range(len(Te_tests)):
+			Te = Te_tests[Te_index]
+			print("{:.2e}".format(Te))
+			eq = fsolve(evolve_density_TI,Nzk_init, args=(Te, Ne, Vi, Nn, Vn, Vzk))
+			Nz_results[Te_index,:] = eq/sum(eq)
 
-	import matplotlib.pyplot as plt
-	for k in range(Z+1):
-		plt.loglog(Te_tests, Nz_results[:,k], label="{}".format(k))
+		import matplotlib.pyplot as plt
+		for k in range(Z+1):
+			plt.loglog(Te_tests, Nz_results[:,k], label="{}".format(k))
 
-	plt.ylim([1e-3, 1])
-	# plt.xlim([1e-1, 1e2])
-	plt.legend()
-	plt.show()
+		plt.ylim([1e-3, 1])
+		# plt.xlim([1e-1, 1e2])
+		plt.legend()
+		plt.show()
+
+	if False:
+		# Te_tests = np.logspace(-0.6, 3.8, 500);
+		Ne_tests = np.logspace(14,21,500)
+		
+		Nz_results = np.zeros((len(Ne_tests),Z+1))
+
+		# Nz_results = np.zeroslike()
+
+		for Ne_index in range(len(Ne_tests)):
+			Ne = Ne_tests[Ne_index]
+			print("{:.2e}".format(Ne))
+			eq = fsolve(evolve_density_TI,Nzk_init, args=(Te, Ne, Vi, Nn, Vn, Vzk))
+			Nz_results[Ne_index,:] = eq/sum(eq)
+
+		import matplotlib.pyplot as plt
+		for k in range(Z+1):
+			plt.loglog(Ne_tests, Nz_results[:,k], label="{}".format(k))
+
+		plt.ylim([1e-3, 1])
+		# plt.xlim([1e-1, 1e2])
+		plt.legend()
+		plt.show()
 
 
 

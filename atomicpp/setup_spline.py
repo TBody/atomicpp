@@ -7,8 +7,8 @@ from Cython.Build import cythonize
 # to compile
 
 ext_module = Extension(
-    "atomicpy",
-    ["atomicpy.pyx"],
+    "Bicubic",
+    ["Bicubic.pyx"],
     language="c++",
     extra_compile_args=['-std=c++11'],
 	extra_link_args=['-std=c++11']
@@ -17,6 +17,6 @@ ext_module = Extension(
 )
 
 setup(
-  name = "atomicpy",
+  name = "Bicubic",
   ext_modules = cythonize(ext_module),
 )
