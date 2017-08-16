@@ -1,0 +1,1483 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"pyx",
+				"pyxspline"
+			],
+			[
+				"x",
+				"x_values"
+			],
+			[
+				"log",
+				"log_coeff"
+			],
+			[
+				"end",
+				"end_in"
+			],
+			[
+				"x_in",
+				"x_in_min"
+			],
+			[
+				"ys",
+				"y_spacing"
+			],
+			[
+				"data",
+				"datapoint"
+			],
+			[
+				"cp",
+				"cppspline"
+			],
+			[
+				"yc",
+				"y_const_index"
+			],
+			[
+				"cpp",
+				"cpp_hi_res"
+			],
+			[
+				"origin",
+				"origin='lower"
+			],
+			[
+				"for",
+				"format"
+			],
+			[
+				"cor",
+				"coord"
+			],
+			[
+				"X",
+				"X_grid"
+			],
+			[
+				"grid",
+				"grid_coeff"
+			],
+			[
+				"Y",
+				"Y_grid"
+			],
+			[
+				"get",
+				"get_grid_coeff\t(Bicubic.pyx)"
+			],
+			[
+				"gri",
+				"grid_coeff"
+			],
+			[
+				"Bicu",
+				"BicubicSpline"
+			],
+			[
+				"generate_from_func_",
+				"generate_from_func_uniform"
+			],
+			[
+				"y",
+				"y_values"
+			],
+			[
+				"p",
+				"pyx_interp"
+			],
+			[
+				"inter",
+				"interp_data"
+			],
+			[
+				"grid_",
+				"grid_coeff\t(BicubicSpline.cpp)"
+			],
+			[
+				"err",
+				"errMsg"
+			],
+			[
+				"col",
+				"colorbar"
+			],
+			[
+				"y_",
+				"y_values"
+			],
+			[
+				"z",
+				"z_values"
+			],
+			[
+				"x_",
+				"x_values"
+			],
+			[
+				"eval",
+				"eval_x"
+			],
+			[
+				"se",
+				"set_title"
+			],
+			[
+				"can",
+				"candidate"
+			],
+			[
+				"hi",
+				"hi_res"
+			],
+			[
+				"lowre",
+				"low_res"
+			],
+			[
+				"ax",
+				"ax1"
+			],
+			[
+				"ym",
+				"y_max"
+			],
+			[
+				"xm",
+				"x_min"
+			],
+			[
+				"im",
+				"imshow"
+			],
+			[
+				"Bi",
+				"BicubicSpline\t(Bicubic.pyx)"
+			],
+			[
+				"if",
+				"ifmain\tif __name__ == '__main__'"
+			],
+			[
+				"plot",
+				"plot_Y"
+			],
+			[
+				"plotx",
+				"plot_X"
+			],
+			[
+				"e",
+				"eval_x"
+			],
+			[
+				"_",
+				"_y_values"
+			],
+			[
+				"cal",
+				"call0D\t(BicubicSpline.cpp)"
+			],
+			[
+				"string",
+				"std::string\t(Prad.py)"
+			],
+			[
+				"name",
+				"namespace\t(BicubicSpline.cpp)"
+			],
+			[
+				"inte",
+				"interpolation\t(BicubicSpline.cpp)"
+			],
+			[
+				"do",
+				"double\t(BicubicSpline.cpp)"
+			],
+			[
+				"def",
+				"default_grid_matrix"
+			],
+			[
+				"defin",
+				"default_interp_data"
+			],
+			[
+				"zero",
+				"zero_interpolator\t(RateCoefficient.cpp)"
+			],
+			[
+				"int",
+				"interpolator"
+			],
+			[
+				"sour",
+				"source_interpolator"
+			],
+			[
+				"evall",
+				"eval_log_coeff"
+			],
+			[
+				"aotm",
+				"atomic_number"
+			],
+			[
+				"coef",
+				"coef_values"
+			],
+			[
+				"eva",
+				"eval_dens"
+			],
+			[
+				"phy",
+				"physics_process"
+			],
+			[
+				"get_log",
+				"get_log_temperature"
+			],
+			[
+				"set",
+				"set_temp_values\t(BilinearSpline.cpp)"
+			],
+			[
+				"Bil",
+				"BilinearSpline.o"
+			],
+			[
+				"dens",
+				"dens_values"
+			],
+			[
+				"tem",
+				"temp_values"
+			],
+			[
+				"B",
+				"BilinearSpline"
+			],
+			[
+				"low",
+				"low_dens"
+			],
+			[
+				"low_",
+				"low_dens"
+			],
+			[
+				"temp",
+				"temp_values\t(BilinearSpline.hpp)"
+			],
+			[
+				"atomic",
+				"atomicpp\t(RateCoefficient.hpp)"
+			],
+			[
+				"call",
+				"call0D"
+			],
+			[
+				"atmoic",
+				"atomicpp"
+			],
+			[
+				"Int",
+				"Interpolator\t(RateCoefficient.hpp)"
+			],
+			[
+				"alpha",
+				"alpha_coeff"
+			],
+			[
+				"alp",
+				"alpha_coeff"
+			],
+			[
+				"call0D_bi",
+				"call0D_bilinear\t(RateCoefficient.hpp)"
+			],
+			[
+				"calcula",
+				"calculate_grid_coeff"
+			],
+			[
+				"logtem",
+				"log_temperature"
+			],
+			[
+				"logd",
+				"log_density.size"
+			],
+			[
+				"Ra",
+				"RateCoefficient"
+			],
+			[
+				"al",
+				"alpha_sub"
+			],
+			[
+				"ap",
+				"alpha_sub"
+			],
+			[
+				"fdT",
+				"fdTdN"
+			],
+			[
+				"_log",
+				"_logTe"
+			],
+			[
+				"f__",
+				"f__[1,1"
+			],
+			[
+				"fs",
+				"f_sub"
+			],
+			[
+				"logc",
+				"log_coeff"
+			],
+			[
+				"return",
+				"return_value"
+			],
+			[
+				"_l",
+				"_log10_Te"
+			],
+			[
+				"sptin",
+				"std::printf(\"%+6.4e"
+			],
+			[
+				"dTN",
+				"dTN_spacing"
+			],
+			[
+				"dN",
+				"dN_spacing"
+			],
+			[
+				"dT",
+				"dT_spacing"
+			],
+			[
+				"log_",
+				"log_temperature"
+			],
+			[
+				"atom",
+				"atomic_number"
+			],
+			[
+				"std",
+				"std::vector"
+			],
+			[
+				"bi",
+				"bicubic.o"
+			],
+			[
+				"bicubi",
+				"bicubic_spline.o"
+			],
+			[
+				"R",
+				"RateCoefficient.o"
+			],
+			[
+				"file",
+				"filename"
+			],
+			[
+				"Te",
+				"Te_it"
+			],
+			[
+				"Ne",
+				"Ne_sample"
+			],
+			[
+				"Nz",
+				"Nz_results"
+			],
+			[
+				"evolve_density_",
+				"evolve_density_TI"
+			],
+			[
+				"N",
+				"Nzk_init"
+			],
+			[
+				"O",
+				"O0"
+			],
+			[
+				"Im",
+				"ImpuritySpeciesPtr"
+			],
+			[
+				"de",
+				"deref"
+			],
+			[
+				"evel",
+				"evolve_density"
+			],
+			[
+				"__",
+				"__name__\t(odeint2.py)"
+			],
+			[
+				"new",
+				"newString"
+			],
+			[
+				"con",
+				"convertToStdString\t(add.pyx)"
+			],
+			[
+				"imp",
+				"impurity_symbol"
+			],
+			[
+				"In",
+				"InputString"
+			],
+			[
+				"Add",
+				"AdderPtr"
+			],
+			[
+				"A",
+				"AdderPtr"
+			],
+			[
+				"Deri",
+				"DerivStruct"
+			],
+			[
+				"Rate",
+				"RateEquations.hpp"
+			],
+			[
+				"seT",
+				"setThresholdDensity"
+			],
+			[
+				"impuritysp",
+				"impurity_symbol_supplied"
+			],
+			[
+				"Imp",
+				"ImpuritySpecies"
+			],
+			[
+				"Der",
+				"DerivStruct"
+			],
+			[
+				"De",
+				"DerivStruct"
+			],
+			[
+				"mak",
+				"makeDerivativeStruct"
+			],
+			[
+				"derivatives",
+				"derivative_struct"
+			],
+			[
+				"der",
+				"derivative_struct"
+			],
+			[
+				"sharedFun",
+				"sharedFunctions.hpp\t(Makefile)"
+			],
+			[
+				"incl",
+				"include"
+			],
+			[
+				"re",
+				"returntwoInts"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/C++/C++ Single File.sublime-build",
+				"Run"
+			]
+		],
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/C++ Starting Kit/C++ - Starting Kit.sublime-build",
+					""
+				],
+				[
+					"Packages/C++ Starting Kit/C++ - Starting Kit.sublime-build",
+					"Run"
+				]
+			],
+			[
+				"Packages/C++/C++ Single File.sublime-build",
+				"Run"
+			]
+		],
+		[
+			[
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					""
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Traditional"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Script Builder"
+				]
+			],
+			[
+				"Packages/LaTeXTools/LaTeX.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/Markdown Preview/Markdown.sublime-build",
+					""
+				]
+			],
+			[
+				"Packages/Markdown Preview/Markdown.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		],
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"trail",
+				"Trailing Spaces: Toggle Trailing Spaces Highlighting"
+			],
+			[
+				"folding",
+				"Code Folding: Unfold All"
+			],
+			[
+				"tra",
+				"Trailing Spaces: Delete Trailing Spaces"
+			],
+			[
+				"dis",
+				"Package Control: Disable Package"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"trai",
+				"Trailing Spaces: Delete Trailing Spaces"
+			],
+			[
+				"linter",
+				"SublimeLinter: Next Error"
+			],
+			[
+				"trailing ",
+				"Trailing Spaces: Delete Trailing Spaces"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"lint",
+				"SublimeLinter: Next Error"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			],
+			[
+				"trailing",
+				"Trailing Spaces: Delete Trailing Spaces"
+			],
+			[
+				"pack",
+				"Package Control: Install Package"
+			],
+			[
+				"code fold",
+				"Code Folding: Unfold All"
+			],
+			[
+				"enable",
+				"Package Control: Enable Package"
+			],
+			[
+				"disa",
+				"Package Control: Disable Package"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"dox",
+				"DoxyDoxygen: Tutorial"
+			],
+			[
+				"package",
+				"Package Control: Remove Package"
+			],
+			[
+				"do",
+				"DoxyDoxygen: Tutorial"
+			],
+			[
+				"preview",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"Markdown",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"print",
+				"Print to HTML: print as HTML via browser"
+			],
+			[
+				"delete ",
+				"Trailing Spaces: Delete Trailing Spaces"
+			],
+			[
+				"comment",
+				"Toggle Comment"
+			],
+			[
+				"package control",
+				"Package Control: Discover Packages"
+			],
+			[
+				"package control add",
+				"Package Control: Advanced Install Package"
+			],
+			[
+				"package control ",
+				"Package Control: Add Channel"
+			],
+			[
+				"package control rem",
+				"Package Control: Remove Package"
+			],
+			[
+				"Align",
+				"Package Control: Install Package"
+			],
+			[
+				"theme",
+				"ColorSchemeSelector: Select Color Scheme"
+			],
+			[
+				"sort",
+				"Sort Lines (Case Sensitive)"
+			],
+			[
+				"T",
+				"Typewriter: Scrolling Mode (Toggle)"
+			],
+			[
+				"typ",
+				"Typewriter: Scrolling Mode (Toggle)"
+			],
+			[
+				"",
+				"ColorSchemeSelector: Select Color Scheme"
+			],
+			[
+				"remove ",
+				"Package Control: Remove Package"
+			],
+			[
+				"install pa",
+				"Package Control: Install Package"
+			],
+			[
+				"type",
+				"Typewriter: Scrolling Mode (Toggle)"
+			],
+			[
+				"packa add",
+				"Package Control: Add Channel"
+			],
+			[
+				"color",
+				"Colorsublime: Install Theme"
+			],
+			[
+				"package co in",
+				"Package Control: Install Package"
+			],
+			[
+				"proje",
+				"Project: Save As"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"latex",
+				"LaTeXTools: Reconfigure and migrate settings"
+			],
+			[
+				"package control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"package control: ins",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/thomasbody/Science/Bicubic_spline",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/fitpack",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/src"
+	],
+	"file_history":
+	[
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/src/fitpack.pyf",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/src/dfitpackmodule.c",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/setup_splines.py",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/fitpack2.py",
+		"/Users/thomasbody/Science/Bicubic_spline/Spline.sublime-project",
+		"/Users/thomasbody/Science/Bicubic_spline/interpolate/__init__.py",
+		"/Users/thomasbody/Science/Bicubic_spline/Spline.py",
+		"/Users/thomasbody/Science/interpolate/fitpack/bispeu.f",
+		"/Users/thomasbody/Science/Bicubic_spline/test_spline.py",
+		"/Users/thomasbody/Science/interpolate/setup_splines.py",
+		"/Users/thomasbody/.bash_profile",
+		"/Users/thomasbody/Science/interpolate/inspect_RBC.py",
+		"/Users/thomasbody/Science/interpolate/__init__.py",
+		"/Users/thomasbody/Science/scipy/scipy/interpolate/__init__.py",
+		"/Users/thomasbody/Science/interpolate/fitpack2.py",
+		"/Users/thomasbody/Science/scipy/scipy/interpolate/fitpack2.py",
+		"/Users/thomasbody/Science/scipy/scipy/interpolate/interpolate.py",
+		"/Users/thomasbody/Science/scipy/scipy/interpolate/setup.py",
+		"/Users/thomasbody/Desktop/fitpack.f",
+		"/Users/thomasbody/Desktop/RectBivariateSpline.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/Bicubic.pyx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Bicubic.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Bicubic_test_json.py",
+		"/Users/thomasbody/Desktop/ALGLIB/spline.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BicubicSpline.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BicubicSpline.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BicubicSpline_v2.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Bicubic2.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/atomicpy.pyx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/test_splinter.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/datatable.h",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/splinter_install.txt",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/glm.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BilinearSpline.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BicubicSpline2.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BicubicSpline2.cpp",
+		"/Users/thomasbody/Downloads/advanced_hillshading.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/setup_spline.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/test_bicubic.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Prad.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/BilinearSpline.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Makefile",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/setup.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/RateCoefficient.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Prad.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/RateCoefficient.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/bicubic_clean.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/RateEquations.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/RateEquations.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/ImpuritySpecies.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/ImpuritySpecies.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/bicubic_spline.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic++.sublime-project",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Bicubic/compare.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/.gitignore",
+		"/Users/thomasbody/.zshrc",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Bicubic/bicubic.m",
+		"/Users/thomasbody/.valgrind/system.supp",
+		"/Users/thomasbody/.valgrindrc",
+		"/lib/valgrind/default.supp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Valgrind_error.txt",
+		"/Users/thomasbody/Downloads/valgrind-3.13.0/README",
+		"/Users/thomasbody/Downloads/valgrind-3.13.0/coregrind/m_syscall.c",
+		"/Users/thomasbody/Downloads/valgrind-3.13.0/coregrind/m_syswrap/syswrap-darwin.c",
+		"/Users/thomasbody/Downloads/valgrind-3.13.0/coregrind/vg_preloaded.c",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/README.md",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/.git/COMMIT_EDITMSG",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Prad_store.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/python_test.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/Makefile",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/python_test.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/add.pyx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/Adder.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/Adder.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/testAdder.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/python_test.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/pyVerify.pyx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/pyVerify.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/sharedFunctions.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/sharedFunctions.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/SD1DData.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/SD1DData.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/computeRadiatedPower.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/README.html",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Prad",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Prad.dSYM/Contents/Resources/DWARF/Prad",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/setup.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/Makefile",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/atomicpppy_wrap.cxx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/atomicpppy_wrap.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/atomicpppy.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/swig_wrap.sh",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/setup.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/swig_wrap.sh",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/setup_swig.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/atomicpppy.i",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/add.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/add_v1.pyx",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/cadd.pxd",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/cadd.pyd",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/__init__.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/pyVerify.pyd",
+		"/Users/thomasbody/Dropbox/Thesis/Code store/atomic1D/atomic1D/__init__.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Cython_wrapping_example/__init__.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/impurity_user_input.json",
+		"/Users/thomasbody/Dropbox/Thesis/OpenADAS_to_JSON/makefile",
+		"/Users/thomasbody/Dropbox/Thesis/OpenADAS_to_JSON/make",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/AtomicDerivative.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp/AtomicDerivative.hpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic1D/reference/data_dict_export.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic1D/Prad.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic1D/atomic1D/RateCoefficient.py",
+		"/Users/thomasbody/Desktop/compare_rates2.csv",
+		"/Users/thomasbody/Dropbox/Thesis/Publish/Compare_rates.csv",
+		"/Users/thomasbody/Science/OpenADAS_to_JSON/README.md",
+		"/System/Library/LaunchDaemons/com.apple.taskgated.plist",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/user_input.json",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic1D/SD1DData.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic1D/sharedFunctions.py",
+		"/Users/thomasbody/Science/splinter/build/cmake_install.cmake",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/Build_notes_splinter",
+		"/Users/thomasbody/Science/splinter/scripts/build_release.sh",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic1D/RateCoefficient.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic1D/ImpuritySpecies.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/json_database/json_data/scd96_c.json",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/atomic1D/__init__.py",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/ImpuritySpecies.cpp",
+		"/Users/thomasbody/Dropbox/Thesis/atomic++/sharedFunctions.cpp"
+	],
+	"find":
+	{
+		"height": 27.0
+	},
+	"find_in_files":
+	{
+		"height": 132.0,
+		"where_history":
+		[
+			"",
+			"/Users/thomasbody/Science/Bicubic_spline",
+			"/Users/thomasbody/Science/interpolate",
+			"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp,<open files>,/Users/thomasbody/Dropbox/Thesis/atomic++/Prad.cpp",
+			"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp,<open files>",
+			"<open files>",
+			"/Users/thomasbody/Dropbox/Thesis/atomic++/atomicpp,<open files>",
+			"",
+			"<open files>",
+			"",
+			"/Users/Tom/Dropbox/Masters_Thesis/Misc_code/Ionisation_stages/atomic-master",
+			"/Users/Tom/Dropbox/Masters Thesis/Misc_code/Ionisation_stages/atomic-master",
+			"",
+			"/Users/Tom/Dropbox/MATLAB",
+			"/Users/Tom/Dropbox/MATLAB_Unitless",
+			"/Users/Tom/Dropbox/MATLAB Back-ups/MATLAB Unitless",
+			"/Users/Tom/Dropbox/MATLAB\\ Back-ups/MATLAB\\ Unitless",
+			"/Users/Tom/Dropbox/MATLAB",
+			"<current file>",
+			"/Users/Tom/Dropbox/MATLAB/Classes,/Users/Tom/Dropbox/MATLAB/Crosssections,/Users/Tom/Dropbox/MATLAB/Databases,/Users/Tom/Dropbox/MATLAB/External methods for GUI_control",
+			"/Users/Tom/Dropbox/MATLAB/External methods for GUI_control",
+			"/Users/Tom/Dropbox/MATLAB",
+			"/Users/Tom/Documents/MATLAB/GUI"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"regrid_smth",
+			", ",
+			"bispeu",
+			"dfitpack",
+			"RectBivariateSpline",
+			"fitpack",
+			"ky",
+			"kx",
+			"ye",
+			"yb",
+			"xe",
+			"xb",
+			"hi_res",
+			"start_in",
+			"low_res['x']",
+			"BicubicSplinePtr",
+			".transpose()",
+			"*(xs)",
+			"*ys",
+			"*xs",
+			"dxy_spacing",
+			"dxy_difference",
+			"dy_difference",
+			"dx_spacing",
+			"dx_difference",
+			"6",
+			"trim_x",
+			"'x'",
+			"'y'",
+			"y_const",
+			"x",
+			"-2",
+			"1",
+			"x_",
+			"x_internal",
+			"x",
+			" *",
+			" * ",
+			"y_spacing",
+			"x_spacing",
+			".fdxdy",
+			".fdy",
+			".fdx,",
+			".fdx",
+			".first",
+			"10",
+			"],",
+			",",
+			"],",
+			")",
+			"(",
+			")",
+			"(",
+			"alpha_coeff",
+			"x",
+			":.2f",
+			"0*",
+			"dx",
+			"[x+0][y+1]",
+			"[x+0][y+0]",
+			"pcolor",
+			"pyx_hi_res",
+			"_x_values",
+			"x",
+			"upscale",
+			"pcolor(",
+			"extent=",
+			"ax1.pcolor(source['z']",
+			"source['z']",
+			"extent=",
+			"origin='lower',",
+			"# \torigin='lower',",
+			"aspect='auto',",
+			"low_res['z']",
+			"low_res['y']",
+			"low_res['x']",
+			"imshow",
+			"x",
+			"y_values",
+			"generate_from_func_uniform",
+			"'x'",
+			"_x",
+			"coord",
+			"y_grid",
+			"x_grid",
+			"zeros",
+			"double",
+			"i",
+			"]))",
+			"1",
+			"0",
+			"_like(grid_coeff)",
+			"),",
+			"[0]",
+			"),",
+			"y",
+			"x",
+			"grid[i][j]",
+			"True",
+			"[j][i]",
+			"grid[i][j]",
+			"[i]",
+			"grid[i][j]",
+			"dx",
+			"f",
+			"_x",
+			" = ",
+			"std::",
+			">",
+			"<",
+			"wrapRegularGridInterpolator",
+			"egularGridInterpolator",
+			"LinearNDInterpolator",
+			"BicubicSpline",
+			"grid_matrix",
+			"difference",
+			"x",
+			"=",
+			"x_values",
+			"x",
+			"cubic",
+			"x",
+			"source['y']",
+			"source['x']",
+			"x",
+			"fig",
+			"plt",
+			"pyx_hi_res"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"call0D",
+			"log_rate",
+			"log_dens",
+			"log_temp",
+			"y",
+			"x",
+			"z_values",
+			"y_values",
+			"x_values",
+			"call0D_bilinear",
+			"call0D",
+			"#include \"atomicpp/RateCoefficient.hpp\"",
+			"#include \"RateCoefficient.hpp\"",
+			"atomicpp::RateCoefficient",
+			"namespace atomicnamespace",
+			"kahanSum",
+			"printDerivativeTuple",
+			"makeDerivativeTuple",
+			"setDominantIonMass",
+			"setThresholdDensity",
+			"calculatePowerEquation",
+			"verifyNeumaierSummation",
+			"resetDerivatives",
+			"calculateChargeExchangePopulationEquation",
+			"calculateElectronImpactPopulationEquation",
+			"rate_coefficients",
+			"rate_coefficients2",
+			"use_shared_interpolation",
+			"has_shared_interpolation",
+			"rec",
+			"std::runtime_error",
+			"std::ifstream",
+			"std::endl",
+			"std::cout",
+			"std::invalid_argument",
+			"#include <set>",
+			"std::set",
+			"std::shared_ptr",
+			"#include <map>",
+			"std::map",
+			"std::ostream",
+			"#include <string>",
+			"std::string",
+			"#include <vector>",
+			"std::vector",
+			"expt_results_json",
+			"range",
+			".items",
+			"import atomicData",
+			"from atomic import atomic",
+			"range",
+			"items",
+			"urllib.request.urlopen",
+			"urllib.parse.urlencode",
+			"urllib.parse.urlencode()",
+			"Controller.Reaction_I2E",
+			"Controller.Species_I2E",
+			"[T,Y,R,E,M,Converged]",
+			"save('/Users/Tom/Dropbox/MATLAB_Unitless/Databases/",
+			"",
+			"Controller.Global.ExperimentUpdated",
+			"Controller.Solver.ExperimentUpdated",
+			"[T,Y,R,M,Converged] = SolveBalanceEquations",
+			"Results_SelectTest",
+			"Results_SelectIndependentVar",
+			"Results_ExportTable",
+			"Results_ExportStruct",
+			"Results_SaveTestIndex",
+			"Results_Plot_HoldDependentVar",
+			"Results_Plot_LookupShowPlotElement",
+			"Results_Plot_LookupShowDependentVar",
+			"GUI_7_DependentVar",
+			"Controller.Global.ExperimentUpdated",
+			"Controller.Solver.EvaluationStartTime",
+			"Controller.Global.ConvergenceCheck_GasSupplyIndex",
+			"Controller.Global.ConvergenceCheck_StartingPressureIndex",
+			"Controller.Global.ConvergenceCheck_PowerAbsorbedIndex",
+			"obj.Global.ConvergenceCheck_GasSupplyIndex",
+			"obj.Global.ConvergenceCheck_StartingPressureIndex",
+			"obj.Global.ConvergenceCheck_PowerAbsorbedIndex",
+			"Evaluation_AxesChange_Callback",
+			"Evaluation_Monitor_Callback",
+			"Evaluation_Mode_Callback",
+			"Evaluation_SaveTestIndex",
+			"Init_CheckDB",
+			"Global_EvaluationMode",
+			"Species_UpdateMode",
+			"Species_UpdateListbox",
+			"Species_DB_ReturnAttributes",
+			"Species_ReturnAttributes",
+			"Species_DB_AddElement",
+			"evaluate_PowerProduct",
+			"Reaction_UpdateMode",
+			"Reaction_UpdateListbox",
+			"Reaction_DB_ReturnAttributes",
+			"Reaction_DB_RemoveElement",
+			"Reaction_DB_Query",
+			"Reaction_DB_AddElement",
+			"Global_UpdateMode",
+			"Init_ResetDB_MAIN",
+			"Global_CheckMode",
+			"Init_CheckDB_MAIN",
+			"GasSupply_UpdatePanel",
+			"GasSupply_UpdateDictionary",
+			"GasSupply_DeleteElement",
+			"Evaluation_UpdateMode",
+			"Evaluation_PlotSolution_",
+			"Evaluation_PlotSolution",
+			"Evaluation_MonitorMultiple",
+			"Evaluation_SelectTest",
+			"Evaluation_CheckConvergence",
+			"EvaluateTab_Species",
+			"EvaluateTab_Results",
+			"EvaluateTab_Reactor",
+			"EvaluateTab_Reaction",
+			"EvaluateTab_OpenScreen",
+			"EvaluateTab_Experiment",
+			"EvaluateTab_Evaluation",
+			"Evaluate_SelectTest",
+			"Update_Evaluate_SelectTest",
+			"Save_GUI_6_SelectTest",
+			"Update_GUI_6_SelectTest",
+			"obj.H.GUI_6_SelectTestPanel",
+			"obj.H.GUI_6_SelectTest",
+			"obj.H.GUI_6_SelectParameter",
+			"EvaluateModeSelection",
+			"UpdateInputformMode",
+			"CrosssectionBuilder_Make"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 35.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 270.0
+	},
+	"output.find_results":
+	{
+		"height": 669.0
+	},
+	"output.latextools":
+	{
+		"height": 136.0
+	},
+	"output.markdown":
+	{
+		"height": 160.0
+	},
+	"pinned_build_system": "",
+	"project": "Spline.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"GUI_control.m"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/Dropbox/MATLAB/MATLAB.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 392.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 229.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
