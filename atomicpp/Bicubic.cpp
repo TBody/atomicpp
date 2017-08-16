@@ -924,6 +924,8 @@ static PyObject *__pyx_pf_7Bicubic_15PyBicubicSpline_6get_x_values(struct __pyx_
 static PyObject *__pyx_pf_7Bicubic_15PyBicubicSpline_8get_y_values(struct __pyx_obj_7Bicubic_PyBicubicSpline *__pyx_v_self); /* proto */
 static int __pyx_pf_7Bicubic_16PyBilinearSpline___init__(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, std::vector<double>  __pyx_v__x_values, std::vector<double>  __pyx_v__y_values, std::vector<std::vector<double> >  __pyx_v__z_values); /* proto */
 static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self, double __pyx_v_eval_x, double __pyx_v_eval_y); /* proto */
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_4get_x_values(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_6get_y_values(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self); /* proto */
 static PyObject *__pyx_tp_new_7Bicubic_PyBicubicSpline(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_7Bicubic_PyBilinearSpline(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 
@@ -1430,6 +1432,7 @@ static int __pyx_pf_7Bicubic_16PyBilinearSpline___init__(struct __pyx_obj_7Bicub
  * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
  * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ * 	def get_x_values(self):
  */
 
 /* Python wrapper */
@@ -1501,6 +1504,8 @@ static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(struct __pyx_obj_7
  * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):
  * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)             # <<<<<<<<<<<<<<
+ * 	def get_x_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
  */
   __Pyx_XDECREF(__pyx_r);
   try {
@@ -1520,12 +1525,129 @@ static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_2call0D(struct __pyx_obj_7
  * 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
  * 	def call0D(self, double eval_x, double eval_y):             # <<<<<<<<<<<<<<
  * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ * 	def get_x_values(self):
  */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_AddTraceback("Bicubic.PyBilinearSpline.call0D", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "Bicubic.pyx":63
+ * 	def call0D(self, double eval_x, double eval_y):
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ * 	def get_x_values(self):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
+ * 	def get_y_values(self):
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_5get_x_values(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_5get_x_values(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("get_x_values (wrapper)", 0);
+  __pyx_r = __pyx_pf_7Bicubic_16PyBilinearSpline_4get_x_values(((struct __pyx_obj_7Bicubic_PyBilinearSpline *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_4get_x_values(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_x_values", 0);
+
+  /* "Bicubic.pyx":64
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ * 	def get_x_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_x_values()             # <<<<<<<<<<<<<<
+ * 	def get_y_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_y_values()
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_convert_vector_to_py_double((*__pyx_v_self->BilinearSplinePtr).get_x_values()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "Bicubic.pyx":63
+ * 	def call0D(self, double eval_x, double eval_y):
+ * 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+ * 	def get_x_values(self):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
+ * 	def get_y_values(self):
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("Bicubic.PyBilinearSpline.get_x_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "Bicubic.pyx":65
+ * 	def get_x_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
+ * 	def get_y_values(self):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).get_y_values()
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_7get_y_values(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_7Bicubic_16PyBilinearSpline_7get_y_values(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("get_y_values (wrapper)", 0);
+  __pyx_r = __pyx_pf_7Bicubic_16PyBilinearSpline_6get_y_values(((struct __pyx_obj_7Bicubic_PyBilinearSpline *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7Bicubic_16PyBilinearSpline_6get_y_values(struct __pyx_obj_7Bicubic_PyBilinearSpline *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __Pyx_RefNannySetupContext("get_y_values", 0);
+
+  /* "Bicubic.pyx":66
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
+ * 	def get_y_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_y_values()             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_convert_vector_to_py_double((*__pyx_v_self->BilinearSplinePtr).get_y_values()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "Bicubic.pyx":65
+ * 	def get_x_values(self):
+ * 		return deref(self.BilinearSplinePtr).get_x_values()
+ * 	def get_y_values(self):             # <<<<<<<<<<<<<<
+ * 		return deref(self.BilinearSplinePtr).get_y_values()
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("Bicubic.PyBilinearSpline.get_y_values", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2165,6 +2287,8 @@ static void __pyx_tp_dealloc_7Bicubic_PyBilinearSpline(PyObject *o) {
 
 static PyMethodDef __pyx_methods_7Bicubic_PyBilinearSpline[] = {
   {"call0D", (PyCFunction)__pyx_pw_7Bicubic_16PyBilinearSpline_3call0D, METH_VARARGS|METH_KEYWORDS, 0},
+  {"get_x_values", (PyCFunction)__pyx_pw_7Bicubic_16PyBilinearSpline_5get_x_values, METH_NOARGS, 0},
+  {"get_y_values", (PyCFunction)__pyx_pw_7Bicubic_16PyBilinearSpline_7get_y_values, METH_NOARGS, 0},
   {0, 0, 0, 0}
 };
 

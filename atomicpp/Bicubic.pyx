@@ -60,3 +60,7 @@ cdef class PyBilinearSpline:
 		self.BilinearSplinePtr.reset(new BilinearSpline(_x_values, _y_values, _z_values))
 	def call0D(self, double eval_x, double eval_y):
 		return deref(self.BilinearSplinePtr).call0D(eval_x, eval_y)
+	def get_x_values(self):
+		return deref(self.BilinearSplinePtr).get_x_values()
+	def get_y_values(self):
+		return deref(self.BilinearSplinePtr).get_y_values()

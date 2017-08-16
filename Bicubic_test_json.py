@@ -7,6 +7,7 @@ from scipy.interpolate import RegularGridInterpolator
 import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource, Normalize
+from matplotlib import rc
 
 def retrieveFromJSON(file_name):
 	# Inputs - a JSON file corresponding to an OpenADAS .dat file or SD1D output file
@@ -154,20 +155,21 @@ def upscale(func, x_length, y_length, _x_values, _y_values):
 
 	return {'x': x_values, 'y': y_values, 'z': z_values}
 
-def plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res):
+def plot_compare(hi_res, cpp_hi_res, pyx_hi_res):
 	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='all', sharey='all')
 
-	ax1.pcolor(low_res['x'], low_res['y'], low_res['z'],cmap='RdBu')
-	ax1.set_title('Low res')
 
-	ax2.pcolor(hi_res['x'], hi_res['y'], hi_res['z'],cmap='RdBu')
-	ax2.set_title('High res')
+	ax3.pcolor(hi_res['x'], hi_res['y'], hi_res['z'],cmap='RdBu')
+	ax3.set_title('Source')
 
-	ax3.pcolor(cpp_hi_res['x'], cpp_hi_res['y'], cpp_hi_res['z'],cmap='RdBu')
-	ax3.set_title('C++')
+	ax1.pcolor(cpp_hi_res['x'], cpp_hi_res['y'], cpp_hi_res['z'],cmap='RdBu')
+	ax1.set_title('C++')
 
-	ax4.pcolor(pyx_hi_res['x'], pyx_hi_res['y'], pyx_hi_res['z'],cmap='RdBu')
-	ax4.set_title('Python')
+	ax2.pcolor(pyx_hi_res['x'], pyx_hi_res['y'], pyx_hi_res['z'],cmap='RdBu')
+	ax2.set_title('Python')
+
+	ax4.pcolor(cpp_hi_res['x'], cpp_hi_res['y'], pyx_hi_res['z'] - cpp_hi_res['z'],cmap='RdBu')
+	ax4.set_title('Diff')
 
 	plt.show()
 
@@ -216,7 +218,7 @@ def inspect_grid_coeff(source, candidate):
 	grid_coeff = grid_coeff.transpose()
 	data_shape = grid_coeff.shape
 
-	print("Data shape is {} by {}".format(data_shape[0], data_shape[1]))
+	# print("Data shape is {} by {}".format(data_shape[0], data_shape[1]))
 	
 	f_grid     = np.zeros_like(grid_coeff)
 	fdx_grid   = np.zeros_like(grid_coeff)
@@ -232,7 +234,7 @@ def inspect_grid_coeff(source, candidate):
 			fdx_grid[i][j]   = grid_coeff[i][j]['fdx']
 			fdy_grid[i][j]   = grid_coeff[i][j]['fdy']
 			fdxdy_grid[i][j] = grid_coeff[i][j]['fdxdy']
-			print("({:<+5.2f}, {:<+5.2f}) = ({:<+5.2f}, {:<+5.2f}) -> ({:<+5.2f}, {:<+5.2f}, {:<+5.2f}, {:<+5.2f})".format(x_values[j], y_values[i], datapoint[0], datapoint[1], f_grid[i][j],fdx_grid[i][j], fdy_grid[i][j], fdxdy_grid[i][j]))
+			# print("({:<+5.2f}, {:<+5.2f}) = ({:<+5.2f}, {:<+5.2f}) -> ({:<+5.2f}, {:<+5.2f}, {:<+5.2f}, {:<+5.2f})".format(x_values[j], y_values[i], datapoint[0], datapoint[1], f_grid[i][j],fdx_grid[i][j], fdy_grid[i][j], fdxdy_grid[i][j]))
 
 	X, Y = np.meshgrid(x_values, y_values)
 
@@ -263,23 +265,23 @@ def inspect_grid_coeff(source, candidate):
 
 	plt.show()
 
-def x_compare(hi_res, pyxspline, cppspline, y_const, trim_x):
+def x_compare(pyxspline, cppspline, y_const, trim_x):
 
-	y_const_index = np.searchsorted(hi_res['y'], y_const)
+	y_const_index = np.searchsorted(pyxspline['y'], y_const)
 	
-	actual = hi_res['z'][y_const_index][:]
+	# actual = pyxspline['z'][y_const_index][:]
 	pyx = pyxspline['z'][y_const_index][:]
 	cpp = cppspline['z'][y_const_index][:]
 
-	# plt.plot(hi_res['x'], actual,'g')
-	# plt.plot(hi_res['x'], pyx,'b')
-	# plt.plot(hi_res['x'], cpp,'r')
+	# plt.plot(pyxspline['x'], actual,'g')
+	# plt.plot(pyxspline['x'], pyx,'b')
+	# plt.plot(pyxspline['x'], cpp,'r')
 
-	start_in = np.searchsorted(hi_res['x'], trim_x[0])
-	end_in = np.searchsorted(hi_res['x'], trim_x[1])
+	start_in = np.searchsorted(pyxspline['x'], trim_x[0])
+	end_in = np.searchsorted(pyxspline['x'], trim_x[1])
 
-	plt.plot(hi_res['x'][start_in:end_in], (pyx - actual)[start_in:end_in],'b')
-	plt.plot(hi_res['x'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
+	plt.plot(pyxspline['x'][start_in:end_in], (pyx - cpp)[start_in:end_in],'b')
+	# plt.plot(pyxspline['x'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
 
 	plt.show()
 
@@ -305,60 +307,53 @@ def y_compare(hi_res, pyxspline, cppspline, x_const, trim_y):
 
 if __name__ == '__main__':
 
-	# data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
-	# x_values = data_dict['log_temperature']
-	# y_values = data_dict['log_density']
-	# x_min = min(x_values)
-	# x_max = max(x_values)
-	# y_min = min(y_values)
-	# y_max = max(y_values)
-	# z_values = data_dict['log_coeff']
+	x_highres = 100
+	y_highres = 100
 
-	x_lowres = 10
-	y_lowres = 15
-	x_highres = 50
-	y_highres = 50
+	data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
+	x_values = np.array(data_dict['log_temperature'])
+	y_values = np.array(data_dict['log_density'])
+	x_min = min(x_values)
+	x_max = max(x_values)
+	y_min = min(y_values)
+	y_max = max(y_values)
+	log_coeff = np.array(data_dict['log_coeff'])
 
-	x_min = -2
-	x_max = 3
-	y_min = -4
-	y_max = 3
+	x_in_min = x_values[1]
+	x_in_max = x_values[-2]
+	y_in_min = y_values[1]
+	y_in_max = y_values[-2]
 
-	x_in_min = x_min + (x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
-	x_in_max = x_max - (x_max-x_min)/(x_lowres-1)
-	y_in_min = y_min + (y_max-y_min)/(y_lowres-1)
-	y_in_max = y_max - (y_max-y_min)/(y_lowres-1)
+	k=0
+	z_values = log_coeff[k][:][:].transpose()
 
-	low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
-	# low_res = generate_from_func_vectors(gen_func, x_values, y_values)
-	hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
+	source = {'x': x_values, 'y': y_values, 'z': z_values}
 
-	x_values = np.array(low_res['x'])
-	y_values = np.array(low_res['y'])
-	z_values = np.array(low_res['z'])
-
-	# plt.pcolor(x_values, y_values, z_values,cmap='RdBu',
+	# plt.pcolor(x_values, y_values, z_values,
 	# 	cmap='RdBu')
 	# plt.colorbar()
+	# plt.xlabel('log(T)/eV')
+	# plt.ylabel('log(N)/m^-3')
 
 	# plt.show()
+
 
 	if True:
 		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
 		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
 	else:
-		cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
-		# x_grid, y_grid = np.meshgrid(x_values, y_values)
-		pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
+		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
+		# cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
+		try:
+			pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
+		except:
+			pyx_interp = wrapRGI(x_values, y_values, z_values)
 
-	# inspect_grid_coeff(hi_res, cpp_interp)
+	# inspect_grid_coeff(source, cpp_interp)
+	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, x_values, y_values)
+	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, x_values, y_values)
 
-	# cpp_hi_res = generate_from_func(cpp_interp.call0D, x_highres, y_highres, x_min, x_max, y_min, y_max)
-	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, low_res['x'], low_res['y'])
-	# pyx_hi_res = generate_from_func(pyx_interp, x_highres, y_highres, x_min, x_max, y_min, y_max)
-	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, low_res['x'], low_res['y'])
-
-	plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
+	# plot_compare(source, cpp_hi_res, pyx_hi_res)
 
 	# plot_difference(pyx_hi_res, cpp_hi_res)
 
@@ -366,8 +361,9 @@ if __name__ == '__main__':
 
 	# cpp_hi_res = generate_from_func(cpp_interp.call0D, len(x_values), len(y_values), x_values.min(), x_values.max(), y_values.min(), y_values.max())
 
-	x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
-	y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
+	x_compare(pyx_hi_res, cpp_hi_res, 19, (x_in_min, x_in_max))
+	exit()
+	y_compare(pyx_hi_res, cpp_hi_res, 2, (y_in_min, y_in_max))
 
 
 	# plt.pcolor(z_values[0] - cpp_hi_res['z'],cmap='RdBu',
