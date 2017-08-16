@@ -21,6 +21,7 @@ c  ..local scalars..
       integer ihalf,j,jbegin,jj,jk,jpoint,k,maxbeg,maxpt,
      * next,nrx,number
 c  ..
+      print *, "fpknot called"
       k = (n-nrint-1)/2
 c  search for knot interval t(number+k) <= x <= t(number+k+1) where
 c  fpint(number) is maximal on the condition that nrdata(number)

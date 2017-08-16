@@ -9,6 +9,7 @@ c  ..local scalars..
 c  ..function references..
       real*8 abs,sqrt
 c  ..
+      print *, "fpgivs called"
       one = 0.1e+01
       store = abs(piv)
       if(store.ge.ww) dd = store*sqrt(one+(ww/piv)**2)

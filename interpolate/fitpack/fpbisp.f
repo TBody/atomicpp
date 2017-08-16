@@ -13,6 +13,7 @@ c  ..local arrays..
 c  ..subroutine references..
 c    fpbspl
 c  ..
+      print *, "fpbisp called"
       kx1 = kx+1
       nkx1 = nx-kx1
       tb = tx(kx1)

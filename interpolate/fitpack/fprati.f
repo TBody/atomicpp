@@ -8,6 +8,7 @@ c  ..scalar arguments..
 c  ..local scalars..
       real*8 h1,h2,h3,p
 c  ..
+      print *, "fprati called"
       if(p3.gt.0.) go to 10
 c  value of p in case p3 = infinity.
       p = (p1*(f1-f3)*f2-p2*(f2-f3)*f1)/((f1-f2)*f3)

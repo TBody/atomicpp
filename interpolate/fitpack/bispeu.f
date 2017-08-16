@@ -51,6 +51,7 @@ c  ..local scalars..
 c  ..
 c  before starting computations a data check is made. if the input data
 c  are invalid control is immediately repassed to the calling program.
+      print *, "bispeu called"
       ier = 10
       lwest = kx+ky+2
       if (lwrk.lt.lwest) go to 100

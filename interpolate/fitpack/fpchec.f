@@ -22,6 +22,7 @@ c  ..local scalars..
       integer i,j,k1,k2,l,nk1,nk2,nk3
       real*8 tj,tl
 c  ..
+      print *, "fpchec called"
       k1 = k+1
       k2 = k1+1
       nk1 = n-k1

@@ -19,6 +19,7 @@ c  ..local scalars..
      * numy,numy1,n1
 c  ..local arrays..
       real*8 h(7)
+      print *, "fpgrre called"
 c  ..subroutine references..
 c    fpback,fpbspl,fpgivs,fpdisc,fprota
 c  ..

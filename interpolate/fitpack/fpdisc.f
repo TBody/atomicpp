@@ -11,6 +11,7 @@ c  ..local scalars..
 c  ..local array..
       real*8 h(12)
 c  ..
+      print *, "fpdisc called"
       k1 = k2-1
       k = k1-1
       nk1 = n-k1

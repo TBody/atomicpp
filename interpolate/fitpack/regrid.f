@@ -280,51 +280,39 @@ c  ..function references..
 c  ..subroutine references..
 c    fpregr,fpchec
 c  ..
+      print *, "regrid called"
 c  we set up the parameters tol and maxit.
       maxit = 20
       tol = 0.1e-02
 c  before starting computations a data check is made. if the input data
 c  are invalid, control is immediately repassed to the calling program.
       ier = 10
-      if(kx.le.0 .or. kx.gt.5) print *, "Branch in regrid 1"
       if(kx.le.0 .or. kx.gt.5) go to 70
       kx1 = kx+1
       kx2 = kx1+1
-      if(ky.le.0 .or. ky.gt.5) print *, "Branch in regrid 2"
       if(ky.le.0 .or. ky.gt.5) go to 70
       ky1 = ky+1
       ky2 = ky1+1
-      if(iopt.lt.(-1) .or. iopt.gt.1) print *, "Branch in regrid 3"
       if(iopt.lt.(-1) .or. iopt.gt.1) go to 70
       nminx = 2*kx1
-      if(mx.lt.kx1 .or. nxest.lt.nminx) print *, "Branch in regrid 4"
       if(mx.lt.kx1 .or. nxest.lt.nminx) go to 70
       nminy = 2*ky1
-      if(my.lt.ky1 .or. nyest.lt.nminy) print *, "Branch in regrid 5"
       if(my.lt.ky1 .or. nyest.lt.nminy) go to 70
       mz = mx*my
       nc = (nxest-kx1)*(nyest-ky1)
       lwest = 4+nxest*(my+2*kx2+1)+nyest*(2*ky2+1)+mx*kx1+
      * my*ky1+max0(nxest,my)
       kwest = 3+mx+my+nxest+nyest
-      if(lwrk.lt.lwest .or. kwrk.lt.kwest) print *, "Branch in regrid 6"
       if(lwrk.lt.lwest .or. kwrk.lt.kwest) go to 70
-      if(xb.gt.x(1) .or. xe.lt.x(mx)) print *, "Branch in regrid 7"
       if(xb.gt.x(1) .or. xe.lt.x(mx)) go to 70
       do 10 i=2,mx
-        if(x(i-1).ge.x(i)) print *, "Branch in regrid 8"
         if(x(i-1).ge.x(i)) go to 70
   10  continue
-      if(yb.gt.y(1) .or. ye.lt.y(my)) print *, "Branch in regrid 9"
       if(yb.gt.y(1) .or. ye.lt.y(my)) go to 70
       do 20 i=2,my
-        if(y(i-1).ge.y(i)) print *, "Branch in regrid 10"
         if(y(i-1).ge.y(i)) go to 70
   20  continue
-C   This is the only branch that gets called
-      if(iopt.ge.0) print *, "Branch in regrid 11"
       if(iopt.ge.0) go to 50
-      if(nx.lt.nminx .or. nx.gt.nxest) print *, "Branch in regrid 12"
       if(nx.lt.nminx .or. nx.gt.nxest) go to 70
       j = nx
       do 30 i=1,kx1
@@ -333,9 +321,7 @@ C   This is the only branch that gets called
         j = j-1
   30  continue
       call fpchec(x,mx,tx,nx,kx,ier)
-      if(ier.ne.0) print *, "Branch in regrid 13"
       if(ier.ne.0) go to 70
-      if(ny.lt.nminy .or. ny.gt.nyest) print *, "Branch in regrid 14"
       if(ny.lt.nminy .or. ny.gt.nyest) go to 70
       j = ny
       do 40 i=1,ky1
@@ -346,10 +332,7 @@ C   This is the only branch that gets called
       call fpchec(y,my,ty,ny,ky,ier)
       if (ier.eq.0) go to 60
       go to 70
-  50  if(s.lt.0.) print *, "Branch in regrid 15"
-      if(s.lt.0.) go to 70
-      if(s.eq.0. .and. (nxest.lt.(mx+kx1) .or. nyest.lt.(my+ky1)) )
-     * print *, "Branch in regrid 16"
+  50  if(s.lt.0.) go to 70
       if(s.eq.0. .and. (nxest.lt.(mx+kx1) .or. nyest.lt.(my+ky1)) )
      * go to 70
       ier = 0
