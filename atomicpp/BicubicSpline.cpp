@@ -1,5 +1,6 @@
 #include <vector>
 #include <array>
+#include <utility>
 #include <math.h>
 #include <algorithm> //for upper/lower_bound
 #include <stdexcept> //For error-throwing
@@ -76,6 +77,7 @@ double BicubicSpline::call0D(const double eval_x, const double eval_y){
 			return_value += x_vector[i] * alpha_sub[i][j] * y_vector[j];
 		}
 	}
+	// return_value = x_vector[0] * alpha_sub[0][0] * y_vector[0];
 
 	return return_value;
 };
@@ -141,84 +143,88 @@ std::vector<std::vector<interp_data>> BicubicSpline::calculate_grid_coeff(){
 	std::vector<std::vector<interp_data>>
 	grid_coeff(Lx,std::vector<interp_data>(Ly,default_interp_data));
 
-	for(int x=0; x<Lx; ++x){
-		for(int y=0; y<Ly; ++y){
+	for(int i=0; i<Lx; ++i){
+		for(int j=0; j<Ly; ++j){
+
+			grid_coeff[i][j].coord = std::make_pair(i, j);
+			grid_coeff[i][j].datapoint = std::make_pair(x_values[i], y_values[j]);
 
 			// Set the function value
-			grid_coeff[x][y].f = z_values[x][y];
+			grid_coeff[i][j].f = z_values[i][j];
 
 			double dx_difference = 0.0;
 			double dx_spacing = 0.0;
-			if((x != 0) and (x != (int)(x_values.size()-1))){
+			if((i != 0) and (i != (int)(x_values.size()-1))){
 				// Central difference for dx
-				dx_difference = z_values[x+1][y] - z_values[x-1][y];
-				dx_spacing = x_values[x+1] - x_values[x-1];
+				dx_difference = z_values[i+1][j] - z_values[i-1][j];
+				dx_spacing = x_values[i+1] - x_values[i-1];
 
-			} else if (x == 0) {
+			} else if (i == 0) {
 				// Forward difference for dx
-				dx_difference = z_values[x+1][y] - z_values[x][y];
-				dx_spacing = x_values[x+1] - x_values[x];
+				dx_difference = z_values[i+1][j] - z_values[i][j];
+				dx_spacing = x_values[i+1] - x_values[i];
 
-			} else if (x == (int)(x_values.size()-1)){
+			} else if (i == (int)(x_values.size()-1)){
 				// Backward difference for dx
-				dx_difference = z_values[x][y] - z_values[x-1][y];
-				dx_spacing = x_values[x] - x_values[x-1];
+				dx_difference = z_values[i][j] - z_values[i-1][j];
+				dx_spacing = x_values[i] - x_values[i-1];
 				
 			}
-			grid_coeff[x][y].fdx = dx_difference/dx_spacing;
+			grid_coeff[i][j].fdx = dx_difference/dx_spacing;
 
 			double dy_difference = 0.0;
 			double dy_spacing = 0.0;
-			if((y != 0) and (y != (int)(y_values.size()-1))){
+			if((j != 0) and (j != (int)(y_values.size()-1))){
 				// Central difference for dy
-				dy_difference = z_values[x][y+1] - z_values[x][y-1];
-				dy_spacing = y_values[y+1] - y_values[y-1];
+				dy_difference = z_values[i][j+1] - z_values[i][j-1];
+				dy_spacing = y_values[j+1] - y_values[j-1];
 
-			} else if (y == 0) {
+			} else if (j == 0) {
 				// Forward difference for dy
-				dy_difference = z_values[x][y+1] - z_values[x][y];
-				dy_spacing = y_values[y+1] - y_values[y];
+				dy_difference = z_values[i][j+1] - z_values[i][j];
+				dy_spacing = y_values[j+1] - y_values[j];
 
-			} else if (y == (int)(y_values.size()-1)){
+			} else if (j == (int)(y_values.size()-1)){
 				// Backward difference for dy
-				dy_difference = z_values[x][y] - z_values[x][y-1];
-				dy_spacing = y_values[y] - y_values[y-1];
+				dy_difference = z_values[i][j] - z_values[i][j-1];
+				dy_spacing = y_values[j] - y_values[j-1];
 				
 			}
-			grid_coeff[x][y].fdy = dy_difference/dy_spacing;
+			grid_coeff[i][j].fdy = dy_difference/dy_spacing;
 
 		}
 	}
 
 	//Now that all axial derivatives have been calculated, use these results to calculate the mixed derivatives
 
-	for(int x=0; x<Lx; ++x){
-		for(int y=0; y<Ly; ++y){
+	for(int i=0; i<Lx; ++i){
+		for(int j=0; j<Ly; ++j){
 			double dxy_difference = 0.0;
 			double dxy_spacing = 0.0;
-			if((x != 0) and (x != (int)(x_values.size()-1))){
+			if((i != 0) and (i != (int)(x_values.size()-1))){
 				// Central difference for dxy
-				dxy_difference = grid_coeff[x+1][y].fdy - grid_coeff[x-1][y].fdy;
-				dxy_spacing = x_values[x+1] - x_values[x-1];
+				dxy_difference = grid_coeff[i+1][j].fdy - grid_coeff[i-1][j].fdy;
+				dxy_spacing = x_values[i+1] - x_values[i-1];
 
-			} else if (x == 0) {
+			} else if (i == 0) {
 				// Forward difference for dxy
-				dxy_difference = grid_coeff[x+1][y].fdy - grid_coeff[x][y].fdy;
-				dxy_spacing = x_values[x+1] - x_values[x];
+				dxy_difference = grid_coeff[i+1][j].fdy - grid_coeff[i][j].fdy;
+				dxy_spacing = x_values[i+1] - x_values[i];
 
-			} else if (x == (int)(x_values.size()-1)){
+			} else if (i == (int)(x_values.size()-1)){
 				// Backward difference for dxy
-				dxy_difference = grid_coeff[x][y].fdy - grid_coeff[x-1][y].fdy;
-				dxy_spacing = x_values[x] - x_values[x-1];
+				dxy_difference = grid_coeff[i][j].fdy - grid_coeff[i-1][j].fdy;
+				dxy_spacing = x_values[i] - x_values[i-1];
 				
 			}
-			grid_coeff[x][y].fdxdy = dxy_difference/dxy_spacing;
+			grid_coeff[i][j].fdxdy = dxy_difference/dxy_spacing;
+
+			// std::printf("(%d, %d) = (%f, %f) -> [%f, %f, %f, %f]\n", i, j, x_values[i], y_values[j], grid_coeff[i][j].f, grid_coeff[i][j].fdx, grid_coeff[i][j].fdy, grid_coeff[i][j].fdxdy);
 		}
 	}
 
 	return grid_coeff;
 };
-
 std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff()
 	{
 	// For storing the value and derivative data at each grid-point
@@ -244,15 +250,23 @@ std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff()
 			{+0, +0, -1, +1},
 		}};
 
+	//prematrix = [+1, +0, +0, +0; +0, +0, +1, +0; -3, +3, -2, -1; +2, -2, +1, +1];
+	//postmatrix = [+1, +0, -3, +2; +0, +0, +3, -2; +0, +1, -2, +1; +0, +0, -1, +1];
+
 	for(int x=0; x<Lx - 1; ++x){ //iterator over temperature dimension of grid, which is of length x_values.size()-1
 		for(int y=0; y<Ly - 1; ++y){ //iterator over density dimension of grid, which is of length y_values.size()-1
 
+			double xs = grid_coeff[x+1][y+0].datapoint.first - grid_coeff[x+0][y+0].datapoint.first;
+			double ys = grid_coeff[x+0][y+1].datapoint.second - grid_coeff[x+0][y+0].datapoint.second;
+
 			grid_matrix f_sub = {{
-				{grid_coeff[x+0][y+0].f,   grid_coeff[x+0][y+1].f,   grid_coeff[x+0][y+0].fdy,   grid_coeff[x+0][y+1].fdy},
-				{grid_coeff[x+1][y+0].f,   grid_coeff[x+1][y+1].f,   grid_coeff[x+1][y+0].fdy,   grid_coeff[x+1][y+1].fdy},
-				{grid_coeff[x+0][y+0].fdx, grid_coeff[x+0][y+1].fdx, grid_coeff[x+0][y+0].fdxdy, grid_coeff[x+0][y+1].fdxdy},
-				{grid_coeff[x+1][y+0].fdx, grid_coeff[x+1][y+1].fdx, grid_coeff[x+1][y+0].fdxdy, grid_coeff[x+1][y+1].fdxdy},
+				{grid_coeff[x+0][y+0].f,      grid_coeff[x+0][y+1].f,      grid_coeff[x+0][y+0].fdy*ys,        grid_coeff[x+0][y+1].fdy*ys},
+				{grid_coeff[x+1][y+0].f,      grid_coeff[x+1][y+1].f,      grid_coeff[x+1][y+0].fdy*ys,        grid_coeff[x+1][y+1].fdy*ys},
+				{grid_coeff[x+0][y+0].fdx*xs, grid_coeff[x+0][y+1].fdx*xs, grid_coeff[x+0][y+0].fdxdy*(xs*ys), grid_coeff[x+0][y+1].fdxdy*(xs*ys)},
+				{grid_coeff[x+1][y+0].fdx*xs, grid_coeff[x+1][y+1].fdx*xs, grid_coeff[x+1][y+0].fdxdy*(xs*ys), grid_coeff[x+1][y+1].fdxdy*(xs*ys)},
 			}};
+
+
 			// grid_coeff submatrix
 			grid_matrix alpha_sub = default_grid_matrix;
 			
@@ -268,7 +282,24 @@ std::vector<std::vector<grid_matrix>> BicubicSpline::calculate_alpha_coeff()
 				}
 			}
 			alpha_coeff[x][y] = alpha_sub;
+			// if((x==0)and(y==0)){
+			// std::printf("f_sub(%d, %d)\n [%f, %f, %f, %f;...\n%f, %f, %f, %f;...\n%f, %f, %f, %f;...\n%f, %f, %f, %f]\n\n",
+			// 	x, y, 
+			// 	grid_coeff[x+0][y+0].f,      grid_coeff[x+0][y+1].f,      grid_coeff[x+0][y+0].fdy*ys,        grid_coeff[x+0][y+1].fdy*ys,
+			// 	grid_coeff[x+1][y+0].f,      grid_coeff[x+1][y+1].f,      grid_coeff[x+1][y+0].fdy*ys,        grid_coeff[x+1][y+1].fdy*ys,
+			// 	grid_coeff[x+0][y+0].fdx*xs, grid_coeff[x+0][y+1].fdx*xs, grid_coeff[x+0][y+0].fdxdy*(xs*ys), grid_coeff[x+0][y+1].fdxdy*(xs*ys),
+			// 	grid_coeff[x+1][y+0].fdx*xs, grid_coeff[x+1][y+1].fdx*xs, grid_coeff[x+1][y+0].fdxdy*(xs*ys), grid_coeff[x+1][y+1].fdxdy*(xs*ys));
+			// std::printf("alpha_sub(%d, %d)\n [%f, %f, %f, %f;...\n%f, %f, %f, %f;...\n%f, %f, %f, %f;...\n%f, %f, %f, %f]\n\n",
+			// 	x, y, 
+			// 	alpha_sub[0][0], alpha_sub[0][1], alpha_sub[0][2], alpha_sub[0][3],
+			// 	alpha_sub[1][0], alpha_sub[1][1], alpha_sub[1][2], alpha_sub[1][3],
+			// 	alpha_sub[2][0], alpha_sub[2][1], alpha_sub[2][2], alpha_sub[2][3],
+			// 	alpha_sub[3][0], alpha_sub[3][1], alpha_sub[3][2], alpha_sub[3][3]);
+			// };	
 		}
 	}
 	return alpha_coeff;
+};
+std::vector<std::vector<interp_data>> BicubicSpline::get_grid_coeff(){
+	return grid_coeff;
 };

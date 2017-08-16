@@ -45,16 +45,9 @@ class wrapRGI():
 		return self.interpolator.__call__((x,y))
 
 def gen_func(x, y):
-	# z = np.cos(x**2 + y**2) #Wave ripple pattern
+	z = 10 * np.cos(x**2 + y**2) #Wave ripple pattern
 	# z = x**2 + (y-1)**2
-	z = x**2 + (y-1)**2 + x*y
-	# z = x
-	# z = y
-	# z = x+y
-	# z = math.sin(x)
 	# z = math.sin(y)
-	# z = math.sin(x+y)
-	# z = math.sin(x) + math.cos(y)
 
 	return z
 
@@ -62,7 +55,7 @@ def generate_from_func_uniform(func, x_length, y_length, x_min, x_max, y_min, y_
 	x_values = np.linspace(x_min, x_max, x_length)
 	y_values = np.linspace(y_min, y_max, y_length)
 	
-	z_values = np.zeros((len(y_values), len(x_values)))
+	z_values = np.zeros((len(x_values), len(y_values)))
 
 	for i in range(x_length):
 		for j in range(y_length):
@@ -87,12 +80,12 @@ def generate_from_func_uniform(func, x_length, y_length, x_min, x_max, y_min, y_
 				z_value = func(x + x_shift, y + y_shift)
 
 			# z_values[y_length -1 - j][i] = z_value
-			z_values[j][i] = z_value
+			z_values[i][j] = z_value
 
 	return {'x': x_values, 'y': y_values, 'z': z_values}
 
 def generate_from_func_vectors(func, x_values, y_values):
-	z_values = np.zeros((len(y_values), len(x_values)))
+	z_values = np.zeros((len(x_values), len(y_values)))
 
 	for i in range(len(x_values)):
 		for j in range(len(y_values)):
@@ -105,19 +98,19 @@ def generate_from_func_vectors(func, x_values, y_values):
 				# Edge values can throw RuntimeError in C++ interpolator
 				z_value = 0
 				if x == min(x_values):
-					x_shift = (x_values[i+1]-x_values[i])*1e-12
+					x_shift = (x_values[i+1]-x_values[i])*1e-6
 				if y == min(y_values):
-					y_shift = (y_values[j+1]-y_values[j])*1e-12
+					y_shift = (y_values[j+1]-y_values[j])*1e-6
 
 				if x == max(x_values):
-					x_shift = (x_values[i-1]-x_values[i])*1e-12
+					x_shift = (x_values[i-1]-x_values[i])*1e-6
 				if y == max(y_values):
-					y_shift = (y_values[j-1]-y_values[j])*1e-12
+					y_shift = (y_values[j-1]-y_values[j])*1e-6
 
 				z_value = func(x + x_shift, y + y_shift)
 
 			# z_values[y_length -1 - j][i] = z_value
-			z_values[j][i] = z_value
+			z_values[i][j] = z_value
 
 	return {'x': x_values, 'y': y_values, 'z': z_values}
 
@@ -125,7 +118,7 @@ def upscale(func, x_length, y_length, _x_values, _y_values):
 	x_values = np.linspace(min(_x_values), max(_x_values), x_length)
 	y_values = np.linspace(min(_y_values), max(_y_values), y_length)
 	
-	z_values = np.zeros((len(y_values), len(x_values)))
+	z_values = np.zeros((len(x_values), len(y_values)))
 
 	for i in range(x_length):
 		for j in range(y_length):
@@ -138,35 +131,51 @@ def upscale(func, x_length, y_length, _x_values, _y_values):
 				# Edge values can throw RuntimeError in C++ interpolator
 				z_value = 0
 				if x == min(x_values):
-					x_shift = (x_values[i+1]-x_values[i])*1e-12
+					x_shift = (x_values[i+1]-x_values[i])*1e-6
 				if y == min(y_values):
-					y_shift = (y_values[j+1]-y_values[j])*1e-12
+					y_shift = (y_values[j+1]-y_values[j])*1e-6
 
 				if x == max(x_values):
-					x_shift = (x_values[i-1]-x_values[i])*1e-12
+					x_shift = (x_values[i-1]-x_values[i])*1e-6
 				if y == max(y_values):
-					y_shift = (y_values[j-1]-y_values[j])*1e-12
+					y_shift = (y_values[j-1]-y_values[j])*1e-6
 
 				z_value = func(x + x_shift, y + y_shift)
 
 			# z_values[y_length -1 - j][i] = z_value
-			z_values[j][i] = z_value
+			z_values[i][j] = z_value
 
 	return {'x': x_values, 'y': y_values, 'z': z_values}
 
 def plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res):
-	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='all', sharey='all')
+	f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row')
 
-	ax1.pcolor(low_res['x'], low_res['y'], low_res['z'],cmap='RdBu')
+	ax1.imshow(low_res['z'],
+		aspect='auto',
+		origin='lower',
+		extent=(low_res['x'].min(),low_res['x'].max(),low_res['y'].min(),low_res['y'].max())
+		)
 	ax1.set_title('Low res')
 
-	ax2.pcolor(hi_res['x'], hi_res['y'], hi_res['z'],cmap='RdBu')
+	ax2.imshow(hi_res['z'],
+		aspect='auto',
+		origin='lower',
+		extent=(hi_res['x'].min(),hi_res['x'].max(),hi_res['y'].min(),hi_res['y'].max())
+		)
 	ax2.set_title('High res')
 
-	ax3.pcolor(cpp_hi_res['x'], cpp_hi_res['y'], cpp_hi_res['z'],cmap='RdBu')
+	ax3.imshow(cpp_hi_res['z'],
+		aspect='auto',
+		origin='lower',
+		extent=(cpp_hi_res['x'].min(),cpp_hi_res['x'].max(),cpp_hi_res['y'].min(),cpp_hi_res['y'].max())
+		)
 	ax3.set_title('C++')
 
-	ax4.pcolor(pyx_hi_res['x'], pyx_hi_res['y'], pyx_hi_res['z'],cmap='RdBu')
+	ax4.imshow(pyx_hi_res['z'],
+		aspect='auto',
+		origin='lower',
+		extent=(pyx_hi_res['x'].min(),pyx_hi_res['x'].max(),pyx_hi_res['y'].min(),pyx_hi_res['y'].max())
+		)
 	ax4.set_title('Python')
 
 	plt.show()
@@ -176,10 +185,20 @@ def plot_difference(source, candidate):
 
 	f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
-	ax1.pcolor(source['x'], source['y'], source['z'],cmap='RdBu')
+	ax1.imshow(source['z'],
+		aspect='auto',
+		# cmap = 'jet',
+		origin='lower',
+		extent=(source['x'].min(),source['x'].max(),source['y'].min(),source['y'].max())
+		)
 	ax1.set_title('Source')
 
-	im = ax2.pcolor(source['x'], source['y'], difference,cmap='RdBu')
+	im = ax2.imshow(difference,
+		aspect='auto',
+		cmap = 'jet',
+		origin='lower',
+		extent=(source['x'].min(),source['x'].max(),source['y'].min(),source['y'].max())
+		)
 	ax2.set_title('Difference')
 	
 	f.subplots_adjust(right=0.8)
@@ -193,10 +212,20 @@ def plot_ratio(source, candidate):
 
 	f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, sharex=True)
 
-	ax1.pcolor(source['x'], source['y'], source['z'],cmap='RdBu')
+	ax1.imshow(source['z'],
+		aspect='auto',
+		# cmap = 'jet',
+		origin='lower',
+		extent=(source['x'].min(),source['x'].max(),source['y'].min(),source['y'].max())
+		)
 	ax1.set_title('Source')
 
-	im = ax2.pcolor(source['x'], source['y'], ratio,cmap='RdBu')
+	im = ax2.imshow(ratio,
+		aspect='auto',
+		cmap = 'jet',
+		origin='lower',
+		extent=(source['x'].min(),source['x'].max(),source['y'].min(),source['y'].max())
+		)
 	ax2.set_title('Ratio')
 	
 	f.subplots_adjust(right=0.8)
@@ -207,99 +236,48 @@ def plot_ratio(source, candidate):
 
 def inspect_grid_coeff(source, candidate):
 
-	plt.pcolor(source['x'], source['y'], source['z'],cmap='RdBu')
+	plt.imshow(source['z'],
+		aspect='auto',
+		# cmap = 'jet',
+		origin='lower',
+		extent=(source['x'].min(),source['x'].max(),source['y'].min(),source['y'].max())
+		)
 
-	x_values = np.array(candidate.get_x_values())
-	y_values = np.array(candidate.get_y_values())
+	grid_coeff = candidate.get_grid_coeff()
+	X_grid = candidate.get_x_values()
+	Y_grid = candidate.get_y_values()
+	X, Y = np.meshgrid(X_grid, Y_grid)
 
-	grid_coeff = np.array(candidate.get_grid_coeff())
-	grid_coeff = grid_coeff.transpose()
-	data_shape = grid_coeff.shape
+	f_grid = np.zeros((len(grid_coeff),len(grid_coeff[0])))
+	fdx_grid = np.zeros((len(grid_coeff),len(grid_coeff[0])))
+	fdy_grid = np.zeros((len(grid_coeff),len(grid_coeff[0])))
+	fdxdy_grid = np.zeros((len(grid_coeff),len(grid_coeff[0])))
 
-	print("Data shape is {} by {}".format(data_shape[0], data_shape[1]))
-	
-	f_grid     = np.zeros_like(grid_coeff)
-	fdx_grid   = np.zeros_like(grid_coeff)
-	fdy_grid   = np.zeros_like(grid_coeff)
-	fdxdy_grid = np.zeros_like(grid_coeff)
-
-	for i in range(data_shape[0]):
-		for j in range(data_shape[1]):
-			# coord = grid_coeff[i][j]['coord']
-			# print("({}, {}) = ({}, {})".format(i, j, coord[0], coord[1]))
-			datapoint = grid_coeff[i][j]['datapoint']
+	for i in range(len(grid_coeff)):
+		for j in range(len(grid_coeff[0])):
 			f_grid[i][j]     = grid_coeff[i][j]['f']
 			fdx_grid[i][j]   = grid_coeff[i][j]['fdx']
 			fdy_grid[i][j]   = grid_coeff[i][j]['fdy']
 			fdxdy_grid[i][j] = grid_coeff[i][j]['fdxdy']
-			print("({:<+5.2f}, {:<+5.2f}) = ({:<+5.2f}, {:<+5.2f}) -> ({:<+5.2f}, {:<+5.2f}, {:<+5.2f}, {:<+5.2f})".format(x_values[j], y_values[i], datapoint[0], datapoint[1], f_grid[i][j],fdx_grid[i][j], fdy_grid[i][j], fdxdy_grid[i][j]))
 
-	X, Y = np.meshgrid(x_values, y_values)
-
-	if False:
+	if True:
 		# Plot the function values
-		# If the same colourmap is used between pcolor and scatter (which is default,cmap='RdBu')
+		# If the same colourmap is used between imshow and scatter (which is default)
 		#   you shouldn't be able to see the points at all
-		plt.scatter(X, Y, c=f_grid, marker = '.')
-		plt.scatter(1, 1, c='r', marker='x')
+		plt.scatter(X, Y, c=f_grid)
 
 	elif True:
 		# Plot dx and dy as a quiver grid -- should look like a 'grad function'
 		U = fdx_grid
 		V = fdy_grid
 
-		Q = plt.quiver(X.tolist(), Y.tolist(), U.tolist(), V.tolist(), pivot='mid',angles='xy')
+		Q = plt.quiver(X, Y, U, V, pivot='mid')
 		# plt.streamplot(X, Y, U, V)
-	else:
-		# What should this look like? http://www.math.harvard.edu/archive/21a_fall_08/exhibits/fxy/
-		U = fdx_grid
-		V = fdy_grid
-		W = fdxdy_grid
-
-		Q1 = plt.quiver(X, Y, U, 0, pivot='tail')
-		# Q2 = plt.quiver(X, Y, 0, W, pivot='tail')
+	elif True:
+		# What should this look like?
+		pass
 
 
-
-	plt.show()
-
-def x_compare(hi_res, pyxspline, cppspline, y_const, trim_x):
-
-	y_const_index = np.searchsorted(hi_res['y'], y_const)
-	
-	actual = hi_res['z'][y_const_index][:]
-	pyx = pyxspline['z'][y_const_index][:]
-	cpp = cppspline['z'][y_const_index][:]
-
-	# plt.plot(hi_res['x'], actual,'g')
-	# plt.plot(hi_res['x'], pyx,'b')
-	# plt.plot(hi_res['x'], cpp,'r')
-
-	start_in = np.searchsorted(hi_res['x'], trim_x[0])
-	end_in = np.searchsorted(hi_res['x'], trim_x[1])
-
-	plt.plot(hi_res['x'][start_in:end_in], (pyx - actual)[start_in:end_in],'b')
-	plt.plot(hi_res['x'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
-
-	plt.show()
-
-def y_compare(hi_res, pyxspline, cppspline, x_const, trim_y):
-
-	x_const_index = np.searchsorted(hi_res['y'], x_const)
-	
-	actual = hi_res['z'][:][x_const_index]
-	pyx = pyxspline['z'][:][x_const_index]
-	cpp = cppspline['z'][:][x_const_index]
-
-	# plt.plot(hi_res['y'], actual,'g')
-	# plt.plot(hi_res['y'], pyx,'b')
-	# plt.plot(hi_res['y'], cpp,'r')
-
-	start_in = np.searchsorted(hi_res['y'], trim_y[0])
-	end_in = np.searchsorted(hi_res['y'], trim_y[1])
-
-	plt.plot(hi_res['y'][start_in:end_in], (pyx - actual)[start_in:end_in],'b')
-	plt.plot(hi_res['y'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
 
 	plt.show()
 
@@ -316,49 +294,36 @@ if __name__ == '__main__':
 
 	x_lowres = 10
 	y_lowres = 15
-	x_highres = 50
-	y_highres = 50
+	x_highres = 100
+	y_highres = 150
 
-	x_min = -2
-	x_max = 3
+	x_min = -4
+	x_max = +2
 	y_min = -4
-	y_max = 3
-
-	x_in_min = x_min + (x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
-	x_in_max = x_max - (x_max-x_min)/(x_lowres-1)
-	y_in_min = y_min + (y_max-y_min)/(y_lowres-1)
-	y_in_max = y_max - (y_max-y_min)/(y_lowres-1)
+	y_max = +2
 
 	low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
 	# low_res = generate_from_func_vectors(gen_func, x_values, y_values)
 	hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
-
-	x_values = np.array(low_res['x'])
-	y_values = np.array(low_res['y'])
-	z_values = np.array(low_res['z'])
-
-	# plt.pcolor(x_values, y_values, z_values,cmap='RdBu',
-	# 	cmap='RdBu')
-	# plt.colorbar()
-
-	# plt.show()
-
+	
 	if True:
-		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
-		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
+		cpp_interp = PyBicubicSpline(low_res['x'], low_res['y'], low_res['z'])
+		pyx_interp = RectBivariateSpline(low_res['x'], low_res['y'], low_res['z'],kx=3,ky=3)
 	else:
-		cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
-		# x_grid, y_grid = np.meshgrid(x_values, y_values)
-		pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
+		cpp_interp = PyBilinearSpline(low_res['x'], low_res['y'], low_res['z'])
+		# x_grid, y_grid = np.meshgrid(low_res['x'], low_res['y'])
+		pyx_interp = wrapRGI(low_res['x'], low_res['y'], low_res['z'])
 
-	# inspect_grid_coeff(hi_res, cpp_interp)
+	inspect_grid_coeff(hi_res, cpp_interp)
 
 	# cpp_hi_res = generate_from_func(cpp_interp.call0D, x_highres, y_highres, x_min, x_max, y_min, y_max)
 	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, low_res['x'], low_res['y'])
 	# pyx_hi_res = generate_from_func(pyx_interp, x_highres, y_highres, x_min, x_max, y_min, y_max)
 	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, low_res['x'], low_res['y'])
 
-	# plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
+
+
+	plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
 
 	# plot_difference(pyx_hi_res, cpp_hi_res)
 
@@ -366,12 +331,12 @@ if __name__ == '__main__':
 
 	# cpp_hi_res = generate_from_func(cpp_interp.call0D, len(x_values), len(y_values), x_values.min(), x_values.max(), y_values.min(), y_values.max())
 
-	x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
-	y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
 
 
-	# plt.pcolor(z_values[0] - cpp_hi_res['z'],cmap='RdBu',
+	# plt.imshow(z_values[0] - cpp_hi_res['z'],
+	# 	aspect='auto',
 	# 	cmap = 'jet',
+	# 	origin='lower',
 	# 	extent=(y_values.min(), y_values.max(), x_values.min(), x_values.max())
 	# 	)
 	# plt.colorbar()
