@@ -33,55 +33,6 @@ static double dmin(double* seq,int len) {
     if (seq[i]<val) val = seq[i];
   return val;
 }
-static double calc_b(double* x,int m,double* tx,int nx) {
-  double val1 = dmin(x,m);
-  double val2 = dmin(tx,nx);
-  if (val2>val1) return val1;
-  val1 = dmax(tx,nx);
-  return val2 - (val1-val2)/nx;
-}
-static double calc_e(double* x,int m,double* tx,int nx) {
-  double val1 = dmax(x,m);
-  double val2 = dmax(tx,nx);
-  if (val2<val1) return val1;
-  val1 = dmin(tx,nx);
-  return val2 + (val2-val1)/nx;
-}
-static int imax(int i1,int i2) {
-  return MAX(i1,i2);
-}
-
-static int calc_surfit_lwrk1(int m, int kx, int ky, int nxest, int nyest) {
- int u = nxest-kx-1;
- int v = nyest-ky-1;
- int km = MAX(kx,ky)+1;
- int ne = MAX(nxest,nyest);
- int bx = kx*v+ky+1;
- int by = ky*u+kx+1;
- int b1,b2;
- if (bx<=by) {b1=bx;b2=bx+v-ky;}
- else {b1=by;b2=by+u-kx;}
- return u*v*(2+b1+b2)+2*(u+v+km*(m+ne)+ne-kx-ky)+b2+1;
-}
-static int calc_surfit_lwrk2(int m, int kx, int ky, int nxest, int nyest) {
- int u = nxest-kx-1;
- int v = nyest-ky-1;
- int bx = kx*v+ky+1;
- int by = ky*u+kx+1;
- int b2 = (bx<=by?bx+v-ky:by+u-kx);
- return u*v*(b2+1)+b2;
-}
-
-static int calc_spherfit_lwrk1(int m, int ntest, int npest) {
- int u = ntest-7;
- int v = npest-7;
- return 185+52*v+10*u+14*u*v+8*(u-1)*v*v+8*m;
-}
-static int calc_spherfit_lwrk2(int ntest, int npest) {
- int u = ntest-7;
- int v = npest-7;
- return 48+21*v+7*u*v+4*(u-1)*v*v;
-}
 
 static int calc_regrid_lwrk(int mx, int my, int kx, int ky,
                             int nxest, int nyest) {

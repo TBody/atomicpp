@@ -4,7 +4,10 @@
 		{
 			"folder_exclude_patterns":
 			[
-				"Store"
+				"Store",
+				"build",
+				"interpolate/dfitpack.cpython-36m-darwin.so.dSYM",
+				"interpolate/__pycache__"
 			],
 			"path": "."
 		}
