@@ -12,6 +12,8 @@ c  ..local scalars..
       integer i,i1,j,k1,l,m
 c  ..
 C       print *, "fpback called"
+      print *, "n:", n
+      print *, "In fpback: ", z
       k1 = k-1
       c(n) = z(n)/a(n,1)
       i = n-1

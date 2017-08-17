@@ -24,6 +24,7 @@ c  ..subroutine references..
 c    fpgrre,fpknot
 c  ..
       print *, "fpregr called"
+      print *, "fpreger tx = ", tx
 c   set constants
       one = 1
       half = 0.5e0

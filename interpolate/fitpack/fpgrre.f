@@ -44,10 +44,56 @@ c                the x- and y-direction.
 c       bx,by  : the (nx-2*kx-1) x (nx-kx-1) and (ny-2*ky-1) x (ny-ky-1)
 c                matrices which contain the discontinuity jumps of the
 c                derivatives of the b-splines in the x- and y-direction.
+
+C       print *, "scalar_arguments="
+C       print *, "p="                , p
+C       print *, "fp="               , fp
+C       print *, "ifsx="             , ifsx
+C       print *, "ifsy="             , ifsy
+C       print *, "ifbx="             , ifbx
+C       print *, "ifby="             , ifby
+C       print *, "mx="               , mx
+C       print *, "my="               , my
+C       print *, "mz="               , mz
+C       print *, "kx="               , kx
+C       print *, "ky="               , ky
+C       print *, "nx="               , nx
+C       print *, "ny="               , ny
+C       print *, "nc="               , nc
+C       print *, "mm="               , mm
+C       print *, "mynx="             , mynx
+C       print *, "kx1="              , kx1
+C       print *, "kx2="              , kx2
+C       print *, "ky1="              , ky1
+C       print *, "ky2="              , ky2
+C       print *, "array_arguments="
+C       print *, "x(mx)="            , x
+C       print *, "y(my)="            , y
+C       print *, "z(mz)="            , z
+C       print *, "tx(nx)="           , tx
+C       print *, "ty(ny)="           , ty
+C       print *, "C(nc)="            , C
+C       print *, "spx(mx,kx1)="      , spx
+C       print *, "spy(my,ky1)="      , spy
+C       print *, "right(mm)="        , right
+C       print *, "q(mynx)="          , q
+C       print *, "ax(nx,kx2)="       , ax
+C       print *, "bx(nx,kx2)="       , bx
+C       print *, "ay(ny,ky2)="       , ay
+C       print *, "by(ny,ky2)="       , by
+C       print *, "fpx(nx)="          , fpx
+C       print *, "fpy(ny)="          , fpy
+C       print *, "nrx(mx)="          , nrx
+C       print *, "nry(my)="          , nry
+
+
+
+
       one = 1
       half = 0.5
       nk1x = nx-kx1
       nk1y = ny-ky1
+
       if(p.gt.0.) print *, "BA FPGRRE 1"
       if(p.gt.0.) pinv = one/p
 c  it depends on the value of the flags ifsx,ifsy,ifbx and ifby and on
@@ -61,6 +107,9 @@ c  ion problem in the x-direction.
       l = kx1
       l1 = kx2
       number = 0
+
+      print *, "tx", tx
+
       do 40 it=1,mx
         arg = x(it)
   10    if(arg.lt.tx(l1) .or. l.eq.nk1x) print *, "BA FPGRRE 3"
@@ -75,6 +124,10 @@ c  ion problem in the x-direction.
   30    continue
         nrx(it) = number
   40  continue
+
+      print *, "nrx", nrx
+      print *, "spx", spx
+
       ifsx = 1
   50  if(ifsy.ne.0) print *, "BA FPGRRE 4"
       if(ifsy.ne.0) go to 100
@@ -204,6 +257,8 @@ c  ibandy denotes the bandwidth of the matrices (ay) and (ry).
       ibandy = ky1
       do 420 it=1,my
         number = nry(it)
+        print *, "Number = ", number
+        print *, "nrold = ", nrold
  300    if(nrold.eq.number) print *, "BA FPGRRE 14"
         if(nrold.eq.number) go to 330
         if(p.le.0.) print *, "BA FPGRRE 15"
@@ -266,6 +321,8 @@ c  solution of the linear system    (ry) c (rx)' = h.
 c  first step: solve the system  (ry) (c1) = h.
       k = 1
       do 450 i=1,nk1x
+        print *, "Calling fpback"
+        print *, "c(k)", c(k)
         call fpback(ay,c(k),nk1y,ibandy,c(k),ny)
         k = k+nk1y
  450  continue

@@ -363,6 +363,51 @@ c  we partition the working space and determine the spline approximation
       knry = knrx+mx
       kndx = knry+my
       kndy = kndx+nxest
+
+C Verified that what is being passed to fpregr is correct
+
+C       print *, "iopt        = iopt       = ", iopt
+C       print *, "x           = x          = ", x
+C       print *, "mx          = mx         = ", mx
+C       print *, "y           = y          = ", y
+C       print *, "my          = my         = ", my
+C       print *, "z           = z          = ", z
+C       print *, "mz          = mz         = ", mz
+C       print *, "xb          = xb         = ", xb
+C       print *, "xe          = xe         = ", xe
+C       print *, "yb          = yb         = ", yb
+C       print *, "ye          = ye         = ", ye
+C       print *, "kx          = kx         = ", kx
+C       print *, "ky          = ky         = ", ky
+C       print *, "s           = s          = ", s
+C       print *, "nxest       = nxest      = ", nxest
+C       print *, "nyest       = nyest      = ", nyest
+C       print *, "tol         = tol        = ", tol
+C       print *, "maxit       = maxit      = ", maxit
+C       print *, "nc          = nc         = ", nc
+C       print *, "nx          = nx         = ", nx
+      print *, "tx          = tx         = ", tx
+C       print *, "ny          = ny         = ", ny
+      print *, "ty          = ty         = ", ty
+C       print *, "C           = c          = ", c
+C       print *, "fp          = fp         = ", fp
+C       print *, "fp0         = wrk(1)     = ", wrk(1)
+C       print *, "fpold       = wrk(2)     = ", wrk(2)
+C       print *, "reducx      = wrk(3)     = ", wrk(3)
+C       print *, "reducy      = wrk(4)     = ", wrk(4)
+C       print *, "fpintx      = wrk(lfpx)  = ", wrk(lfpx)
+C       print *, "fpinty      = wrk(lfpy)  = ", wrk(lfpy)
+C       print *, "lastdi      = iwrk(1)    = ", iwrk(1)
+C       print *, "nplusx      = iwrk(2)    = ", iwrk(2)
+C       print *, "nplusy      = iwrk(3)    = ", iwrk(3)
+C       print *, "nrx         = iwrk(knrx) = ", iwrk(knrx)
+C       print *, "nry         = iwrk(knry) = ", iwrk(knry)
+C       print *, "nrdatx      = iwrk(kndx) = ", iwrk(kndx)
+C       print *, "nrdaty      = iwrk(kndy) = ", iwrk(kndy)
+C       print *, "wrk_fpregr  = wrk(lww)   = ", wrk(lww)
+C       print *, "lwrk_fpregr = jwrk       = ", jwrk
+C       print *, "ier = ", ier
+
       call fpregr(iopt,x,mx,y,my,z,mz,xb,xe,yb,ye,kx,ky,s,nxest,nyest,
      * tol,maxit,nc,nx,tx,ny,ty,c,fp,wrk(1),wrk(2),wrk(3),wrk(4),
      * wrk(lfpx),wrk(lfpy),iwrk(1),iwrk(2),iwrk(3),iwrk(knrx),
