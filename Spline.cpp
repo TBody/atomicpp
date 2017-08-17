@@ -7,15 +7,15 @@
 #include <sstream>
 
 void fprota(double cos,double sin,double a,double b){
-// c  subroutine fprota applies a givens rotation to a and b.
+//  subroutine fprota applies a givens rotation to a and b.
   double stor1 = a;
   double stor2 = b;
   b = cos * stor2 + sin * stor1;
   a = cos * stor1 - sin * stor2;
 };
 void fpgivs(double piv, double ww,double cos,double sin){
-// c  subroutine fpgivs calculates the parameters of a given
-// c  transformation .
+//  subroutine fpgivs calculates the parameters of a given
+//  transformation .
   // 1 = 0.1e+01
   double dd;
   if(abs(piv)>=ww) {dd = abs(piv)*sqrt(1+(ww/piv)*(ww/piv));}
@@ -26,7 +26,38 @@ void fpgivs(double piv, double ww,double cos,double sin){
 };
 
 void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double> h){
+  std::vector<double> hh(19,0.0);
 
+//  subroutine fpbspl evaluates the (k+1) non-zero b-splines of
+//  degree k at t(l) <= x < t(l+1) using the stable recurrence
+//  relation of de boor and cox.
+//  Travis Oliphant  2007
+//    changed so that weighting of 0 is used when knots with
+//      multiplicity are present.
+//    Also, notice that l+k <= n and 1 <= l+1-k
+//      or else the routine will be accessing memory outside t
+//      Thus it is imperative that that k <= l <= n-k but this
+//      is not checked.  
+  
+  h[0] = 1;
+
+  for(int j=0; j<k; ++j){
+    for(int i=0; i<j; ++i){
+      hh[i] = h[i];
+    }
+    h[0] = 0;
+    for(int i=0; i<j; ++i){
+      int li = l+i;
+      int lj = li-j;
+      if(t[li] == t[lj]){
+        double f = hh[i]/(t[li]-t[lj]);
+        h[i] = h[i]+f*(t[li]-x);
+        h[i+1] = f*(x-t[lj]);
+      } else {
+        h[i+1] = 0;
+      }
+    }
+  }
 };
 
 void fpgrre(
@@ -47,7 +78,7 @@ void fpgrre(
   std::vector<double> ty,
   int ny,
   double p,
-  std::vector<double> c,
+  std::vector<double> C,
   int nc,
   double fp,
   std::vector<double> fpx,
@@ -69,30 +100,30 @@ void fpgrre(
   std::vector<int> nrx,
   std::vector<int> nry
   ){
-// c  ..subroutine references..
-// c    fpback,fpbspl,fpgivs,fpdisc,fprota
-// c  ..
-// c  the b-spline coefficients of the smoothing spline are calculated as
-// c  the least-squares solution of the over-determined linear system of
-// c  equations  (ay) c (ax)' = q       where
-// c
-// c               |   (spx)    |            |   (spy)    |
-// c        (ax) = | ---------- |     (ay) = | ---------- |
-// c               | (1/p) (bx) |            | (1/p) (by) |
-// c
-// c                                | z  ' 0 |
-// c                            q = | ------ |
-// c                                | 0  ' 0 |
-// c
-// c  with c      : the (ny-ky-1) x (nx-kx-1) matrix which contains the
-// c                b-spline coefficients.
-// c       z      : the my x mx matrix which contains the function values.
-// c       spx,spy: the mx x (nx-kx-1) and  my x (ny-ky-1) observation
-// c                matrices according to the least-squares problems in
-// c                the x- and y-direction.
-// c       bx,by  : the (nx-2*kx-1) x (nx-kx-1) and (ny-2*ky-1) x (ny-ky-1)
-// c                matrices which contain the discontinuity jumps of the
-// c                derivatives of the b-splines in the x- and y-direction.
+//  ..subroutine references..
+//    fpback,fpbspl,fpgivs,fpdisc,fprota
+//  ..
+//  the b-spline coefficients of the smoothing spline are calculated as
+//  the least-squares solution of the over-determined linear system of
+//  equations  (ay) C (ax)' = q       where
+//
+//               |   (spx)    |            |   (spy)    |
+//        (ax) = | ---------- |     (ay) = | ---------- |
+//               | (1/p) (bx) |            | (1/p) (by) |
+//
+//                                | z  ' 0 |
+//                            q = | ------ |
+//                                | 0  ' 0 |
+//
+//  with C      : the (ny-ky-1) x (nx-kx-1) matrix which contains the
+//                b-spline coefficients.
+//       z      : the my x mx matrix which contains the function values.
+//       spx,spy: the mx x (nx-kx-1) and  my x (ny-ky-1) observation
+//                matrices according to the least-squares problems in
+//                the x- and y-direction.
+//       bx,by  : the (nx-2*kx-1) x (nx-kx-1) and (ny-2*ky-1) x (ny-ky-1)
+//                matrices which contain the discontinuity jumps of the
+//                derivatives of the b-splines in the x- and y-direction.
 
 std::vector<double> h(7, 0.0);
 
@@ -103,9 +134,9 @@ double nk1y = ny-ky1;
 
 double pinv = 0.0;
 if(p > 0.){pinv = 1/p;}
-// c  calculate the non-zero elements of the matrix (spx) which is the
-// c  observation matrix according to the least-squares spline approximat-
-// c  ion problem in the x-direction.
+//  calculate the non-zero elements of the matrix (spx) which is the
+//  observation matrix according to the least-squares spline approximat-
+//  ion problem in the x-direction.
 int l = kx1;
 int l1 = kx2;
 int number = 0;
@@ -124,9 +155,9 @@ for(int it = 0; it < mx; ++it){
   nrx[it] = number;
 }
 ifsx = 1;
-// c  calculate the non-zero elements of the matrix (spy) which is the
-// c  observation matrix according to the least-squares spline approximat-
-// c  ion problem in the y-direction.
+//  calculate the non-zero elements of the matrix (spy) which is the
+//  observation matrix according to the least-squares spline approximat-
+//  ion problem in the y-direction.
 l = ky1;
 l1 = ky2;
 number = 0;
@@ -146,12 +177,12 @@ for(int it = 0; it < my; ++it){
 }
 ifsy = 1;
 
-// c  reduce the matrix (ax) to upper triangular form (rx) using givens
-// c  rotations. apply the same transformations to the rows of matrix q
-// c  to obtain the my x (nx-kx-1) matrix g.
-// c  store matrix (rx) into (ax) and g into q.
+//  reduce the matrix (ax) to upper triangular form (rx) using givens
+//  rotations. apply the same transformations to the rows of matrix q
+//  to obtain the my x (nx-kx-1) matrix g.
+//  store matrix (rx) into (ax) and g into q.
 l = my*nk1x;
-// c  initialization.
+//  initialization.
 for(int i=0; i<l-1; ++i){
   q[i] = 0;
 }
@@ -163,79 +194,97 @@ for(int i=0; i<nk1x-1; ++i){
 
 l = 0;
 int nrold = 0;
-// c  ibandx denotes the bandwidth of the matrices (ax) and (rx).
+//  ibandx denotes the bandwidth of the matrices (ax) and (rx).
 int ibandx = kx1;
 int irot, n1;
-double piv, sin, cos;
+double piv;
+double sin = 0.0;
+double cos = 0.0;
 int i2, i3;
 
 for(int it = 0; it< mx; ++it){
   number = nrx[it];
   // 50
-  if ( nrold==number ){
-    // !  fetch a new row of matrix (spx).
-    h[ibandx] = 0.;
-    for(int j = 1 ; j< kx1; ++j){
-      h[j] = spx[it][j];
-    };
-    // !  find the appropriate column of q.
-    for(int j = 0; j< my; ++j){
-      l = l + 1;
-      right[j] = z[l];
-    };
-    irot = number;
-  } else {
-    // if ( p<=0. ) print * , "ba fpgrre 10"
-    // if ( p<=0. ){ goto 150};
-    if ( p<=0. ){
+  bool repeat_loop = true;
+  while(repeat_loop){
+    if( nrold==number ){
+        // !  fetch a new row of matrix (spx).
+        h[ibandx] = 0.;
+        for(int j = 1 ; j< kx1; ++j){
+          h[j] = spx[it][j];
+        };
+        // !  find the appropriate column of q.
+        for(int j = 0; j< my; ++j){
+          l = l + 1;
+          right[j] = z[l];
+        };
+        irot = number;
+      } else {
+        // if ( p<=0. ) print * , "ba fpgrre 10"
+        // if ( p<=0. ){ goto 150};
+        if ( p<=0. ){
+          nrold = nrold + 1;
+          continue; //go back to start of while loop
+        }
+        ibandx = kx2;
+        // !  fetch a new row of matrix (bx).
+        n1 = nrold + 1;
+        for(int j = 0; j < kx2; ++j){
+          h[j] = bx[n1][j]*pinv;
+        }
+        // !  find the appropriate column of q.
+        for(int j = 0; j < my; ++j){
+          right[j] = 0.;
+        }
+        irot = nrold;
+      };
+      // !  rotate the new row of matrix (ax) into triangle.
+      for(int i = 0; i< ibandx; ++i){
+      irot = irot + 1;
+      piv = h[i];
+      // if ( piv==0. ) print * , "ba fpgrre 11"
+      if ( piv != 0. ){
+        // !  calculate the parameters of the givens transformation.
+        fpgivs(piv,ax[irot][1],cos,sin);
+        // !  apply that transformation to the rows of matrix q.
+        int iq = (irot-1)*my;
+        for(int j = 0; j< my; ++j){
+          iq = iq + 1;
+          fprota(cos,sin,right[j],q[iq]);
+        }
+        // !  apply that transformation to the columns of (ax).
+        // if ( i==ibandx ) print * , "ba fpgrre 12"
+        // if ( i==ibandx ){ goto 100};
+        if (not( i==ibandx )){
+          i2 = 1;
+          i3 = i + 1;
+          for(int j = i3-1; j< ibandx; ++j){
+            i2 = i2 + 1;
+            fprota(cos,sin,h[j],ax[irot][i2]);
+          }
+        }
+      }
+    }
+    // if ( nrold==number ) print * , "ba fpgrre 13"
+    if ( nrold==number ){
+      break;
+    } else {
       nrold = nrold + 1;
-      continue;
     }
-    ibandx = kx2;
-    // !  fetch a new row of matrix (bx).
-    n1 = nrold + 1;
-    for(int j = 0; j < kx2; ++j){
-      h[j] = bx[n1][j]*pinv;
-    }
-    // !  find the appropriate column of q.
-    for(int j = 0; j < my; ++j){
-      right[j] = 0.;
-    }
-    irot = nrold;
-  };
-  // !  rotate the new row of matrix (ax) into triangle.
-  for(int i = 0; i< ibandx; ++i){
-  irot = irot + 1;
-  piv = h[i];
-  // if ( piv==0. ) print * , "ba fpgrre 11"
-  if ( piv/=0. ){
-    // !  calculate the parameters of the givens transformation.
-    fpgivs(piv,ax[irot][1],cos,sin);
-    // !  apply that transformation to the rows of matrix q.
-    int iq = (irot-1)*my;
-    for(int j = 0; j< my; ++j){
-      iq = iq + 1;
-      fprota(cos,sin,right[j],q[iq]);
-    }
-    // !  apply that transformation to the columns of (ax).
-    // if ( i==ibandx ) print * , "ba fpgrre 12"
-    // if ( i==ibandx ){ goto 100};
-    i2 = 1;
-    i3 = i + 1;
-    for(int j = i3-1; j< ibandx; ++j){
-      i2 = i2 + 1;
-      // call fprota(cos,sin,h[j],ax[irot][i2]);
-    }
-  };
   }
-  // if ( nrold==number ) print * , "ba fpgrre 13"
-  // 100
-  // if ( nrold==number ) goto 200
-  // 150
-  nrold = nrold + 1;
-  // goto 50
-  // 200
 }
+
+// !  reduce the matrix (ay) to upper triangular form (ry) using givens
+// !  rotations. apply the same transformations to the columns of matrix g
+// !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
+// !  store matrix (ry) into (ay) and h into C.
+int ncof = nk1x * nk1y;
+// !  initialization.
+
+for(int i = 0; i< ncof; ++i){
+  C[i] = 0;
+}
+
 
 // double arg,fac,term;
 // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;
@@ -265,7 +314,7 @@ int fpregr(int iopt,
   std::vector<double> tx,
   int ny,
   std::vector<double> ty,
-  std::vector<double> c,
+  std::vector<double> C,
   double fp,
   double fp0,
   double fpold,
@@ -283,13 +332,13 @@ int fpregr(int iopt,
   std::vector<double> wrk,
   int lwrk
   ){
-  // c   set constants
+  //   set constants
   // double 1 = 1;
   double half = 0.5e0;
   double con1 = 0.1e0;
   double con9 = 0.9e0;
   double con4 = 0.4e-01;
-  // c  we partition the working space.
+  //  we partition the working space.
   int kx1 = kx+1;
   int ky1 = ky+1;
   int kx2 = kx1+1;
@@ -306,47 +355,47 @@ int fpregr(int iopt,
   int lay = lbx+nxk;
   int lby = lay+nyest*ky2;
 
-  // cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-  // c part 1: determination of the number of knots and their position.     c
-  // c ****************************************************************     c
-  // c  given a set of knots we compute the least-squares spline sinf(x,y), c
-  // c  and the corresponding sum of squared residuals fp=f(p=inf).         c
-  // c  if iopt=-1  sinf(x,y) is the requested approximation.               c
-  // c  if iopt=0 or iopt=1 we check whether we can accept the knots:       c
-  // c    if fp <=s we will continue with the current set of knots.         c
-  // c    if fp > s we will increase the number of knots and compute the    c
-  // c       corresponding least-squares spline until finally fp<=s.        c
-  // c    the initial choice of knots depends on the value of s and iopt.   c
-  // c    if s=0 we have spline interpolation; in that case the number of   c
-  // c    knots equals nmaxx = mx+kx+1  and  nmaxy = my+ky+1.               c
-  // c    if s>0 and                                                        c
-  // c     *iopt=0 we first compute the least-squares polynomial of degree  c
-  // c      kx in x and ky in y; nx=nminx=2*kx+2 and ny=nymin=2*ky+2.       c
-  // c     *iopt=1 we start with the knots found at the last call of the    c
-  // c      routine, except for the case that s > fp0; then we can compute  c
-  // c      the least-squares polynomial directly.                          c
-  // cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+  // 
+  // part 1: determination of the number of knots and their position.    
+  // ****************************************************************    
+  //  given a set of knots we compute the least-squares spline sinf(x,y),
+  //  and the corresponding sum of squared residuals fp=f(p=inf).        
+  //  if iopt=-1  sinf(x,y) is the requested approximation.              
+  //  if iopt=0 or iopt=1 we check whether we can accept the knots:      
+  //    if fp <=s we will continue with the current set of knots.        
+  //    if fp > s we will increase the number of knots and compute the   
+  //       corresponding least-squares spline until finally fp<=s.       
+  //    the initial choice of knots depends on the value of s and iopt.  
+  //    if s=0 we have spline interpolation; in that case the number of  
+  //    knots equals nmaxx = mx+kx+1  and  nmaxy = my+ky+1.              
+  //    if s>0 and                                                       
+  //     *iopt=0 we first compute the least-squares polynomial of degree 
+  //      kx in x and ky in y; nx=nminx=2*kx+2 and ny=nymin=2*ky+2.      
+  //     *iopt=1 we start with the knots found at the last call of the   
+  //      routine, except for the case that s > fp0; then we can compute 
+  //      the least-squares polynomial directly.                         
+  // 
 
-  // c  determine the number of knots for polynomial approximation.
+  //  determine the number of knots for polynomial approximation.
 
   int nminx = 2*kx1;
   int nminy = 2*ky1;
 
-  // c  acc denotes the absolute tolerance for the root of f(p)=s.
+  //  acc denotes the absolute tolerance for the root of f(p)=s.
   double acc = tol*s;
-  // c  find nmaxx and nmaxy which denote the number of knots in x- and y-
-  // c  direction in case of spline interpolation.
+  //  find nmaxx and nmaxy which denote the number of knots in x- and y-
+  //  direction in case of spline interpolation.
   int nmaxx = mx+kx1;
   int nmaxy = my+ky1;
-  // c  find nxe and nye which denote the maximum number of knots
-  // c  allowed in each direction
+  //  find nxe and nye which denote the maximum number of knots
+  //  allowed in each direction
   int nxe = std::min(nmaxx,nxest);
   int nye = std::min(nmaxy,nyest);
-  // c  if s = 0, s(x,y) is an interpolating spline.
+  //  if s = 0, s(x,y) is an interpolating spline.
   nx = nmaxx;
   ny = nmaxy;
-  // c  find the position of the interior knots in case of interpolation.
-  // c  the knots in the x-direction.
+  //  find the position of the interior knots in case of interpolation.
+  //  the knots in the x-direction.
   int mk1 = mx-kx1;
   int k3 = kx/2;
   int i = kx1+1;
@@ -358,7 +407,7 @@ int fpregr(int iopt,
   j = j+1;
   }
 
-  // c  the knots in the y-direction.
+  //  the knots in the y-direction.
   mk1 = my-ky1;
   k3 = ky/2;
   i = ky1+1;
@@ -377,21 +426,21 @@ int fpregr(int iopt,
   int ifby = 0;
   double p = -1;
 
-  // c  main loop for the different sets of knots.mpm=mx+my is a save upper
-  // c  bound for the number of trials.
+  //  main loop for the different sets of knots.mpm=mx+my is a save upper
+  //  bound for the number of trials.
 
   // for(int iter = 0; iter < mpm; ++iter){
-  // c  find nrintx (nrinty) which is the number of knot intervals in the
-  // c  x-direction (y-direction).
+  //  find nrintx (nrinty) which is the number of knot intervals in the
+  //  x-direction (y-direction).
   int nrintx = nx-nminx+1;
   int nrinty = ny-nminy+1;
-  // c  find ncof, the number of b-spline coefficients for the current set
-  // c  of knots.
+  //  find ncof, the number of b-spline coefficients for the current set
+  //  of knots.
   int nk1x = nx-kx1;
   int nk1y = ny-ky1;
   int ncof = nk1x*nk1y;
-  // c  find the position of the additional knots which are needed for the
-  // c  b-spline representation of s(x,y).
+  //  find the position of the additional knots which are needed for the
+  //  b-spline representation of s(x,y).
   i = nx;
   for(j=1; j < kx1; ++j){
   tx[j-1] = xb;
@@ -405,12 +454,12 @@ int fpregr(int iopt,
   ty[i-1] = ye;
   i = i-1;
   }
-  // c  find the least-squares spline sinf(x,y) and calculate for each knot
-  // c  interval tx(j+kx)<=x<=tx(j+kx+1) (ty(j+ky)<=y<=ty(j+ky+1)) the sum
-  // c  of squared residuals fpintx(j),j=1,2,...,nx-2*kx-1 (fpinty(j),j=1,2,
-  // c  ...,ny-2*ky-1) for the data points having their absciss (ordinate)-
-  // c  value belonging to that interval.
-  // c  fp gives the total sum of squared residuals.
+  //  find the least-squares spline sinf(x,y) and calculate for each knot
+  //  interval tx(j+kx)<=x<=tx(j+kx+1) (ty(j+ky)<=y<=ty(j+ky+1)) the sum
+  //  of squared residuals fpintx(j),j=1,2,...,nx-2*kx-1 (fpinty(j),j=1,2,
+  //  ...,ny-2*ky-1) for the data points having their absciss (ordinate)-
+  //  value belonging to that interval.
+  //  fp gives the total sum of squared residuals.
 
   // ifsx = ifsx;
   // ifsy = ifsy;
@@ -429,7 +478,7 @@ int fpregr(int iopt,
   // ty = ty;
   // ny = ny;
   // p = p;
-  // c = c;
+  // C = C;
   // nc = nc;
   // fp = fp;
   std::vector<double>  fpx = fpintx;
@@ -461,11 +510,11 @@ int fpregr(int iopt,
   // std::vector<int> nry(my, 0);
   // = nry;
 
-  fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,c,nc,fp,fpx,fpy,mm,mynx,kx1,kx2,ky1,ky2,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
+  fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,C,nc,fp,fpx,fpy,mm,mynx,kx1,kx2,ky1,ky2,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
 
   double fpms = fp-s;
 
-  // c  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
+  //  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
   if((nx==nmaxx) and (ny==nmaxy)){
   int ier = -1;
   fp = 0.;
@@ -485,7 +534,7 @@ struct regrid_return{
   int ny;
   std::vector<double> tx;
   std::vector<double> ty;
-  std::vector<double> c;
+  std::vector<double> C;
   double fp;
   int ier;
 };
@@ -506,12 +555,12 @@ struct regrid_return{
   sum ((z(i,j)-s(x(i),y(j))))**2) be <= s, with s a given non-negative
   constant, called the smoothing factor.
   the fit is given in the b-spline representation (b-spline coefficients
-  c((ny-ky-1)*(i-1)+j),i=1,...,nx-kx-1;j=1,...,ny-ky-1) and can be eval-
+  C((ny-ky-1)*(i-1)+j),i=1,...,nx-kx-1;j=1,...,ny-ky-1) and can be eval-
   uated by means of subroutine bispev.
 
   calling sequence:
   call regrid(iopt,mx,x,my,y,z,xb,xe,yb,ye,kx,ky,s,nxest,nyest,
-  *  nx,tx,ny,ty,c,fp,wrk,lwrk,iwrk,kwrk,ier)
+  *  nx,tx,ny,ty,C,fp,wrk,lwrk,iwrk,kwrk,ier)
 
   parameters:
   iopt  : integer flag. on entry iopt must specify whether a least-
@@ -597,8 +646,8 @@ struct regrid_return{
   if the computation mode iopt=-1 is used, the values ty(ky+2),
   ...ty(ny-ky-1) must be supplied by the user, before entry.
   see also the restrictions (ier=10).
-  c     : real array of dimension at least (nxest-kx-1)*(nyest-ky-1).
-  on succesful exit, c contains the coefficients of the spline
+  C     : real array of dimension at least (nxest-kx-1)*(nyest-ky-1).
+  on succesful exit, C contains the coefficients of the spline
   approximation s(x,y)
   fp    : real. unless ier=10, fp contains the sum of squared
   residuals of the spline approximation returned.
@@ -755,7 +804,7 @@ struct regrid_return{
   latest update : march 1989
   **/
 
-// nx,tx,ny,ty,c,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
+// nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
 regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vector<double> z){
 
   // Translation of interpolate/src/fitpack.pyf (header)
@@ -787,7 +836,7 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
 
   std::vector<double> tx(nxest, 0.0);
   std::vector<double> ty(nyest, 0.0);
-  std::vector<double> c((nxest-kx-1)*(nyest-ky-1), 0.0);
+  std::vector<double> C((nxest-kx-1)*(nyest-ky-1), 0.0);
   double fp = 0.0;
 
   int lwrk = 4 + nxest * (my + 2 * kx + 5) + nyest * (2 * ky + 5) + mx * (kx + 1) + my * (ky + 1) + std::max(my, nxest);
@@ -799,14 +848,14 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
 
   // End of translation of interpolate/src/fitpack.pyf (header)
 
-  // call regrid(iopt,mx,x,my,y,z,xb,xe,yb,ye,kx,ky,s,nxest,nyest,nx,tx,ny,ty,c,fp,wrk,lwrk,iwrk,kwrk,ier)
+  //all regrid(iopt,mx,x,my,y,z,xb,xe,yb,ye,kx,ky,s,nxest,nyest,nx,tx,ny,ty,C,fp,wrk,lwrk,iwrk,kwrk,ier)
 
   // Translation of fitpack/regrid.f (implementation)
 
   int maxit = 20;
   double tol = 0.1e-02;
-  // c  before starting computations a data check is made. if the input data
-  // c  are invalid, control is immediately repassed to the calling program.
+  //  before starting computations a data check is made. if the input data
+  //  are invalid, control is immediately repassed to the calling program.
   ier = 10;
   if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 1");
 
@@ -851,7 +900,7 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
   if(s == 0. and (nxest < (mx+kx1) or nyest < (my+ky1)) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
 
   ier = 0;
-  // c  we partition the working space and determine the spline approximation;
+  //  we partition the working space and determine the spline approximation;
   int lfpx = 5;
   int lfpy = lfpx+nxest;
   int lww = lfpy+nyest;
@@ -884,7 +933,7 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
   // tx     = tx;
   int ny     = 0;
   // ty     = ty;
-  // c      = c;
+  //      = C;
   // fp     = fp;
   double fp0    = wrk[1-1];
   double fpold  = wrk[2-1];
@@ -911,13 +960,13 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
   // int                 ier    = ier;
 
   ier = fpregr(iopt,x,mx,y,my,z,mz,xb,xe,yb,ye,kx,ky,s,
-  nxest,nyest,tol,maxit,nc,nx,tx,ny,ty,c,fp,fp0,fpold,reducx,
+  nxest,nyest,tol,maxit,nc,nx,tx,ny,ty,C,fp,fp0,fpold,reducx,
   reducy,fpintx,fpinty,lastdi,nplusx,nplusy,nrx,nry,nrdatx,nrdaty,
   wrk_fpregr,lwrk_fpregr);
 
 
-  // call fpregr(iopt,x,mx,y,my,z,mz,xb,xe,yb,ye,kx,ky,s,nxest,nyest,
-  // 	tol,maxit,nc,nx,tx,ny,ty,c,fp,wrk(1),wrk(2),wrk(3),wrk(4),
+  //all fpregr(iopt,x,mx,y,my,z,mz,xb,xe,yb,ye,kx,ky,s,nxest,nyest,
+  // 	tol,maxit,nc,nx,tx,ny,ty,C,fp,wrk(1),wrk(2),wrk(3),wrk(4),
   // 	wrk(lfpx),wrk(lfpy),iwrk(1),iwrk(2),iwrk(3),iwrk(knrx),
   // 	iwrk(knry),iwrk(kndx),iwrk(kndy),wrk(lww),jwrk,ier)
 
