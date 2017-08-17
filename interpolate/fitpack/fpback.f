@@ -11,7 +11,7 @@ c  ..local scalars..
       real*8 store
       integer i,i1,j,k1,l,m
 c  ..
-      print *, "fpback called"
+C       print *, "fpback called"
       k1 = k-1
       c(n) = z(n)/a(n,1)
       i = n-1
