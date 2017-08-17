@@ -24,6 +24,29 @@ void fpgivs(double piv, double ww,double cos,double sin){
   sin = piv/dd;
   ww = dd;
 };
+void fpback(std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest){
+  int k1 = k-1;
+  C[n] = z[n]/a[n][0];
+  int i = n-1;
+
+  double store;
+
+
+  if(i!=0){
+    for(int j=1; j< n; ++j){
+      store = z[i];
+      int i1 = k1;
+      if(j<=k1){i1 = j-1;}
+        int m = i;
+        for(int l=0; l<i1; ++l){
+          m = m+1;
+          store = store-C[m]*a[i][l+1];
+        }
+      C[i] = store/a[i][0];
+      i = i-1;
+    }
+  }
+}
 
 void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double> h){
   std::vector<double> hh(19,0.0);
@@ -37,8 +60,8 @@ void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double>
 //    Also, notice that l+k <= n and 1 <= l+1-k
 //      or else the routine will be accessing memory outside t
 //      Thus it is imperative that that k <= l <= n-k but this
-//      is not checked.  
-  
+//      is not checked.
+
   h[0] = 1;
 
   for(int j=0; j<k; ++j){
@@ -285,6 +308,102 @@ for(int i = 0; i< ncof; ++i){
   C[i] = 0;
 }
 
+for(int i=0; i<nk1y; ++i){
+  for(int j=0; j<nk1x; ++j){
+    ay[i][j] = 0;
+  }
+}
+
+nrold = 0;
+//  ibandy denotes the bandwidth of the matrices (ay) and (ry).
+int ibandy = ky1;
+
+for(int it=0; it < my; ++it){
+  number = nry[it];
+  bool repeat_loop = true;
+  while(repeat_loop){
+
+// 300    if(nrold.eq.number) print *, "BA FPGRRE 14"
+  // if(nrold.eq.number) go to 330
+  if(nrold != number){
+    if(p <= 0){
+      // if(p.le.0.) print *, "BA FPGRRE 15"
+      // if(p.le.0.) go to 410
+      nrold += 1;
+      continue;
+    }
+  ibandy = ky2;
+  // fetch a new row of matrix (by).
+  n1 = nrold+1;
+  for(int j=0; j < ky2; ++j){
+      h[j] = by[n1][j]*pinv;
+    }
+
+    //  find the appropiate row of g.
+    for(int j=0; j < nk1x; ++j){
+      right[j] = 0.;
+    }
+
+    irot = nrold;
+  } else {
+    //  fetch a new row of matrix (spy)
+    h[ibandy] = 0.;
+    //  find the appropriate row of g.
+    for(int j=0; j< ky1; ++j){
+      h[j] = spy[it][j];
+    }
+    l = it;
+    for(int j=0; j< nk1x; ++j){
+      right[j] = q[l];
+      l = l+my;
+    }
+    irot = number;
+  }
+
+  //  rotate the new row of matrix (ay) into triangle.
+  for(int i=0; i<ibandy; ++i){
+    irot = irot+1;
+    piv = h[i];
+    if(piv==0.){continue;}
+    fpgivs(piv,ay[irot][1],cos,sin);
+    //  calculate the parameters of the givens transformation.
+    //  apply that transformation to the colums of matrix g.
+    int ic = irot;
+    for(int j=0; j<nk1x; ++j){
+      fprota(cos,sin,right[j],C[ic]);
+      ic = ic+nk1y;
+    }
+    if(i==ibandy){
+      break;
+    }
+    //  apply that transformation to the columns of matrix (ay).
+    i2 = 1;
+    i3 = i+1;
+    for(int j = i3-1; j<ibandy; ++j){
+      i2 = i2+1;
+      fprota(cos,sin,h[j],ay[irot][i2]);
+    }
+  }
+  if(nrold==number){
+    repeat_loop = false;
+  }
+  nrold = nrold+1;
+  }
+}
+//  backward substitution to obtain the b-spline coefficients as the
+//  solution of the linear system    (ry) c (rx)' = h.
+//  first step: solve the system  (ry) (c1) = h.
+
+int k = 1;
+
+for(int i=1; i<nk1x; ++i){
+  // std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest
+  // In .f as 
+  // fpback(ay,C[k],nk1y,ibandy,C[k],ny);
+  // But needs vector not scalar for C[k] arguments
+  fpback(ay,C,nk1y,ibandy,C,ny);
+  k = k+nk1y;
+}
 
 // double arg,fac,term;
 // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;
@@ -355,26 +474,26 @@ int fpregr(int iopt,
   int lay = lbx+nxk;
   int lby = lay+nyest*ky2;
 
-  // 
-  // part 1: determination of the number of knots and their position.    
-  // ****************************************************************    
+  //
+  // part 1: determination of the number of knots and their position.
+  // ****************************************************************
   //  given a set of knots we compute the least-squares spline sinf(x,y),
-  //  and the corresponding sum of squared residuals fp=f(p=inf).        
-  //  if iopt=-1  sinf(x,y) is the requested approximation.              
-  //  if iopt=0 or iopt=1 we check whether we can accept the knots:      
-  //    if fp <=s we will continue with the current set of knots.        
-  //    if fp > s we will increase the number of knots and compute the   
-  //       corresponding least-squares spline until finally fp<=s.       
-  //    the initial choice of knots depends on the value of s and iopt.  
-  //    if s=0 we have spline interpolation; in that case the number of  
-  //    knots equals nmaxx = mx+kx+1  and  nmaxy = my+ky+1.              
-  //    if s>0 and                                                       
-  //     *iopt=0 we first compute the least-squares polynomial of degree 
-  //      kx in x and ky in y; nx=nminx=2*kx+2 and ny=nymin=2*ky+2.      
-  //     *iopt=1 we start with the knots found at the last call of the   
-  //      routine, except for the case that s > fp0; then we can compute 
-  //      the least-squares polynomial directly.                         
-  // 
+  //  and the corresponding sum of squared residuals fp=f(p=inf).
+  //  if iopt=-1  sinf(x,y) is the requested approximation.
+  //  if iopt=0 or iopt=1 we check whether we can accept the knots:
+  //    if fp <=s we will continue with the current set of knots.
+  //    if fp > s we will increase the number of knots and compute the
+  //       corresponding least-squares spline until finally fp<=s.
+  //    the initial choice of knots depends on the value of s and iopt.
+  //    if s=0 we have spline interpolation; in that case the number of
+  //    knots equals nmaxx = mx+kx+1  and  nmaxy = my+ky+1.
+  //    if s>0 and
+  //     *iopt=0 we first compute the least-squares polynomial of degree
+  //      kx in x and ky in y; nx=nminx=2*kx+2 and ny=nymin=2*ky+2.
+  //     *iopt=1 we start with the knots found at the last call of the
+  //      routine, except for the case that s > fp0; then we can compute
+  //      the least-squares polynomial directly.
+  //
 
   //  determine the number of knots for polynomial approximation.
 
