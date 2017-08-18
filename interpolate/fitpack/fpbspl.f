@@ -21,13 +21,16 @@ c  ..local scalars..
 c  ..local arrays..
       real*8 hh(19)
 c  ..
+C   18  format (' ',A1,f6.2)
+C   19  format (' ',A1,9(f6.2))
+C   17  format (' ',A4,9(f6.2))
 C       print *, "fpbspl called with "
-C       print *, "t", t
+C       print 19, "t", t
 C       print *, "n", n
 C       print *, "k", k
-C       print *, "x", x
+C       print 18, "x", x
 C       print *, "l", l
-C       print *, "h", h
+C       print 19, "h", h
 
 
       one = 0.1d+01
@@ -44,8 +47,15 @@ C       print *, "h", h
           h(i+1) = 0.0d0 
           goto 20
   15      f = hh(i)/(t(li)-t(lj)) 
+C           print 18, "f", f
+C           print *, "li", li
+C           print *, "t(li)", t(li)
           h(i) = h(i)+f*(t(li)-x)
+C           print 18, "0", h(i)+f*(t(li)-x)
           h(i+1) = f*(x-t(lj))
+C           print 18, "1", f*(x-t(lj))
   20  continue
+
+C       print 17, "hret", h
       return
       end

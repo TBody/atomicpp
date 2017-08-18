@@ -92,6 +92,12 @@ C       print *, "fpgrre nry", nry
       nk1x = nx-kx1
       nk1y = ny-ky1
 
+C       print *, "p = ", p
+C       print *, "ifsx = ", ifsx
+C       print *, "ifsy = ", ifsy
+C       print *, "ifbx = ", ifbx
+C       print *, "ifby = ", ifby
+
 C       if(p.gt.0.) print *, "BA FPGRRE 1"
       if(p.gt.0.) pinv = one/p
 c  it depends on the value of the flags ifsx,ifsy,ifbx and ifby and on
@@ -124,8 +130,11 @@ C         if(arg.lt.tx(l1) .or. l.eq.nk1x) go to 20
         nrx(it) = number
   40  continue
 
-C       print *, "nrx", nrx
-C       print *, "spx", spx
+      print *, "spx", spx
+      print *, "spx(2,4)", spx(2,4)
+      print *, "nrx", nrx
+      print *, "h", h
+      stop
 
       ifsx = 1
   50    if(ifsy.ne.0) go to 100   

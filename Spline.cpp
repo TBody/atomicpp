@@ -52,7 +52,7 @@ void fpback(std::vector<std::vector<double>> a, std::vector<double> z, int n, in
   }
 };
 
-void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double> h){
+void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double>& h){
   std::vector<double> hh(19,0.0);
 
   //  subroutine fpbspl evaluates the (k+1) non-zero b-splines of
@@ -67,32 +67,40 @@ void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double>
   //      is not checked.
 
   // std::cout << "fpbspl called with " << std::endl;
-  // std::cout << "t" << t << std::endl;
-  // std::cout << "n" << n << std::endl;
-  // std::cout << "k" << k << std::endl;
-  // std::cout << "x" << x << std::endl;
-  // std::cout << "l" << l << std::endl;
-  // std::cout << "h" << h << std::endl;
+  // std::cout << "t = " << t << std::endl;
+  // std::cout << "n = " << n << std::endl;
+  // std::cout << "k = " << k << std::endl;
+  // std::cout << "x = " << x << std::endl;
+  // std::cout << "l = " << l << std::endl;
+  // std::cout << "h = " << h << std::endl;
 
-  h[0] = 1;
+  h[1-1] = 1;
 
-  for(int j=0; j<k; ++j){
-    for(int i=0; i<j; ++i){
-      hh[i] = h[i];
+  for(int j = 1; j <= k; ++j){
+    for(int i = 1; i <= j; ++i){
+      hh[i-1] = h[i-1];
     }
-    h[0] = 0;
-    for(int i=0; i<j; ++i){
+    h[1-1] = 0;
+    for(int i = 1; i <= j; ++i){
       int li = l+i;
       int lj = li-j;
-      if(t[li] == t[lj]){
-        double f = hh[i]/(t[li]-t[lj]);
-        h[i] = h[i]+f*(t[li]-x);
-        h[i+1] = f*(x-t[lj]);
+
+      if(t[li-1] != t[lj-1]){
+        double f = hh[i-1] / (t[li-1]-t[lj-1]);
+        // std::cout << "f = " << f << std::endl;
+        // std::cout << "li = " << li << std::endl;
+        // std::cout << "t(li) = " << t[li-1] << std::endl;
+        // h[i-1] = h[i-1]+f*(t[li-1]-x);
+        h[i-1] = h[i-1]+f*(t[li-1]-x);
+        // std::cout << "0 = " << h[i-1]+f*(t[li-1]-x) << std::endl;
+        h[i+1-1] = f*(x-t[lj-1]);
+        // std::cout << "1 = " << f*(x-t[lj-1]) << std::endl;
       } else {
-        h[i+1] = 0;
+        h[i+1-1] = 0;
       }
     }
   }
+  // std::cout << "h returned " << h << std::endl;
 };
 
 void fpgrre(
@@ -260,19 +268,29 @@ void fpgrre(
   int l1 = kx2;
   int number = 0;
 
-  for(int it = 0; it < mx; ++it){
-    double arg = x[it];
-    while(not(arg<tx[l1] or l==nk1x)){
+
+
+  for(int it = 1; it <= mx; ++it){
+    double arg = x[it-1];
+
+    while(not(arg<tx[l1-1] or l==nk1x)){
       l = l1;
       l1 = l+1;
       number = number+1;
     }
+
     fpbspl(tx,nx,kx,arg,l,h);
-    for(int i=0; i<kx1; ++i){
-      spx[it][i] = h[i];
+    // std::cout << "Check" << h << std::endl;
+    for(int i=1; i <= kx1; ++i){
+      spx[it-1][i-1] = h[i-1];
     }
-    nrx[it] = number;
+    nrx[it-1] = number;
   }
+  std::cout << "spx" << spx << std::endl;
+  std::cout << "spx[1,3]" << spx[1][3] << std::endl;
+  std::cout << "nrx" << nrx << std::endl;
+  std::cout << "h" << h << std::endl;
+  throw std::runtime_error("Stop");
 
   // std::cout << "spx = " << spx << std::endl;
   // std::cout << "nrx = " << nrx << std::endl;
