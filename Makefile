@@ -1,3 +1,6 @@
+run_cpp: Spline.cpp
+	g++ Spline.cpp -std=c++11 -Wall -o Spline
+	./Spline
 
 run_py: interpolate/setup_splines.py
 	rm -rf interpolate/__pycache__
@@ -8,4 +11,3 @@ run_py: interpolate/setup_splines.py
 	clear
 	clear
 	python Spline.py
-run_cpp: 

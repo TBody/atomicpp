@@ -38,7 +38,7 @@ c   tx(kx+1) <= x(i-1) <= x(i) <= tx(nx-kx), i=2,...,mx
 c   ty(ky+1) <= y(j-1) <= y(j) <= ty(ny-ky), j=2,...,my
 c
 c  other subroutines required:
-c    fpbisp,fpbspl
+c    fpbisp
 c
 c  ..scalar arguments..
       integer nx,ny,kx,ky,m,lwrk,ier

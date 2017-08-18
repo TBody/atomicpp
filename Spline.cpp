@@ -1077,6 +1077,137 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
   // End of translation of fitpack/regrid.f (implementation)
 };
 
+// fpbisp(tx,nx,ty,ny,c,kx,ky,x,mx,y,my,z,wx,wy,lx,ly)
+double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<double>& ty, const int& ny, const std::vector<double>& c, const int& kx, const int& ky, const double& x, const double& y){
+  double z;
+
+  std::vector<double> h(6, 0.0);
+  int lx = 0;
+  int ly = 0;
+  std::vector<double> wx(kx+1, 0.0);
+  std::vector<double> wy(ky+1, 0.0);
+
+  int kx1 = kx+1;
+  int nkx1 = nx-kx1;
+  double tb = tx[kx1-1];
+  double te = tx[nkx1+1-1];
+  int l = kx1;
+  int l1 = l+1;
+  
+  int mx = 1;
+  int my = 1;
+
+  double arg = x;
+  if(arg < tb){
+    arg = tb;
+  }
+  if(arg > te){
+    arg = te;
+  }
+
+  while(not(arg < tx[l1-1] or l==nkx1)){
+    l = l1;
+    l1 = l+1;
+  }
+  fpbspl(tx,nx,kx,arg,l,h);
+  lx = l-kx1;
+
+  for(int j=1; j <= kx1; ++j){
+    wx[j-1] = h[j-1];
+  }
+
+  int ky1 = ky+1;
+  int nky1 = ny-ky1;
+  tb = ty[ky1-1];
+  te = ty[nky1+1-1];
+  l = ky1;
+  l1 = l+1;
+
+  arg = y;
+  if(arg < tb){
+    arg = tb;
+  }
+  if(arg > te){
+    arg = te;
+  }
+  while(not(arg<ty[l1-1] or l==nky1)){
+    l = l1;
+    l1 = l+1;
+  }
+  fpbspl(ty,ny,ky,arg,l,h);
+  ly = l-ky1;
+
+  for(int j=1; j<=ky1; ++j){
+    wy[j-1] = h[j-1];
+  }
+
+  int m = 0;
+
+  l = lx*nky1;
+  for(int i1=1; i1<= kx1; ++i1){
+    h[i1-1] = wx[i1-1];
+  }
+  l1 = l+ly;
+  double sp = 0.;
+  for(int i1=1; i1<= kx1; ++i1){
+    int l2 = l1;
+    for(int j1=1; j1<= ky1; ++j1){
+      l2 = l2+1;
+      sp = sp+c[l2-1]*h[i1-1]*wy[j1-1];
+    }
+    l1 = l1+nky1;
+  }
+  m = m+1;
+  z = sp;
+  std::cout << z << std::endl;
+  return z;
+}
+
+/**
+  bispeu evaluates a bivariate spline s(x,y) of degrees kx and ky, given in the b-spline representation.
+  input parameters:
+    tx    : real array, length nx, which contains the position of the
+           knots in the x-direction.
+    nx    : integer, giving the total number of knots in the x-direction
+    ty    : real array, length ny, which contains the position of the
+           knots in the y-direction.
+    ny    : integer, giving the total number of knots in the y-direction
+    C     : real array, length (nx-kx-1)*(ny-ky-1), which contains the
+           b-spline coefficients.
+    kx,ky : integer values, giving the degrees of the spline.
+    x     : real array of dimension (mx).
+    y     : real array of dimension (my).
+    m     : on entry m must specify the number points. m >= 1.
+    wrk   : real array of dimension lwrk. used as workspace.
+    lwrk  : integer, specifying the dimension of wrk.
+           lwrk >= kx+ky+2
+
+  output parameters:
+    z     : real array of dimension m.
+           on successful exit z(i) contains the value of s(x,y)
+           at the point (x(i),y(i)), i=1,...,m.
+    ier   : integer error flag
+    ier=0 : normal return
+    ier=10: invalid input data (see restrictions)
+
+  restrictions:
+    m >=1, lwrk>=mx*(kx+1)+my*(ky+1), kwrk>=mx+my
+    tx(kx+1) <= x(i-1) <= x(i) <= tx(nx-kx), i=2,...,mx
+    ty(ky+1) <= y(j-1) <= y(j) <= ty(ny-ky), j=2,...,my
+ **/
+double bispeu(const std::vector<double>& tx,const std::vector<double>& ty,const std::vector<double>& c,const double& x,const double& y){
+  // z = bispeu(tx,ty,c,kx,ky,x,y)
+
+  int nx = tx.size();
+  int ny = ty.size();
+  int kx = 3;
+  int ky = 3;
+
+  double z = fpbisp(tx, nx, ty, ny, c, kx, ky, x, y);
+
+  return z;
+}
+
 int main(){
   std::cout << "main called" <<std::endl;
 
@@ -1107,7 +1238,17 @@ int main(){
   std::cout << "C   = " << setup_spline.C   << std::endl;
   std::cout << "fp  = " << setup_spline.fp  << std::endl;
   std::cout << "ier = " << setup_spline.ier << std::endl;
+
+  std::vector<double> tx = setup_spline.tx;
+  std::vector<double> ty = setup_spline.ty;
+  std::vector<double> C = setup_spline.C;
+
+  double eval_x = 1.5;
+  double eval_y = 5;
+
+  double z_returned = bispeu(tx,ty,C,eval_x,eval_y);
 }
+
 
 
 
