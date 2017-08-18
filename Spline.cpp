@@ -13,33 +13,13 @@ void fprota(const double cos, const double sin, double& a, double& b){
   double stor1 = a;
   double stor2 = b;
 
-  // std::cout << "\nfprota called with" << std::endl;
-  // std::cout << "cos =" << cos << std::endl;
-  // std::cout << "sin =" << sin << std::endl;
-  // std::cout << "a   =" << a << std::endl;
-  // std::cout << "b   =" << b << std::endl;
-
-
   b = cos * stor2 + sin * stor1;
   a = cos * stor1 - sin * stor2;
-
-  // std::cout << "\nfprota returned with" << std::endl;
-  // std::cout << "cos =" << cos << std::endl;
-  // std::cout << "sin =" << sin << std::endl;
-  // std::cout << "a   =" << a << std::endl;
-  // std::cout << "b   =" << b << std::endl;
 };
 
 void fpgivs(const double piv, double& ww, double& cos, double& sin){
   //  subroutine fpgivs calculates the parameters of a given
   //  transformation .
-  // 1 = 0.1e+01
-
-  // std::cout << "\nfpgivs called with" << std::endl;
-  // std::cout << "piv = " << piv << std::endl;
-  // std::cout << " ww = " <<  ww << std::endl;
-  // std::cout << "cos = " << cos << std::endl;
-  // std::cout << "sin = " << sin << std::endl;
 
   double dd;
   if(abs(piv)>=ww){
@@ -50,12 +30,6 @@ void fpgivs(const double piv, double& ww, double& cos, double& sin){
   cos = ww/dd;
   sin = piv/dd;
   ww = dd;
-
-  // std::cout << "\nfpgivs returned with" << std::endl;
-  // std::cout << "piv = " << piv << std::endl;
-  // std::cout << " ww = " <<  ww << std::endl;
-  // std::cout << "cos = " << cos << std::endl;
-  // std::cout << "sin = " << sin << std::endl;
 };
 
 void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int z_start, const int n, const int k, std::vector<double>& C, const int c_start, const int nest){
@@ -63,8 +37,6 @@ void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>
   // Supply start as '1' to not apply a shift
   int z_shifted = z_start - 1;
   int c_shifted = c_start - 1;
-
-  // std::cout << "fpback called" << std::endl;
 
   int k1 = k-1;
   C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
@@ -134,14 +106,6 @@ void fpbspl(const std::vector<double>& t,const int n, const int k, const double 
   //      Thus it is imperative that that k <= l <= n-k but this
   //      is not checked.
 
-  // std::cout << "fpbspl called with " << std::endl;
-  // std::cout << "t = " << t << std::endl;
-  // std::cout << "n = " << n << std::endl;
-  // std::cout << "k = " << k << std::endl;
-  // std::cout << "x = " << x << std::endl;
-  // std::cout << "l = " << l << std::endl;
-  // std::cout << "h = " << h << std::endl;
-
   h[1-1] = 1;
 
   for(int j = 1; j <= k; ++j){
@@ -155,61 +119,54 @@ void fpbspl(const std::vector<double>& t,const int n, const int k, const double 
 
       if(t[li-1] != t[lj-1]){
         double f = hh[i-1] / (t[li-1]-t[lj-1]);
-        // std::cout << "f = " << f << std::endl;
-        // std::cout << "li = " << li << std::endl;
-        // std::cout << "t(li) = " << t[li-1] << std::endl;
-        // h[i-1] = h[i-1]+f*(t[li-1]-x);
         h[i-1] = h[i-1]+f*(t[li-1]-x);
-        // std::cout << "0 = " << h[i-1]+f*(t[li-1]-x) << std::endl;
         h[i+1-1] = f*(x-t[lj-1]);
-        // std::cout << "1 = " << f*(x-t[lj-1]) << std::endl;
       } else {
         h[i+1-1] = 0;
       }
     }
   }
-  // std::cout << "h returned " << h << std::endl;
 };
 
 void fpgrre(
-    int& ifsx,
-    int& ifsy,
-    int& ifbx,
-    int& ifby,
-    const std::vector<double>& x,
-    const int& mx,
-    const std::vector<double>& y,
-    const int& my,
-    const std::vector<double>& z,
-    const int& mz,
-    const int& kx,
-    const int& ky,
-    const std::vector<double>& tx,
-    const int& nx,
-    const std::vector<double>& ty,
-    const int& ny,
-    const double p,
-    std::vector<double>& C,
-    const int& nc,
-    double fp,
-    std::vector<double>& fpx,
-    std::vector<double>& fpy,
-    const int& mm,
-    const int& mynx,
-    const int& kx1,
-    const int& kx2,
-    const int& ky1,
-    const int& ky2,
-    std::vector<std::vector<double>>& spx,
-    std::vector<std::vector<double>>& spy,
-    std::vector<double>& right,
-    std::vector<double>& q,
-    std::vector<std::vector<double>>& ax,
-    std::vector<std::vector<double>>& ay,
-    std::vector<std::vector<double>>& bx,
-    std::vector<std::vector<double>>& by,
-    std::vector<int>& nrx,
-    std::vector<int>& nry
+  int& ifsx,
+  int& ifsy,
+  int& ifbx,
+  int& ifby,
+  const std::vector<double>& x,
+  const int& mx,
+  const std::vector<double>& y,
+  const int& my,
+  const std::vector<double>& z,
+  const int& mz,
+  const int& kx,
+  const int& ky,
+  const std::vector<double>& tx,
+  const int& nx,
+  const std::vector<double>& ty,
+  const int& ny,
+  const double p,
+  std::vector<double>& C,
+  const int& nc,
+  double fp,
+  std::vector<double>& fpx,
+  std::vector<double>& fpy,
+  const int& mm,
+  const int& mynx,
+  const int& kx1,
+  const int& kx2,
+  const int& ky1,
+  const int& ky2,
+  std::vector<std::vector<double>>& spx,
+  std::vector<std::vector<double>>& spy,
+  std::vector<double>& right,
+  std::vector<double>& q,
+  std::vector<std::vector<double>>& ax,
+  std::vector<std::vector<double>>& ay,
+  std::vector<std::vector<double>>& bx,
+  std::vector<std::vector<double>>& by,
+  std::vector<int>& nrx,
+  std::vector<int>& nry
   ){
   //  ..subroutine references..
   //    fpback,fpbspl,fpgivs,fpdisc,fprota
@@ -236,9 +193,9 @@ void fpgrre(
   //                matrices which contain the discontinuity jumps of the
   //                derivatives of the b-splines in the x- and y-direction.
 
-    std::vector<double> h(7, 0.0);
+    // std::cout << "fpgrre called" <<std::endl;
 
-    std::cout << "fpgrre called" <<std::endl;
+    std::vector<double> h(7, 0.0);
 
     // double 1 = 1;
     double half = 0.5;
@@ -270,11 +227,6 @@ void fpgrre(
       }
       nrx[it-1] = number;
     }
-    // std::cout << "spx" << spx << std::endl;
-    // std::cout << "spx[1,3]" << spx[1][3] << std::endl;
-    // std::cout << "nrx" << nrx << std::endl;
-    // std::cout << "h" << h << std::endl;
-    // throw std::runtime_error("Stop");
 
     ifsx = 1;
     //  calculate the non-zero elements of the matrix (spy) which is the
@@ -301,12 +253,6 @@ void fpgrre(
       nry[it-1] = number;
     }
     ifsy = 1;
-    
-    // std::cout << "spy" << spy << std::endl;
-    // std::cout << "spy[1,3]" << spy[1][3] << std::endl;
-    // std::cout << "nry" << nry << std::endl;
-    // std::cout << "h" << h << std::endl;
-    // throw std::runtime_error("Stop");
 
     //  reduce the matrix (ax) to upper triangular form (rx) using givens
     //  rotations. apply the same transformations to the rows of matrix q
@@ -343,8 +289,6 @@ void fpgrre(
         right[j-1] = z[l-1];
       }
 
-      // std::cout << "\nh = " << h << std::endl;
-
       int irot = number;
       // rotate the new row of matrix (ax) into triangle.
       double sin = 0.0;
@@ -352,10 +296,6 @@ void fpgrre(
       for(int i = 1; i <= ibandx; ++i){
         irot += 1;
         double piv = h[i-1];
-        // std::cout << "\npiv = " << piv << std::endl;
-        // std::cout << "ax(irot,1) = " << ax[irot-1][1-1] << std::endl;
-        // std::cout << "cos = " << cos << std::endl;
-        // std::cout << "sin = " << sin << std::endl;
 
         if(piv == 0){continue;}
         //calculate the parameters of the given transformation.
@@ -376,16 +316,6 @@ void fpgrre(
         }
       }
     }
-
-    // std::cout << "h =" << h << std::endl;
-    // std::cout << "right = " <<right << std::endl;
-    // // std::cout << "piv = " << piv << std::endl;
-    // for(int i=0; i<9; ++i){
-    //   for(int j=0; j<5; ++j){
-    //     std::cout << i+1 << " " << j+1 << " " << ax[i][j] << std::endl;
-    //   }
-    // }
-    // throw std::runtime_error("Stop");
 
 
     // !  reduce the matrix (ay) to upper triangular form (ry) using givens
@@ -423,8 +353,6 @@ void fpgrre(
         l += my;
       }
 
-      // std::cout << "\nh = " << h << std::endl;
-
       int irot = number;
       // rotate the new row of matrix (ay) into triangle.
       double sin = 0.0;
@@ -432,10 +360,6 @@ void fpgrre(
       for(int i = 1; i <= ibandy; ++i){
         irot += 1;
         double piv = h[i-1];
-        // std::cout << "\npiv = " << piv << std::endl;
-        // std::cout << "ay(irot,1) = " << ay[irot-1][1-1] << std::endl;
-        // std::cout << "cos = " << cos << std::endl;
-        // std::cout << "sin = " << sin << std::endl;
 
         if(piv == 0){continue;}
         //calculate the parameters of the given transformation.
@@ -456,17 +380,6 @@ void fpgrre(
         }
       }
     }
-
-    // std::cout << "h =" << h << std::endl;
-    // std::cout << "right = " <<right << std::endl;
-    // // std::cout << "piv = " << piv << std::endl;
-    // for(int i=0; i<9; ++i){
-    //   for(int j=0; j<5; ++j){
-    //     std::cout << i+1 << " " << j+1 << " " << ay[i][j] << std::endl;
-    //   }
-    // }
-    // throw std::runtime_error("Stop");
-
 
   int k = 1;
   for(int i=1; i <= nk1x; ++i){
@@ -491,10 +404,6 @@ void fpgrre(
       l += nk1y;
     }
   }
-
-  // for(int i = 0; i<25; ++i){
-  //   std::cout << i+1 << " " << C[i] << std::endl;
-  // }
 
   fp = 0.;
   for(int i=1;i <= nx;++i){
@@ -528,10 +437,8 @@ void fpgrre(
           k2 = k2+1;
           term = term+fac*spy[i2-1][l2-1]*C[k2-1];
         }
-        // 510        continue
         k1 = k1+nk1y;
       }
-      // 520      continue
       //  calculate the squared residual at the current grid point.
       term = (z[iz-1]-term)*(z[iz-1]-term);
       //  adjust the different parameters.
@@ -539,31 +446,18 @@ void fpgrre(
       fpx[numx1-1] = fpx[numx1-1]+term;
       fpy[numy1-1] = fpy[numy1-1]+term;
       double fac = term*half;
-      //           if(numy.eq.nroldy) print *, "BA FPGRRE 19"
       if(numy!=nroldy){
         fpy[numy1-1] = fpy[numy1-1]-fac;
         fpy[numy-1] = fpy[numy-1]+fac;
-      // go to 530
       }
-      // 530      
       nroldy = numy;
-      //           if(numx.eq.nroldx) print *, "BA FPGRRE 20"
       if(numx!=nroldx){
         fpx[numx1-1] = fpx[numx1-1]-fac;
         fpx[numx-1] = fpx[numx-1]+fac;
-      // go to 540
       }
     }
-    // 540    continue
-   
     nroldx = numx;
   }
-  // 550  continue
-
-  // std::cout << "fp = " << fp << std::endl;
-  // std::cout << "fpx = " << fpx << std::endl;
-  // std::cout << "fpy = " << fpy << std::endl;
-  
 };
 
 int fpregr(
@@ -632,7 +526,7 @@ int fpregr(
   int lay = lbx+nxk;
   int lby = lay+nyest*ky2;
 
-  std::cout << "fpregr called" <<std::endl;
+  // std::cout << "fpregr called" <<std::endl;
 
   //
   // part 1: determination of the number of knots and their position.
@@ -679,26 +573,22 @@ int fpregr(
   int k3 = kx/2;
   int i = kx1+1;
   int j = k3+2;
-  // std::cout << "Before loop 30 tx = " << tx << std::endl;
   for(int l = 1; l <= mk1; ++l){
     tx[i-1] = x[j-1];
     i = i+1;
     j = j+1;
   }
-  // std::cout << "After loop 30 tx = " << tx << std::endl;
   //  the knots in the y-direction.
   mk1 = my-ky1;
   k3 = ky/2;
   i = ky1+1;
   j = k3+2;
 
-  // std::cout << "Before loop 70 ty = " << ty << std::endl;
   for(int l = 1; l <= mk1; ++l){
     ty[i-1] = y[j-1];
     i = i+1;
     j = j+1;
   }
-  // std::cout << "After loop 70 ty = " << ty << std::endl;
 
   int mpm = mx+my;
   int ifsx = 0;
@@ -722,23 +612,20 @@ int fpregr(
   int ncof = nk1x*nk1y;
   //  find the position of the additional knots which are needed for the
   //  b-spline representation of s(x,y).
-  // std::cout << "Before loop 130 tx = " << tx << std::endl;
   i = nx;
   for(int j=1; j <= kx1; ++j){
     tx[j-1] = xb;
     tx[i-1] = xe;
     i = i-1;
   }
-  // std::cout << "After loop 130 tx = " << tx << std::endl;
 
-  // std::cout << "Before loop 140 ty = " << ty << std::endl;
   i = ny;
   for(int j=1; j <= ky1; ++j){
     ty[j-1] = yb;
     ty[i-1] = ye;
     i = i-1;
   }
-  // std::cout << "After loop 140 ty = " << ty << std::endl;
+  
   //  find the least-squares spline sinf(x,y) and calculate for each knot
   //  interval tx(j+kx)<=x<=tx(j+kx+1) (ty(j+ky)<=y<=ty(j+ky+1)) the sum
   //  of squared residuals fpintx(j),j=1,2,...,nx-2*kx-1 (fpinty(j),j=1,2,
@@ -746,95 +633,17 @@ int fpregr(
   //  value belonging to that interval.
   //  fp gives the total sum of squared residuals.
 
-  // ifsx = ifsx;
-  // ifsy = ifsy;
-  // ifbx = ifbx;
-  // ifby = ifby;
-  // x = x;
-  // mx = mx;
-  // y = y;
-  // my = my;
-  // z = z;
-  // mz = mz;
-  // kx = kx;
-  // ky = ky;
-  // tx = tx;
-  // nx = nx;
-  // ty = ty;
-  // ny = ny;
-  // p = p;
-  // C = C;
-  // nc = nc;
-  // fp = fp;
   std::vector<double>  fpx = fpintx;
   std::vector<double>  fpy = fpinty;
-  // mm = mm;
-  // mynx = mynx;
-  // kx1 = kx1;
-  // kx2 = kx2;
-  // ky1 = ky1;
-  // ky2 = ky2;
   std::vector<std::vector<double>> spx(mx, std::vector<double>(kx1, 0.0));
-  // = wrk[lsx - 1];
   std::vector<std::vector<double>> spy(mx, std::vector<double>(ky1, 0.0));
-  // = wrk[lsy - 1];
   std::vector<double> right(mm, 0.0);
-  // = wrk[lri - 1];
   std::vector<double> q(mynx, 0.0);
-  // = wrk[lq - 1];
   std::vector<std::vector<double>> ax(nx, std::vector<double>(kx2,0.0));
-  // = wrk[lax - 1];
   std::vector<std::vector<double>> ay(ny, std::vector<double>(ky2,0.0));
-  // = wrk[lay - 1];
   std::vector<std::vector<double>> bx(nx, std::vector<double>(kx2,0.0));
-  // = wrk[lbx - 1];
   std::vector<std::vector<double>> by(ny, std::vector<double>(ky2,0.0));
-  // = wrk[lby - 1];
-  // std::vector<int> nrx(mx, 0);
-  // = nrx;
-  // std::vector<int> nry(my, 0);
-  // = nry;
 
-  // std::cout << "fpgrre ifsx = " << ifsx << std::endl;
-  // std::cout << "fpgrre ifsy = " << ifsy << std::endl;
-  // std::cout << "fpgrre ifbx = " << ifbx << std::endl;
-  // std::cout << "fpgrre ifby = " << ifby << std::endl;
-  // std::cout << "fpgrre x = " << x << std::endl;
-  // std::cout << "fpgrre mx = " << mx << std::endl;
-  // std::cout << "fpgrre y = " << y << std::endl;
-  // std::cout << "fpgrre my = " << my << std::endl;
-  // std::cout << "fpgrre z = " << z << std::endl;
-  // std::cout << "fpgrre mz = " << mz << std::endl;
-  // std::cout << "fpgrre kx = " << kx << std::endl;
-  // std::cout << "fpgrre ky = " << ky << std::endl;
-  // std::cout << "fpgrre tx = " << tx << std::endl;
-  // std::cout << "fpgrre nx = " << nx << std::endl;
-  // std::cout << "fpgrre ty = " << ty << std::endl;
-  // std::cout << "fpgrre ny = " << ny << std::endl;
-  // std::cout << "fpgrre p = " << p << std::endl;
-  // std::cout << "fpgrre C = " << C << std::endl;
-  // std::cout << "fpgrre nc = " << nc << std::endl;
-  // std::cout << "fpgrre fp = " << fp << std::endl;
-  // std::cout << "fpgrre fpx = " << fpx << std::endl;
-  // std::cout << "fpgrre fpy = " << fpy << std::endl;
-  // std::cout << "fpgrre mm = " << mm << std::endl;
-  // std::cout << "fpgrre mynx = " << mynx << std::endl;
-  // std::cout << "fpgrre kx1 = " << kx1 << std::endl;
-  // std::cout << "fpgrre kx2 = " << kx2 << std::endl;
-  // std::cout << "fpgrre ky1 = " << ky1 << std::endl;
-  // std::cout << "fpgrre ky2 = " << ky2 << std::endl;
-  // std::cout << "fpgrre spx = " << spx << std::endl;
-  // std::cout << "fpgrre spy = " << spy << std::endl;
-  // std::cout << "fpgrre right = " << right << std::endl;
-  // std::cout << "fpgrre q = " << q << std::endl;
-  // std::cout << "fpgrre ax = " << ax << std::endl;
-  // std::cout << "fpgrre ay = " << ay << std::endl;
-  // std::cout << "fpgrre bx = " << bx << std::endl;
-  // std::cout << "fpgrre by = " << by << std::endl;
-  // std::cout << "fpgrre nrx = " << nrx << std::endl;
-  // std::cout << "fpgrre nry = " << nry << std::endl;
-  // std::cout << "fpgrre given tx = " << tx << std::endl;
-  // std::cout << "fpgrre given ty = " << ty << std::endl;
   fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,C,nc,fp,fpx,fpy,mm,mynx,kx1,kx2,ky1,ky2,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
 
   double fpms = fp-s;
@@ -1124,7 +933,7 @@ struct regrid_return{
   latest update : march 1989
   **/
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
-regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vector<double> z){
+regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
 
   std::cout << "regrid_smth called" <<std::endl;
 
@@ -1165,7 +974,7 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
 
   // End of translation of interpolate/src/fitpack.pyf (header)
 
-  //all regrid(iopt,mx,x,my,y,z,xb,xe,yb,ye,kx,ky,s,nxest,nyest,nx,tx,ny,ty,C,fp,wrk,lwrk,iwrk,kwrk,ier)
+  // call regrid(iopt,mx,x,my,y,z,xb,xe,yb,ye,kx,ky,s,nxest,nyest,nx,tx,ny,ty,C,fp,wrk,lwrk,iwrk,kwrk,ier)
 
   // Translation of fitpack/regrid.f (implementation)
 
@@ -1245,51 +1054,6 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
   std::vector<int>    nrdaty(nyest, 0);
   int                 lwrk_fpregr   = jwrk;
   std::vector<double> wrk_fpregr   (lwrk_fpregr, 0.0);
-
-  // std::cout << "iopt        = " << iopt        << std::endl;
-  // std::cout << "x           = " << x           << std::endl;
-  // std::cout << "mx          = " << mx          << std::endl;
-  // std::cout << "y           = " << y           << std::endl;
-  // std::cout << "my          = " << my          << std::endl;
-  // std::cout << "z           = " << z           << std::endl;
-  // std::cout << "mz          = " << mz          << std::endl;
-  // std::cout << "xb          = " << xb          << std::endl;
-  // std::cout << "xe          = " << xe          << std::endl;
-  // std::cout << "yb          = " << yb          << std::endl;
-  // std::cout << "ye          = " << ye          << std::endl;
-  // std::cout << "kx          = " << kx          << std::endl;
-  // std::cout << "ky          = " << ky          << std::endl;
-  // std::cout << "s           = " << s           << std::endl;
-  // std::cout << "nxest       = " << nxest       << std::endl;
-  // std::cout << "nyest       = " << nyest       << std::endl;
-  // std::cout << "tol         = " << tol         << std::endl;
-  // std::cout << "maxit       = " << maxit       << std::endl;
-  // std::cout << "nc          = " << nc          << std::endl;
-  // std::cout << "nx          = " << nx          << std::endl;
-  // std::cout << "tx          = " << tx          << std::endl;
-  // std::cout << "ny          = " << ny          << std::endl;
-  // std::cout << "ty          = " << ty          << std::endl;
-  // std::cout << "C           = " << C           << std::endl;
-  // std::cout << "fp          = " << fp          << std::endl;
-  // std::cout << "fp0         = " << fp0         << std::endl;
-  // std::cout << "fpold       = " << fpold       << std::endl;
-  // std::cout << "reducx      = " << reducx      << std::endl;
-  // std::cout << "reducy      = " << reducy      << std::endl;
-  // std::cout << "fpintx      = " << fpintx      << std::endl;
-  // std::cout << "fpinty      = " << fpinty      << std::endl;
-  // std::cout << "lastdi      = " << lastdi      << std::endl;
-  // std::cout << "nplusx      = " << nplusx      << std::endl;
-  // std::cout << "nplusy      = " << nplusy      << std::endl;
-  // std::cout << "nrx         = " << nrx         << std::endl;
-  // std::cout << "nry         = " << nry         << std::endl;
-  // std::cout << "nrdatx      = " << nrdatx      << std::endl;
-  // std::cout << "nrdaty      = " << nrdaty      << std::endl;
-  // std::cout << "wrk_fpregr  = " << wrk_fpregr  << std::endl;
-  // std::cout << "lwrk_fpregr = " << lwrk_fpregr << std::endl;
-  // std::cout << "ier         = " << ier         << std::endl;
-
-
-
 
   ier = fpregr(iopt,x,mx,y,my,z,mz,xb,xe,yb,ye,kx,ky,s,
   nxest,nyest,tol,maxit,nc,nx,tx,ny,ty,C,fp,fp0,fpold,reducx,
