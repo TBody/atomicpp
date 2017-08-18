@@ -38,7 +38,6 @@ void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>
     int z_shifted = z_start - 1;
     int c_shifted = c_start - 1;
 
-    int k1 = k-1;
     C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
     
     int i = n-1;
@@ -47,15 +46,15 @@ void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>
     if(i!=0){
       for(int j=2; j <= n; ++j){
         store = z[z_shifted + i-1];
-        int i1 = k1;
+        int i1 = k-1;
 
-        if(j <= k1){
+        if(j <= k-1){
           i1 = j-1;
         }
         int m = i;
         for(int l=1; l <= i1; ++l){
           m = m+1;
-          store = store - C[c_shifted + m-1]*a[i-1][l+1-1];
+          store = store - C[c_shifted + m-1]*a[i-1][l];
         }
         C[c_shifted + i-1] = store/a[i-1][0];
         i -= 1;
@@ -67,7 +66,6 @@ void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>
 
     // std::cout << "fpback called" << std::endl;
 
-    int k1 = k-1;
     C[n-1] = z[n-1]/a[n-1][0];
     
     int i = n-1;
@@ -76,15 +74,15 @@ void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>
     if(i!=0){
       for(int j=2; j <= n; ++j){
         store = z[i-1];
-        int i1 = k1;
+        int i1 = k-1;
 
-        if(j <= k1){
+        if(j <= k-1){
           i1 = j-1;
         }
         int m = i;
         for(int l=1; l <= i1; ++l){
           m = m+1;
-          store = store - C[m-1]*a[i-1][l+1-1];
+          store = store - C[m-1]*a[i-1][l];
         }
         C[i-1] = store/a[i-1][0];
         i -= 1;
@@ -120,9 +118,9 @@ void fpbspl(const std::vector<double>& t,const int n, const int k, const double 
         if(t[li-1] != t[lj-1]){
           double f = hh[i-1] / (t[li-1]-t[lj-1]);
           h[i-1] = h[i-1]+f*(t[li-1]-x);
-          h[i+1-1] = f*(x-t[lj-1]);
+          h[i] = f*(x-t[lj-1]);
         } else {
-          h[i+1-1] = 0;
+          h[i] = 0;
         }
       }
     }
@@ -151,10 +149,6 @@ void fpgrre(
   double fp,
   std::vector<double>& fpx,
   std::vector<double>& fpy,
-  const int& kx1,
-  const int& kx2,
-  const int& ky1,
-  const int& ky2,
   std::vector<std::vector<double>>& spx,
   std::vector<std::vector<double>>& spy,
   std::vector<double>& right,
@@ -198,14 +192,14 @@ void fpgrre(
       //  calculate the non-zero elements of the matrix (spx) which is the
       //  observation matrix according to the least-squares spline approximat-
       //  ion problem in the x-direction.
-      int l = kx1;
-      int l1 = kx2;
+      int l = (kx+1);
+      int l1 = (kx+2);
       int number = 0;
 
       for(int it = 1; it <= mx; ++it){
         double arg = x[it-1];
 
-        while(not(arg<tx[l1-1] or l==nx-kx1)){
+        while(not(arg<tx[l1-1] or l==nx-(kx+1))){
           l = l1;
           l1 = l+1;
           number = number+1;
@@ -213,7 +207,7 @@ void fpgrre(
 
         fpbspl(tx,nx,kx,arg,l,h);
         // std::cout << "Check" << h << std::endl;
-        for(int i=1; i <= kx1; ++i){
+        for(int i=1; i <= (kx+1); ++i){
           spx[it-1][i-1] = h[i-1];
         }
         nrx[it-1] = number;
@@ -223,14 +217,14 @@ void fpgrre(
       //  calculate the non-zero elements of the matrix (spy) which is the
       //  observation matrix according to the least-squares spline approximat-
       //  ion problem in the y-direction.
-      l = ky1;
-      l1 = ky2;
+      l = (ky+1);
+      l1 = (ky+2);
       number = 0;
 
       for(int it = 1; it <= my; ++it){
         double arg = y[it-1];
 
-        while(not(arg<ty[l1-1] or l==ny-ky1)){
+        while(not(arg<ty[l1-1] or l==ny-(ky+1))){
           l = l1;
           l1 = l+1;
           number +=1;
@@ -238,7 +232,7 @@ void fpgrre(
 
         fpbspl(ty,ny,ky,arg,l,h);
         // std::cout << "Check" << h << std::endl;
-        for(int i=1; i <= ky1; ++i){
+        for(int i=1; i <= (ky+1); ++i){
           spy[it-1][i-1] = h[i-1];
         }
         nry[it-1] = number;
@@ -249,20 +243,20 @@ void fpgrre(
       //  rotations. apply the same transformations to the rows of matrix q
       //  to obtain the my x (nx-kx-1) matrix g.
       //  store matrix (rx) into (ax) and g into q.
-      l = my*nx-kx1;
+      l = my*nx-(kx+1);
       //  initialization.
       for(int i = 1; i <= l; ++i){
         q[i-1] = 0;
       }
-      for(int i = 1; i <= nx-kx1; ++i){
-        for(int j = 1; i <= kx2; ++i){
+      for(int i = 1; i <= nx-(kx+1); ++i){
+        for(int j = 1; i <= (kx+2); ++i){
           ax[i-1][j-1] = 0;
         }
       }
 
       l = 0;
       // int nrold = 0;
-      int ibandx = kx1;
+      int ibandx = (kx+1);
       //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
       
       for(int it = 1; it <= mx; ++it){
@@ -270,7 +264,7 @@ void fpgrre(
         // fetch a new row of matrix (spx).
         h[ibandx-1] = 0.;
 
-        for(int j = 1; j <= kx1; ++j){
+        for(int j = 1; j <= (kx+1); ++j){
           h[j-1] = spx[it-1][j-1];
         }
 
@@ -313,33 +307,33 @@ void fpgrre(
       // !  rotations. apply the same transformations to the columns of matrix g
       // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
       // !  store matrix (ry) into (ay) and h into C.
-      int ncof = nx-kx1 * ny-ky1;
+      int ncof = nx-(kx+1) * ny-(ky+1);
       // !  initialization.
 
       for(int i = 1; i<= ncof; ++i){
         C[i-1] = 0;
       }
 
-      for(int i=1; i<=ny-ky1; ++i){
-        for(int j=1; j<=nx-kx1; ++j){
+      for(int i=1; i<=ny-(ky+1); ++i){
+        for(int j=1; j<=nx-(kx+1); ++j){
           ay[i-1][j-1] = 0;
         }
       }
 
-      int ibandy = ky1;
+      int ibandy = (ky+1);
 
       for(int it = 1; it <= my; ++it){
         number = nry[it-1];
         // fetch a new row of matrix (spx).
         h[ibandy-1] = 0.;
 
-        for(int j = 1; j <= ky1; ++j){
+        for(int j = 1; j <= (ky+1); ++j){
           h[j-1] = spy[it-1][j-1];
         }
 
         l = it;
         // find the appropriate column of q.
-        for(int j = 1; j <= nx-kx1; ++j){
+        for(int j = 1; j <= nx-(kx+1); ++j){
           right[j-1] = q[l-1];
           l += my;
         }
@@ -357,9 +351,9 @@ void fpgrre(
           fpgivs(piv, ay[irot-1][1-1], cos, sin);
           //apply that transformation to the rows of matrix q.
           int ic = irot;
-          for(int j = 1; j <= nx-kx1; ++j){
+          for(int j = 1; j <= nx-(kx+1); ++j){
             fprota(cos, sin, right[j-1], C[ic-1]);
-            ic += ny-ky1;
+            ic += ny-(ky+1);
           }
           //apply that transformation to the columns of (ay).
           if(i == ibandy){break;} //Break out of inner loop, continue on outer loop
@@ -373,26 +367,26 @@ void fpgrre(
       }
 
     int k = 1;
-    for(int i=1; i <= nx-kx1; ++i){
-      fpback(ay,C,k,ny-ky1,ibandy,C,k,ny);
-      k = k + ny-ky1;
+    for(int i=1; i <= nx-(kx+1); ++i){
+      fpback(ay,C,k,ny-(ky+1),ibandy,C,k,ny);
+      k = k + ny-(ky+1);
     }
 
     k = 0;
-    for(int j=1; j <= ny-ky1; ++j){
+    for(int j=1; j <= ny-(ky+1); ++j){
       k += 1;
       l = k;
-      for(int i=1; i <= nx-kx1; ++i){
+      for(int i=1; i <= nx-(kx+1); ++i){
         right[i-1] = C[l-1];
-        l += ny-ky1;
+        l += ny-(ky+1);
       }
 
-      fpback(ax,right,nx-kx1,ibandx,right,nx);
+      fpback(ax,right,nx-(kx+1),ibandx,right,nx);
 
       l = k;
-      for(int i = 1; i <= nx-kx1; ++i){
+      for(int i = 1; i <= nx-(kx+1); ++i){
         C[l-1] = right[i-1];
-        l += ny-ky1;
+        l += ny-(ky+1);
       }
     }
 
@@ -420,15 +414,15 @@ void fpgrre(
         //  cross products of the non-zero b-splines at (x,y), multiplied with
         //  the appropiate b-spline coefficients.
         double term = 0.;
-        int k1 = numx*ny-ky1+numy;
-        for(int l1=1; l1<=kx1;++l1){
+        int k1 = numx*ny-(ky+1)+numy;
+        for(int l1=1; l1<=(kx+1);++l1){
           int k2 = k1;
           double fac = spx[i1-1][l1-1];
-          for(int l2=1; l2<=ky1;++l2){
+          for(int l2=1; l2<=(ky+1);++l2){
             k2 = k2+1;
             term = term+fac*spy[i2-1][l2-1]*C[k2-1];
           }
-          k1 = k1+ny-ky1;
+          k1 = k1+ny-(ky+1);
         }
         //  calculate the squared residual at the current grid point.
         term = (z[iz-1]-term)*(z[iz-1]-term);
@@ -484,10 +478,6 @@ int fpregr(
   ){
   //Up to fgrre
       //  we partition the working space.
-      int kx1 = kx+1;
-      int ky1 = ky+1;
-      int kx2 = kx1+1;
-      int ky2 = ky1+1;
       int mm = std::max(nxest,my);
       int mynx = nxest*my;
 
@@ -505,7 +495,7 @@ int fpregr(
       //       corresponding least-squares spline until finally fp<=s.
       //    the initial choice of knots depends on the value of s and iopt.
       //    if s=0 we have spline interpolation; in that case the number of
-      //    knots equals nmaxx = mx+kx+1  and  nmaxy = my+ky+1.
+      //    knots equals mx+kx+1 = mx+kx+1  and  my+ky+1 = my+ky+1.
       //    if s>0 and
       //     *iopt=0 we first compute the least-squares polynomial of degree
       //      kx in x and ky in y; nx=nminx=2*kx+2 and ny=nymin=2*ky+2.
@@ -514,31 +504,25 @@ int fpregr(
       //      the least-squares polynomial directly.
       //
 
-      //  find nmaxx and nmaxy which denote the number of knots in x- and y-
+      //  find mx+kx+1 and my+ky+1 which denote the number of knots in x- and y-
       //  direction in case of spline interpolation.
-      int nmaxx = mx+kx1;
-      int nmaxy = my+ky1;
       //  if s = 0, s(x,y) is an interpolating spline.
-      nx = nmaxx;
-      ny = nmaxy;
+      nx = mx+kx+1;
+      ny = my+ky+1;
       //  find the position of the interior knots in case of interpolation.
       //  the knots in the x-direction.
-      int mk1 = mx-kx1;
-      int k3 = kx/2;
-      int i = kx1+1;
-      int j = k3+2;
-      for(int l = 1; l <= mk1; ++l){
+      int i = (kx+1)+1;
+      int j = kx/2+2;
+      for(int l = 1; l <= (mx-kx-1); ++l){
         tx[i-1] = x[j-1];
         i = i+1;
         j = j+1;
       }
       //  the knots in the y-direction.
-      mk1 = my-ky1;
-      k3 = ky/2;
-      i = ky1+1;
-      j = k3+2;
+      i = ky+2;
+      j = ky/2+2;
 
-      for(int l = 1; l <= mk1; ++l){
+      for(int l = 1; l <= (my-ky-1); ++l){
         ty[i-1] = y[j-1];
         i = i+1;
         j = j+1;
@@ -556,14 +540,14 @@ int fpregr(
       //  find the position of the additional knots which are needed for the
       //  b-spline representation of s(x,y).
       i = nx;
-      for(int j=1; j <= kx1; ++j){
+      for(int j=1; j <= (kx+1); ++j){
         tx[j-1] = xb;
         tx[i-1] = xe;
         i = i-1;
       }
 
       i = ny;
-      for(int j=1; j <= ky1; ++j){
+      for(int j=1; j <= (ky+1); ++j){
         ty[j-1] = yb;
         ty[i-1] = ye;
         i = i-1;
@@ -578,14 +562,14 @@ int fpregr(
 
       std::vector<double>  fpx = fpintx;
       std::vector<double>  fpy = fpinty;
-      std::vector<std::vector<double>> spx(mx, std::vector<double>(kx1, 0.0));
-      std::vector<std::vector<double>> spy(mx, std::vector<double>(ky1, 0.0));
+      std::vector<std::vector<double>> spx(mx, std::vector<double>((kx+1), 0.0));
+      std::vector<std::vector<double>> spy(mx, std::vector<double>((ky+1), 0.0));
       std::vector<double> right(mm, 0.0);
       std::vector<double> q(mynx, 0.0);
-      std::vector<std::vector<double>> ax(nx, std::vector<double>(kx2,0.0));
-      std::vector<std::vector<double>> ay(ny, std::vector<double>(ky2,0.0));
-      std::vector<std::vector<double>> bx(nx, std::vector<double>(kx2,0.0));
-      std::vector<std::vector<double>> by(ny, std::vector<double>(ky2,0.0));
+      std::vector<std::vector<double>> ax(nx, std::vector<double>((kx+2),0.0));
+      std::vector<std::vector<double>> ay(ny, std::vector<double>((ky+2),0.0));
+      std::vector<std::vector<double>> bx(nx, std::vector<double>((kx+2),0.0));
+      std::vector<std::vector<double>> by(ny, std::vector<double>((ky+2),0.0));
 
     fpgrre(ifsx,
            ifsy,
@@ -609,10 +593,6 @@ int fpregr(
            fp,
            fpx,
            fpy,
-           kx1,
-           kx2,
-           ky1,
-           ky2,
            spx,
            spy,
            right,
@@ -624,8 +604,8 @@ int fpregr(
            nrx,
            nry);
 
-    //  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
-    if((nx==nmaxx) and (ny==nmaxy)){
+    //  if nx=mx+kx+1 and ny=my+ky+1, sinf(x,y) is an interpolating spline.
+    if((nx==mx+kx+1) and (ny==my+ky+1)){
       int ier = -1;
       fp = 0.;
       return ier;
@@ -922,15 +902,15 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
     throw std::runtime_error("Grid too small for bicubic interpolation");
     };
 
-    double s = 0.0;
+    const double s = 0.0;
 
-    double xb = x[0];
-    double xe = x[mx-1];
-    double yb = y[0];
-    double ye = y[my-1];
+    const double xb = x[0];
+    const double xe = x[mx-1];
+    const double yb = y[0];
+    const double ye = y[my-1];
 
-    int nxest = mx+kx+1;
-    int nyest = my+ky+1;
+    const int nxest = mx+kx+1;
+    const int nyest = my+ky+1;
 
     std::vector<double> tx(nxest, 0.0);
     std::vector<double> ty(nyest, 0.0);
@@ -952,50 +932,31 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
 
     int maxit = 20;
     double tol = 0.1e-02;
-    //  before starting computations a data check is made. if the input data
-    //  are invalid, control is immediately repassed to the calling program.
     ier = 10;
-    if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 1");
-
-    int kx1 = kx+1;
-    int kx2 = kx1+1;
-    if(ky <= 0 or ky > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 2");
-
-    int ky1 = ky+1;
-    int ky2 = ky1+1;
-    if(iopt < (-1) or iopt > 1) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 3");
-
-    int nminx = 2*kx1;
-    if(mx < kx1 or nxest < nminx) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 4");
-
-    int nminy = 2*ky1;
-    if(my < ky1 or nyest < nminy) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 5");
+    int nminx = 2*(kx+1);
+    int nminy = 2*(ky+1);
 
     int mz = mx*my;
-    int nc = (nxest-kx1)*(nyest-ky1);
-    int lwest = 4+nxest*(my+2*kx2+1)+nyest*(2*ky2+1)+mx*kx1+ my*ky1+std::max(nxest,my);
+    int nc = (nxest-(kx+1))*(nyest-(ky+1));
+    int lwest = 4+nxest*(my+2*(kx+2)+1)+nyest*(2*(ky+2)+1)+mx*(kx+1)+ my*(ky+1)+std::max(nxest,my);
     int kwest = 3+mx+my+nxest+nyest;
+    //  before starting computations a data check is made. if the input data
+    if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 1");
+    if(ky <= 0 or ky > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 2");
+    if(iopt < (-1) or iopt > 1) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 3");
+    if(mx < (kx+1) or nxest < nminx) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 4");
+    if(my < (ky+1) or nyest < nminy) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 5");
     if(lwrk < lwest or kwrk < kwest) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 6");
-
     if(xb > x[1-1] or xe < x[mx-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 7");
-
     for(int i = 1; i< mx; ++i){
       if(x[i-1] >= x[i]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 8");
     }
-
     if(yb > y[1-1] or ye < y[my-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 9");
-
     for(int j = 1; j < my; ++j){
       if(y[j-1] >= y[j]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 10");
     }
-
-    if(not(iopt >= 0)){
-      throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 11");
-    }
-
-    if(s < 0.) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 12");
-
-    if(s == 0. and (nxest < (mx+kx1) or nyest < (my+ky1)) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
+    if(not(iopt >= 0)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 11");
+    if((nxest < (mx+(kx+1)) or nyest < (my+(ky+1))) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
 
     ier = 0;
     //  we partition the working space and determine the spline approximation;
@@ -1032,11 +993,11 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
   std::vector<double> wx(kx+1, 0.0);
   std::vector<double> wy(ky+1, 0.0);
 
-  int kx1 = kx+1;
-  int nkx1 = nx-kx1;
-  double tb = tx[kx1-1];
-  double te = tx[nkx1+1-1];
-  int l = kx1;
+  // int (kx+1) = kx+1;
+  int nkx1 = nx-(kx+1);
+  double tb = tx[(kx+1)-1];
+  double te = tx[nkx1];
+  int l = (kx+1);
   int l1 = l+1;
 
   double arg = x;
@@ -1052,17 +1013,15 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
     l1 = l+1;
   }
   fpbspl(tx,nx,kx,arg,l,h);
-  lx = l-kx1;
+  lx = l-(kx+1);
 
-  for(int j=1; j <= kx1; ++j){
+  for(int j=1; j <= (kx+1); ++j){
     wx[j-1] = h[j-1];
   }
 
-  int ky1 = ky+1;
-  int nky1 = ny-ky1;
-  tb = ty[ky1-1];
-  te = ty[nky1+1-1];
-  l = ky1;
+  tb = ty[(ky+1)-1];
+  te = ty[(ny-(ky+1))];
+  l = (ky+1);
   l1 = l+1;
 
   arg = y;
@@ -1072,32 +1031,32 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
   if(arg > te){
     arg = te;
   }
-  while(not(arg<ty[l1-1] or l==nky1)){
+  while(not(arg<ty[l1-1] or l==(ny-(ky+1)))){
     l = l1;
     l1 = l+1;
   }
   fpbspl(ty,ny,ky,arg,l,h);
-  ly = l-ky1;
+  ly = l-(ky+1);
 
-  for(int j=1; j<=ky1; ++j){
+  for(int j=1; j<=(ky+1); ++j){
     wy[j-1] = h[j-1];
   }
 
   int m = 0;
 
-  l = lx*nky1;
-  for(int i1=1; i1<= kx1; ++i1){
+  l = lx*(ny-(ky+1));
+  for(int i1=1; i1<= (kx+1); ++i1){
     h[i1-1] = wx[i1-1];
   }
   l1 = l+ly;
   double sp = 0.;
-  for(int i1=1; i1<= kx1; ++i1){
+  for(int i1=1; i1<= (kx+1); ++i1){
     int l2 = l1;
-    for(int j1=1; j1<= ky1; ++j1){
+    for(int j1=1; j1<= (ky+1); ++j1){
       l2 = l2+1;
       sp = sp+c[l2-1]*h[i1-1]*wy[j1-1];
     }
-    l1 = l1+nky1;
+    l1 = l1+(ny-(ky+1));
   }
   m = m+1;
   double z = sp;
