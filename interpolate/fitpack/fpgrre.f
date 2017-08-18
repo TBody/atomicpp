@@ -130,11 +130,11 @@ C         if(arg.lt.tx(l1) .or. l.eq.nk1x) go to 20
         nrx(it) = number
   40  continue
 
-      print *, "spx", spx
-      print *, "spx(2,4)", spx(2,4)
-      print *, "nrx", nrx
-      print *, "h", h
-      stop
+C       print *, "spx", spx
+C       print *, "spx(2,4)", spx(2,4)
+C       print *, "nrx", nrx
+C       print *, "h", h
+C       stop
 
       ifsx = 1
   50    if(ifsy.ne.0) go to 100   
@@ -162,6 +162,14 @@ C         if(arg.lt.ty(l1) .or. l.eq.nk1y) go to 70
         nry(it) = number
   90  continue
       ifsy = 1
+
+C       print *, "spy", spy
+C       print *, "spy(2,4)", spy(2,4)
+C       print *, "nry", nry
+C       print *, "h", h
+C       stop
+
+
  100  if(p.le.0.) go to 120
 C  100  if(p.le.0.) print *, "BA FPGRRE 6"
 C       if(p.le.0.) go to 120
@@ -193,25 +201,24 @@ c  initialization.
       nrold = 0
 c  ibandx denotes the bandwidth of the matrices (ax) and (rx).
       ibandx = kx1
+
+
+
+
+
+
+
+
+
+
       do 270 it=1,mx
         number = nrx(it)
- 150    if(nrold.eq.number) go to 180
+  150   if(nrold.eq.number) go to 180
 C  150    if(nrold.eq.number) print *, "BA FPGRRE 9"
 C         if(nrold.eq.number) go to 180
 C         if(p.le.0.) print *, "BA FPGRRE 10"
-        if(p.le.0.) go to 260
-        ibandx = kx2
-c  fetch a new row of matrix (bx).
-        n1 = nrold+1
-        do 160 j=1,kx2
-          h(j) = bx(n1,j)*pinv
- 160    continue
-c  find the appropriate column of q.
-        do 170 j=1,my
-          right(j) = 0.
- 170    continue
-        irot = nrold
-        go to 210
+C         if(p.le.0.) go to 260
+        nrold = number
 c  fetch a new row of matrix (spx).
  180    h(ibandx) = 0.
         do 190 j=1,kx1
@@ -229,7 +236,7 @@ c  rotate the new row of matrix (ax) into triangle.
           piv = h(i)
 C           if(piv.eq.0.) print *, "BA FPGRRE 11"
           if(piv.eq.0.) go to 240
-c  calculate the parameters of the givens transformation.
+c  calculate the parameters of the given transformation.
           call fpgivs(piv,ax(irot,1),cos,sin)
 c  apply that transformation to the rows of matrix q.
           iq = (irot-1)*my
@@ -250,9 +257,22 @@ C           if(i.eq.ibandx) print *, "BA FPGRRE 12"
  250    if(nrold.eq.number) go to 270
 C  250    if(nrold.eq.number) print *, "BA FPGRRE 13"
 C         if(nrold.eq.number) go to 270
- 260    nrold = nrold+1
+C  260    nrold = nrold+1
         go to 150
  270  continue
+
+  19  format (' ',A6,7(f6.2))
+  18  format (' ',A6,9(f6.2))
+  17  format (' ',A6,45(f6.2))
+      print 19, "h", h
+      print 18, "right", right
+      print 17, "ax", ax
+C       stop
+
+
+
+
+
 c  reduce the matrix (ay) to upper triangular form (ry) using givens
 c  rotations. apply the same transformations to the columns of matrix g
 c  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.

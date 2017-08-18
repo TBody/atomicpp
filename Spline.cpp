@@ -8,24 +8,54 @@
 #include <iostream>
 #include "prettyprint.hpp"
 
-void fprota(double cos,double sin,double a,double b){
-  //  subroutine fprota applies a givens rotation to a and b.
+void fprota(const double cos, const double sin, double& a, double& b){
+  //  subroutine fprota applies a given rotation to a and b.
   double stor1 = a;
   double stor2 = b;
+
+  // std::cout << "\nfprota called with" << std::endl;
+  // std::cout << "cos =" << cos << std::endl;
+  // std::cout << "sin =" << sin << std::endl;
+  // std::cout << "a   =" << a << std::endl;
+  // std::cout << "b   =" << b << std::endl;
+
+
   b = cos * stor2 + sin * stor1;
   a = cos * stor1 - sin * stor2;
+
+  // std::cout << "\nfprota returned with" << std::endl;
+  // std::cout << "cos =" << cos << std::endl;
+  // std::cout << "sin =" << sin << std::endl;
+  // std::cout << "a   =" << a << std::endl;
+  // std::cout << "b   =" << b << std::endl;
 };
 
-void fpgivs(double piv, double ww,double cos,double sin){
+void fpgivs(const double piv, double& ww, double& cos, double& sin){
   //  subroutine fpgivs calculates the parameters of a given
   //  transformation .
   // 1 = 0.1e+01
+
+  // std::cout << "\nfpgivs called with" << std::endl;
+  // std::cout << "piv = " << piv << std::endl;
+  // std::cout << " ww = " <<  ww << std::endl;
+  // std::cout << "cos = " << cos << std::endl;
+  // std::cout << "sin = " << sin << std::endl;
+
   double dd;
-  if(abs(piv)>=ww) {dd = abs(piv)*sqrt(1+(ww/piv)*(ww/piv));}
-  if(abs(piv)<ww) {dd = ww*sqrt(1+(piv/ww)*(piv/ww));}
+  if(abs(piv)>=ww){
+    dd = abs(piv)*sqrt(1+(ww/piv)*(ww/piv));
+  } else {
+    dd = ww*sqrt(1+(piv/ww)*(piv/ww));
+  }
   cos = ww/dd;
   sin = piv/dd;
   ww = dd;
+
+  // std::cout << "\nfpgivs returned with" << std::endl;
+  // std::cout << "piv = " << piv << std::endl;
+  // std::cout << " ww = " <<  ww << std::endl;
+  // std::cout << "cos = " << cos << std::endl;
+  // std::cout << "sin = " << sin << std::endl;
 };
 
 void fpback(std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest){
@@ -52,7 +82,7 @@ void fpback(std::vector<std::vector<double>> a, std::vector<double> z, int n, in
   }
 };
 
-void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double>& h){
+void fpbspl(const std::vector<double>& t,const int n, const int k, const double x, const int l, std::vector<double>& h){
   std::vector<double> hh(19,0.0);
 
   //  subroutine fpbspl evaluates the (k+1) non-zero b-splines of
@@ -268,8 +298,6 @@ void fpgrre(
   int l1 = kx2;
   int number = 0;
 
-
-
   for(int it = 1; it <= mx; ++it){
     double arg = x[it-1];
 
@@ -286,14 +314,11 @@ void fpgrre(
     }
     nrx[it-1] = number;
   }
-  std::cout << "spx" << spx << std::endl;
-  std::cout << "spx[1,3]" << spx[1][3] << std::endl;
-  std::cout << "nrx" << nrx << std::endl;
-  std::cout << "h" << h << std::endl;
-  throw std::runtime_error("Stop");
-
-  // std::cout << "spx = " << spx << std::endl;
-  // std::cout << "nrx = " << nrx << std::endl;
+  // std::cout << "spx" << spx << std::endl;
+  // std::cout << "spx[1,3]" << spx[1][3] << std::endl;
+  // std::cout << "nrx" << nrx << std::endl;
+  // std::cout << "h" << h << std::endl;
+  // throw std::runtime_error("Stop");
 
   ifsx = 1;
   //  calculate the non-zero elements of the matrix (spy) which is the
@@ -303,22 +328,29 @@ void fpgrre(
   l1 = ky2;
   number = 0;
 
+  for(int it = 1; it <= my; ++it){
+    double arg = y[it-1];
 
-  for(int it = 0; it < my; ++it){
-    
-    double arg = y[it];
-    while(not(arg<ty[l1] or l==nk1y)){
+    while(not(arg<ty[l1-1] or l==nk1y)){
       l = l1;
       l1 = l+1;
-      number = number+1;
+      number +=1;
     }
+
     fpbspl(ty,ny,ky,arg,l,h);
-    for(int i=0; i<ky1; ++i){
-      spy[it][i] = h[i];
+    // std::cout << "Check" << h << std::endl;
+    for(int i=1; i <= ky1; ++i){
+      spy[it-1][i-1] = h[i-1];
     }
-    nry[it] = number;
+    nry[it-1] = number;
   }
   ifsy = 1;
+  
+  // std::cout << "spy" << spy << std::endl;
+  // std::cout << "spy[1,3]" << spy[1][3] << std::endl;
+  // std::cout << "nry" << nry << std::endl;
+  // std::cout << "h" << h << std::endl;
+  // throw std::runtime_error("Stop");
 
   //  reduce the matrix (ax) to upper triangular form (rx) using givens
   //  rotations. apply the same transformations to the rows of matrix q
@@ -326,204 +358,249 @@ void fpgrre(
   //  store matrix (rx) into (ax) and g into q.
   l = my*nk1x;
   //  initialization.
-  for(int i=0; i<l-1; ++i){
-    q[i] = 0;
+  for(int i = 1; i <= l; ++i){
+    q[i-1] = 0;
   }
-  for(int i=0; i<nk1x-1; ++i){
-    for(int j=0; i<kx2-1; ++i){
-      ax[i][j] = 0;
+  for(int i = 1; i <= nk1x; ++i){
+    for(int j = 1; i <= kx2; ++i){
+      ax[i-1][j-1] = 0;
     }
   }
 
   l = 0;
-  int nrold = 0;
-  //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
+  // int nrold = 0;
   int ibandx = kx1;
-  int irot, n1;
-  double piv;
-  double sin = 0.0;
-  double cos = 0.0;
-  int i2, i3;
+  //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
+  
+  for(int it = 1; it <= mx; ++it){
+    number = nrx[it-1];
+    // fetch a new row of matrix (spx).
+    h[ibandx-1] = 0.;
 
-  for(int it = 0; it< mx; ++it){
-    number = nrx[it];
-    // 50
-    bool repeat_loop = true;
-    while(repeat_loop){
-      if( nrold==number ){
-          // !  fetch a new row of matrix (spx).
-          h[ibandx] = 0.;
-          for(int j = 1 ; j< kx1; ++j){
-            h[j] = spx[it][j];
-          };
-          // !  find the appropriate column of q.
-          for(int j = 0; j< my; ++j){
-            l = l + 1;
-            right[j] = z[l];
-          };
-          irot = number;
-        } else {
-          // if ( p<=0. ) print * , "ba fpgrre 10"
-          // if ( p<=0. ){ goto 150};
-          if ( p<=0. ){
-            nrold = nrold + 1;
-            continue; //go back to start of while loop
-          }
-          ibandx = kx2;
-          // !  fetch a new row of matrix (bx).
-          n1 = nrold + 1;
-          for(int j = 0; j < kx2; ++j){
-            h[j] = bx[n1][j]*pinv;
-          }
-          // !  find the appropriate column of q.
-          for(int j = 0; j < my; ++j){
-            right[j] = 0.;
-          }
-          irot = nrold;
-        };
-        // !  rotate the new row of matrix (ax) into triangle.
-        for(int i = 0; i< ibandx; ++i){
-        irot = irot + 1;
-        piv = h[i];
-        // if ( piv==0. ) print * , "ba fpgrre 11"
-        if ( piv != 0. ){
-          // !  calculate the parameters of the givens transformation.
-          fpgivs(piv,ax[irot][1],cos,sin);
-          // !  apply that transformation to the rows of matrix q.
-          int iq = (irot-1)*my;
-          for(int j = 0; j< my; ++j){
-            iq = iq + 1;
-            fprota(cos,sin,right[j],q[iq]);
-          }
-          // !  apply that transformation to the columns of (ax).
-          // if ( i==ibandx ) print * , "ba fpgrre 12"
-          // if ( i==ibandx ){ goto 100};
-          if (not( i==ibandx )){
-            i2 = 1;
-            i3 = i + 1;
-            for(int j = i3-1; j< ibandx; ++j){
-              i2 = i2 + 1;
-              fprota(cos,sin,h[j],ax[irot][i2]);
-            }
-          }
-        }
+    for(int j = 1; j <= kx1; ++j){
+      h[j-1] = spx[it-1][j-1];
+    }
+
+    // find the appropriate column of q.
+    for(int j = 1; j <= my; ++j){
+      l += 1;
+      right[j-1] = z[l-1];
+    }
+
+    int irot = number;
+    // rotate the new row of matrix (ax) into triangle.
+    for(int i = 1; i <= ibandx; ++i){
+      irot += 1;
+      double piv = h[i];
+      if(piv == 0){continue;}
+      double sin = 0.0;
+      double cos = 0.0;
+      //calculate the parameters of the given transformation.
+      fpgivs(piv, ax[irot-1][1-1], cos, sin);
+      //apply that transformation to the rows of matrix q.
+      int iq = (irot - 1) * my;
+      for(int j = 1; j <= my; ++j){
+        iq += 1;
+        fprota(cos, sin, right[j-1], q[iq-1]);
       }
-      // if ( nrold==number ) print * , "ba fpgrre 13"
-      if ( nrold==number ){
-        break;
-      } else {
-        nrold = nrold + 1;
+      //apply that transformation to the columns of (ax).
+      if(i == ibandx){break;} //Break out of inner loop, continue on outer loop
+      int i2 = 1;
+      int i3 = i+1;
+      for(int j = i3; j <= ibandx; ++j){
+        i2 += 1;
+        fprota(cos, sin, h[j-1], ax[irot-1][i2-1]);
       }
     }
   }
 
-  // !  reduce the matrix (ay) to upper triangular form (ry) using givens
-  // !  rotations. apply the same transformations to the columns of matrix g
-  // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
-  // !  store matrix (ry) into (ay) and h into C.
-  int ncof = nk1x * nk1y;
-  // !  initialization.
+  // std::cout << << std::endl;
+  std::cout << "h =" << h << std::endl;
+  std::cout << "right = " <<right << std::endl;
+  // std::cout << "piv = " << piv << std::endl;
+  std::cout << " ax = " << ax << std::endl;
 
-  for(int i = 0; i< ncof; ++i){
-    C[i] = 0;
-  }
+  throw std::runtime_error("Stop");
 
-  for(int i=0; i<nk1y; ++i){
-    for(int j=0; j<nk1x; ++j){
-      ay[i][j] = 0;
-    }
-  }
+  // for(int it = 0; it< mx; ++it){
+  //   number = nrx[it];
+  //   // 50
+  //   bool repeat_loop = true;
+  //   while(repeat_loop){
+  //     if( nrold==number ){
+  //         // !  fetch a new row of matrix (spx).
+  //         h[ibandx] = 0.;
+  //         for(int j = 1 ; j< kx1; ++j){
+  //           h[j] = spx[it][j];
+  //         };
+  //         // !  find the appropriate column of q.
+  //         for(int j = 0; j< my; ++j){
+  //           l = l + 1;
+  //           right[j] = z[l];
+  //         };
+  //         irot = number;
+  //       } else {
+  //         // if ( p<=0. ) print * , "ba fpgrre 10"
+  //         // if ( p<=0. ){ goto 150};
+  //         if ( p<=0. ){
+  //           nrold = nrold + 1;
+  //           continue; //go back to start of while loop
+  //         }
+  //         ibandx = kx2;
+  //         // !  fetch a new row of matrix (bx).
+  //         n1 = nrold + 1;
+  //         for(int j = 0; j < kx2; ++j){
+  //           h[j] = bx[n1][j]*pinv;
+  //         }
+  //         // !  find the appropriate column of q.
+  //         for(int j = 0; j < my; ++j){
+  //           right[j] = 0.;
+  //         }
+  //         irot = nrold;
+  //       };
+  //       // !  rotate the new row of matrix (ax) into triangle.
+  //       for(int i = 0; i< ibandx; ++i){
+  //       irot = irot + 1;
+  //       piv = h[i];
+  //       // if ( piv==0. ) print * , "ba fpgrre 11"
+  //       if ( piv != 0. ){
+  //         // !  calculate the parameters of the givens transformation.
+  //         fpgivs(piv,ax[irot][1],cos,sin);
+  //         // !  apply that transformation to the rows of matrix q.
+  //         int iq = (irot-1)*my;
+  //         for(int j = 0; j< my; ++j){
+  //           iq = iq + 1;
+  //           fprota(cos,sin,right[j],q[iq]);
+  //         }
+  //         // !  apply that transformation to the columns of (ax).
+  //         // if ( i==ibandx ) print * , "ba fpgrre 12"
+  //         // if ( i==ibandx ){ goto 100};
+  //         if (not( i==ibandx )){
+  //           i2 = 1;
+  //           i3 = i + 1;
+  //           for(int j = i3-1; j< ibandx; ++j){
+  //             i2 = i2 + 1;
+  //             fprota(cos,sin,h[j],ax[irot][i2]);
+  //           }
+  //         }
+  //       }
+  //     }
+  //     // if ( nrold==number ) print * , "ba fpgrre 13"
+  //     if ( nrold==number ){
+  //       break;
+  //     } else {
+  //       nrold = nrold + 1;
+  //     }
+  //   }
+  // }
 
-  nrold = 0;
-  //  ibandy denotes the bandwidth of the matrices (ay) and (ry).
-  int ibandy = ky1;
+  // // !  reduce the matrix (ay) to upper triangular form (ry) using givens
+  // // !  rotations. apply the same transformations to the columns of matrix g
+  // // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
+  // // !  store matrix (ry) into (ay) and h into C.
+  // int ncof = nk1x * nk1y;
+  // // !  initialization.
 
-  for(int it=0; it < my; ++it){
-    number = nry[it];
-    bool repeat_loop = true;
-    while(repeat_loop){
-  // 300    if(nrold.eq.number) print *, "BA FPGRRE 14"
-    // if(nrold.eq.number) go to 330
-    if(nrold != number){
-      if(p <= 0){
-        // if(p.le.0.) print *, "BA FPGRRE 15"
-        // if(p.le.0.) go to 410
-        nrold += 1;
-        continue;
-      }
-    ibandy = ky2;
-    // fetch a new row of matrix (by).
-    n1 = nrold+1;
-    for(int j=0; j < ky2; ++j){
-        h[j] = by[n1][j]*pinv;
-      }
+  // for(int i = 0; i< ncof; ++i){
+  //   C[i] = 0;
+  // }
 
-      //  find the appropiate row of g.
-      for(int j=0; j < nk1x; ++j){
-        right[j] = 0.;
-      }
+  // for(int i=0; i<nk1y; ++i){
+  //   for(int j=0; j<nk1x; ++j){
+  //     ay[i][j] = 0;
+  //   }
+  // }
 
-      irot = nrold;
-    } else {
-      //  fetch a new row of matrix (spy)
-      h[ibandy] = 0.;
-      //  find the appropriate row of g.
-      for(int j=0; j< ky1; ++j){
-        h[j] = spy[it][j];
-      }
-      l = it;
-      for(int j=0; j< nk1x; ++j){
-        right[j] = q[l];
-        l = l+my;
-      }
-      irot = number;
-    }
+  // nrold = 0;
+  // //  ibandy denotes the bandwidth of the matrices (ay) and (ry).
+  // int ibandy = ky1;
 
-    //  rotate the new row of matrix (ay) into triangle.
-    for(int i=0; i<ibandy; ++i){
-      irot = irot+1;
-      piv = h[i];
-      if(piv==0.){continue;}
-      fpgivs(piv,ay[irot][1],cos,sin);
-      //  calculate the parameters of the givens transformation.
-      //  apply that transformation to the colums of matrix g.
-      int ic = irot;
-      for(int j=0; j<nk1x; ++j){
-        fprota(cos,sin,right[j],C[ic]);
-        ic = ic+nk1y;
-      }
-      if(i==ibandy){
-        break;
-      }
-      //  apply that transformation to the columns of matrix (ay).
-      i2 = 1;
-      i3 = i+1;
-      for(int j = i3-1; j<ibandy; ++j){
-        i2 = i2+1;
-        fprota(cos,sin,h[j],ay[irot][i2]);
-      }
-    }
-    std::printf("%d == %d\n", nrold, number);
-    if(nrold==number){
-      repeat_loop = false;
-    }
-    nrold = nrold+1;
-    }
-  }
-  //  backward substitution to obtain the b-spline coefficients as the
-  //  solution of the linear system    (ry) c (rx)' = h.
-  //  first step: solve the system  (ry) (c1) = h.
+  // for(int it=0; it < my; ++it){
+  //   number = nry[it];
+  //   bool repeat_loop = true;
+  //   while(repeat_loop){
+  // // 300    if(nrold.eq.number) print *, "BA FPGRRE 14"
+  //   // if(nrold.eq.number) go to 330
+  //   if(nrold != number){
+  //     if(p <= 0){
+  //       // if(p.le.0.) print *, "BA FPGRRE 15"
+  //       // if(p.le.0.) go to 410
+  //       nrold += 1;
+  //       continue;
+  //     }
+  //   ibandy = ky2;
+  //   // fetch a new row of matrix (by).
+  //   n1 = nrold+1;
+  //   for(int j=0; j < ky2; ++j){
+  //       h[j] = by[n1][j]*pinv;
+  //     }
 
-  int k = 1;
+  //     //  find the appropiate row of g.
+  //     for(int j=0; j < nk1x; ++j){
+  //       right[j] = 0.;
+  //     }
 
-  for(int i=1; i<nk1x; ++i){
-    // std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest
-    // In .f as 
-    // fpback(ay,C[k],nk1y,ibandy,C[k],ny);
-    // But needs vector not scalar for C[k] arguments
-    fpback(ay,C,nk1y,ibandy,C,ny);
-    k = k+nk1y;
-  }
+  //     irot = nrold;
+  //   } else {
+  //     //  fetch a new row of matrix (spy)
+  //     h[ibandy] = 0.;
+  //     //  find the appropriate row of g.
+  //     for(int j=0; j< ky1; ++j){
+  //       h[j] = spy[it][j];
+  //     }
+  //     l = it;
+  //     for(int j=0; j< nk1x; ++j){
+  //       right[j] = q[l];
+  //       l = l+my;
+  //     }
+  //     irot = number;
+  //   }
+
+  //   //  rotate the new row of matrix (ay) into triangle.
+  //   for(int i=0; i<ibandy; ++i){
+  //     irot = irot+1;
+  //     piv = h[i];
+  //     if(piv==0.){continue;}
+  //     fpgivs(piv,ay[irot][1],cos,sin);
+  //     //  calculate the parameters of the givens transformation.
+  //     //  apply that transformation to the colums of matrix g.
+  //     int ic = irot;
+  //     for(int j=0; j<nk1x; ++j){
+  //       fprota(cos,sin,right[j],C[ic]);
+  //       ic = ic+nk1y;
+  //     }
+  //     if(i==ibandy){
+  //       break;
+  //     }
+  //     //  apply that transformation to the columns of matrix (ay).
+  //     i2 = 1;
+  //     i3 = i+1;
+  //     for(int j = i3-1; j<ibandy; ++j){
+  //       i2 = i2+1;
+  //       fprota(cos,sin,h[j],ay[irot][i2]);
+  //     }
+  //   }
+  //   std::printf("%d == %d\n", nrold, number);
+  //   if(nrold==number){
+  //     repeat_loop = false;
+  //   }
+  //   nrold = nrold+1;
+  //   }
+  // }
+  // //  backward substitution to obtain the b-spline coefficients as the
+  // //  solution of the linear system    (ry) c (rx)' = h.
+  // //  first step: solve the system  (ry) (c1) = h.
+
+  // int k = 1;
+
+  // for(int i=1; i<nk1x; ++i){
+  //   // std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest
+  //   // In .f as 
+  //   // fpback(ay,C[k],nk1y,ibandy,C[k],ny);
+  //   // But needs vector not scalar for C[k] arguments
+  //   fpback(ay,C,nk1y,ibandy,C,ny);
+  //   k = k+nk1y;
+  // }
 
   // double arg,fac,term;
   // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;

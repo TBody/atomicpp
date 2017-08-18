@@ -6,10 +6,23 @@ c  ..scalar arguments..
 c ..local scalars..
       real*8 stor1,stor2
 c  ..
-C       print *, "fprota called"
+C       print *, ""
+C       print *, "fprota called with "
+C       print *, "cos=", cos
+C       print *, "sin=", sin
+C       print *, "  a=", a
+C       print *, "  b=", b
       stor1 = a
       stor2 = b
       b = cos*stor2+sin*stor1
       a = cos*stor1-sin*stor2
+
+C       print *, ""
+C       print *, "fprota returned with "
+C       print *, "cos=", cos
+C       print *, "sin=", sin
+C       print *, "  a=", a
+C       print *, "  b=", b
+
       return
       end
