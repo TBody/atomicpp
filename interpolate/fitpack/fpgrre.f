@@ -452,9 +452,9 @@ C           if(numx.eq.nroldx) print *, "BA FPGRRE 20"
  540    continue
         nroldx = numx
  550  continue
-      print *, "fp = ", fp
-      print *, "fpx = ", fpx
-      print *, "fpy = ", fpy
+C       print *, "fp = ", fp
+C       print *, "fpx = ", fpx
+C       print *, "fpy = ", fpy
 
       return
       end

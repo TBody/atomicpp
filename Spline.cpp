@@ -176,30 +176,30 @@ void fpgrre(
     int ifsy,
     int ifbx,
     int ifby,
-    std::vector<double> x,
-    int mx,
-    std::vector<double> y,
-    int my,
-    std::vector<double> z,
-    int mz,
-    int kx,
-    int ky,
-    std::vector<double> tx,
-    int nx,
-    std::vector<double> ty,
-    int ny,
-    double p,
+    const std::vector<double> x,
+    const int mx,
+    const std::vector<double> y,
+    const int my,
+    const std::vector<double> z,
+    const int mz,
+    const int kx,
+    const int ky,
+    const std::vector<double> tx,
+    const int nx,
+    const std::vector<double> ty,
+    const int ny,
+    const double p,
     std::vector<double> C,
-    int nc,
+    const int nc,
     double fp,
     std::vector<double> fpx,
     std::vector<double> fpy,
-    int mm,
-    int mynx,
-    int kx1,
-    int kx2,
-    int ky1,
-    int ky2,
+    const int mm,
+    const int mynx,
+    const int kx1,
+    const int kx2,
+    const int ky1,
+    const int ky2,
     std::vector<std::vector<double>> spx,
     std::vector<std::vector<double>> spy,
     std::vector<double> right,
@@ -236,93 +236,9 @@ void fpgrre(
   //                matrices which contain the discontinuity jumps of the
   //                derivatives of the b-splines in the x- and y-direction.
 
-  //Verified
-    std::cout << "fpgrre called" <<std::endl;
     std::vector<double> h(7, 0.0);
 
-    // Print inspect
-      // std::cout << "scalar_arguments=" << std::endl;
-      // std::cout << "p="                << p          << std::endl;
-      // std::cout << "fp="               << fp         << std::endl;
-      // std::cout << "ifsx="             << ifsx       << std::endl;
-      // std::cout << "ifsy="             << ifsy       << std::endl;
-      // std::cout << "ifbx="             << ifbx       << std::endl;
-      // std::cout << "ifby="             << ifby       << std::endl;
-      // std::cout << "mx="               << mx         << std::endl;
-      // std::cout << "my="               << my         << std::endl;
-      // std::cout << "mz="               << mz         << std::endl;
-      // std::cout << "kx="               << kx         << std::endl;
-      // std::cout << "ky="               << ky         << std::endl;
-      // std::cout << "nx="               << nx         << std::endl;
-      // std::cout << "ny="               << ny         << std::endl;
-      // std::cout << "nc="               << nc         << std::endl;
-      // std::cout << "mm="               << mm         << std::endl;
-      // std::cout << "mynx="             << mynx       << std::endl;
-      // std::cout << "kx1="              << kx1        << std::endl;
-      // std::cout << "kx2="              << kx2        << std::endl;
-      // std::cout << "ky1="              << ky1        << std::endl;
-      // std::cout << "ky2="              << ky2        << std::endl;
-      // std::cout << "array_arguments="  << std::endl;
-      // std::cout << "x(mx)="            << x          << std::endl;
-      // std::cout << "y(my)="            << y          << std::endl;
-      // std::cout << "z(mz)="            << z          << std::endl;
-      // std::cout << "tx(nx)="           << tx         << std::endl;
-      // std::cout << "ty(ny)="           << ty         << std::endl;
-      // std::cout << "C(nc)="            << C          << std::endl;
-      // std::cout << "spx(mx,kx1)="      << spx        << std::endl;
-      // std::cout << "spy(my,ky1)="      << spy        << std::endl;
-      // std::cout << "right(mm)="        << right      << std::endl;
-      // std::cout << "q(mynx)="          << q          << std::endl;
-      // std::cout << "ax(nx,kx2)="       << ax         << std::endl;
-      // std::cout << "bx(nx,kx2)="       << bx         << std::endl;
-      // std::cout << "ay(ny,ky2)="       << ay         << std::endl;
-      // std::cout << "by(ny,ky2)="       << by         << std::endl;
-      // std::cout << "fpx(nx)="          << fpx        << std::endl;
-      // std::cout << "fpy(ny)="          << fpy        << std::endl;
-      // std::cout << "nrx(mx)="          << nrx        << std::endl;
-      // std::cout << "nry(my)="          << nry        << std::endl;
-      // std::cout << "local_scalars="    << std::endl;
-      // std::cout << "arg="              << arg        << std::endl;
-      // std::cout << "cos="              << cos        << std::endl;
-      // std::cout << "fac="              << fac        << std::endl;
-      // std::cout << "pinv="             << pinv       << std::endl;
-      // std::cout << "piv="              << piv        << std::endl;
-      // std::cout << "sin="              << sin        << std::endl;
-      // std::cout << "term="             << term       << std::endl;
-      // std::cout << "one="              << one        << std::endl;
-      // std::cout << "half="             << half       << std::endl;
-      // std::cout << "i="                << i          << std::endl;
-      // std::cout << "ibandx="           << ibandx     << std::endl;
-      // std::cout << "ibandy="           << ibandy     << std::endl;
-      // std::cout << "ic="               << ic         << std::endl;
-      // std::cout << "iq="               << iq         << std::endl;
-      // std::cout << "irot="             << irot       << std::endl;
-      // std::cout << "it="               << it         << std::endl;
-      // std::cout << "iz="               << iz         << std::endl;
-      // std::cout << "i1="               << i1         << std::endl;
-      // std::cout << "i2="               << i2         << std::endl;
-      // std::cout << "i3="               << i3         << std::endl;
-      // std::cout << "j="                << j          << std::endl;
-      // std::cout << "k="                << k          << std::endl;
-      // std::cout << "k1="               << k1         << std::endl;
-      // std::cout << "k2="               << k2         << std::endl;
-      // std::cout << "l="                << l          << std::endl;
-      // std::cout << "l1="               << l1         << std::endl;
-      // std::cout << "l2="               << l2         << std::endl;
-      // std::cout << "ncof="             << ncof       << std::endl;
-      // std::cout << "nk1x="             << nk1x       << std::endl;
-      // std::cout << "nk1y="             << nk1y       << std::endl;
-      // std::cout << "nrold="            << nrold      << std::endl;
-      // std::cout << "nroldx="           << nroldx     << std::endl;
-      // std::cout << "nroldy="           << nroldy     << std::endl;
-      // std::cout << "number="           << number     << std::endl;
-      // std::cout << "numx="             << numx       << std::endl;
-      // std::cout << "numx1="            << numx1      << std::endl;
-      // std::cout << "numy="             << numy       << std::endl;
-      // std::cout << "numy1="            << numy1      << std::endl;
-      // std::cout << "n1="               << n1         << std::endl;
-      // std::cout << "local_arrays="     << std::endl;
-      // std::cout << "h(7)="             << h          << std::endl;
+    std::cout << "fpgrre called" <<std::endl;
 
     // double 1 = 1;
     double half = 0.5;
@@ -644,9 +560,9 @@ void fpgrre(
   }
   // 550  continue
 
-  std::cout << "fp = " << fp << std::endl;
-  std::cout << "fpx = " << fpx << std::endl;
-  std::cout << "fpy = " << fpy << std::endl;
+  // std::cout << "fp = " << fp << std::endl;
+  // std::cout << "fpx = " << fpx << std::endl;
+  // std::cout << "fpy = " << fpy << std::endl;
 
 
 
