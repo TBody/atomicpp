@@ -935,7 +935,7 @@ struct regrid_return{
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
 regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
 
-  std::cout << "regrid_smth called" <<std::endl;
+  // std::cout << "regrid_smth called" <<std::endl;
 
   // Translation of interpolate/src/fitpack.pyf (header)
 
@@ -1099,6 +1099,14 @@ int main(){
   }
 
   regrid_return setup_spline = regrid_smth(x, y, z_flattened);
+
+  std::cout << "nx  = " << setup_spline.nx  << std::endl;
+  std::cout << "ny  = " << setup_spline.ny  << std::endl;
+  std::cout << "tx  = " << setup_spline.tx  << std::endl;
+  std::cout << "ty  = " << setup_spline.ty  << std::endl;
+  std::cout << "C   = " << setup_spline.C   << std::endl;
+  std::cout << "fp  = " << setup_spline.fp  << std::endl;
+  std::cout << "ier = " << setup_spline.ier << std::endl;
 }
 
 
