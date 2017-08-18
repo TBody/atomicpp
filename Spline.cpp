@@ -562,41 +562,86 @@ void fpgrre(
   for(int j=1; j <= nk1y; ++j){
     k += 1;
     l = k;
-    std::cout << "l @1 =" << l << std::endl;
     for(int i=1; i <= nk1x; ++i){
       right[i-1] = C[l-1];
-      // std::cout << "right(i)" << right[i-1] << std::endl;
       l += nk1y;
     }
 
     fpback(ax,right,nk1x,ibandx,right,nx);
-    std::cout << "right = " << right << std::endl;
 
     l = k;
     for(int i = 1; i <= nk1x; ++i){
-      std::cout << "l @2 = " << l << std::endl;
       C[l-1] = right[i-1];
-      std::cout << "c(l) = " << C[l-1] << std::endl;
       l += nk1y;
     }
   }
 
-  for(int i = 0; i<25; ++i){
-    std::cout << i+1 << " " << C[i] << std::endl;
+  // for(int i = 0; i<25; ++i){
+  //   std::cout << i+1 << " " << C[i] << std::endl;
+  // }
+
+  fp = 0.;
+  for(int i=1;i <= nx;++i){
+    fpx[i-1] = 0.;
   }
-  
+  for(int i=1;i <= ny;++i){
+    fpy[i-1] = 0.;
+  }
+  nk1y = ny-ky1;
+  int iz = 0;
+  int nroldx = 0;
 
-
-  // Old code
-    // }
-    // //  backward substitution to obtain the b-spline coefficients as the
-    // //  solution of the linear system    (ry) c (rx)' = h.
-    // //  first step: solve the system  (ry) (c1) = h.
-
-
-    // double arg,fac,term;
-    // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;
-    // }
+  //  main loop for the different grid points.
+  for(int i1=1; i1<=mx;++i1){
+    int numx = nrx[i1-1];
+    int numx1 = numx+1;
+    int nroldy = 0;
+    for(int i2=1; i2<=my;++i2){
+      int numy = nry[i2-1];
+      int numy1 = numy+1;
+      iz = iz+1;
+      //  evaluate s(x,y) at the current grid point by making the sum of the
+      //  cross products of the non-zero b-splines at (x,y), multiplied with
+      //  the appropiate b-spline coefficients.
+      double term = 0.;
+      int k1 = numx*nk1y+numy;
+      for(int l1=1; l1<=kx1;++l1){
+        int k2 = k1;
+        double fac = spx[i1-1][l1-1];
+        for(int l2=1; l2<=ky1;++l2){
+          k2 = k2+1;
+          term = term+fac*spy[i2-1][l2-1]*C[k2-1];
+        }
+        // 510        continue
+        k1 = k1+nk1y;
+      }
+      // 520      continue
+      //  calculate the squared residual at the current grid point.
+      term = (z[iz-1]-term)*(z[iz-1]-term);
+      //  adjust the different parameters.
+      fp = fp+term;
+      fpx[numx1-1] = fpx[numx1-1]+term;
+      fpy[numy1-1] = fpy[numy1-1]+term;
+      double fac = term*half;
+      //           if(numy.eq.nroldy) print *, "BA FPGRRE 19"
+      if(numy!=nroldy){
+        fpy[numy1-1] = fpy[numy1-1]-fac;
+        fpy[numy-1] = fpy[numy-1]+fac;
+      // go to 530
+      }
+      // 530      
+      nroldy = numy;
+      //           if(numx.eq.nroldx) print *, "BA FPGRRE 20"
+      if(numx!=nroldx){
+        fpx[numx1-1] = fpx[numx1-1]-fac;
+        fpx[numx-1] = fpx[numx-1]+fac;
+      // go to 540
+      }
+    }
+    // 540    continue
+    nroldx = numx;
+  }
+  // 550  continue
 };
 
 int fpregr(int iopt,
