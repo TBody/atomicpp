@@ -66,13 +66,13 @@ void fpbspl(std::vector<double> t,int n,int k,double x,int l,std::vector<double>
   //      Thus it is imperative that that k <= l <= n-k but this
   //      is not checked.
 
-  std::cout << "fpbspl called with " << std::endl;
-  std::cout << "t" << t << std::endl;
-  std::cout << "n" << n << std::endl;
-  std::cout << "k" << k << std::endl;
-  std::cout << "x" << x << std::endl;
-  std::cout << "l" << l << std::endl;
-  std::cout << "h" << h << std::endl;
+  // std::cout << "fpbspl called with " << std::endl;
+  // std::cout << "t" << t << std::endl;
+  // std::cout << "n" << n << std::endl;
+  // std::cout << "k" << k << std::endl;
+  // std::cout << "x" << x << std::endl;
+  // std::cout << "l" << l << std::endl;
+  // std::cout << "h" << h << std::endl;
 
   h[0] = 1;
 
@@ -160,6 +160,7 @@ void fpgrre(
   //                matrices which contain the discontinuity jumps of the
   //                derivatives of the b-splines in the x- and y-direction.
 
+  std::cout << "fpgrre called" <<std::endl;
   std::vector<double> h(7, 0.0);
 
   // std::cout << "scalar_arguments=" << std::endl;
@@ -259,8 +260,6 @@ void fpgrre(
   int l1 = kx2;
   int number = 0;
 
-  std::cout << "tx = " << tx << std::endl;
-
   for(int it = 0; it < mx; ++it){
     double arg = x[it];
     while(not(arg<tx[l1] or l==nk1x)){
@@ -275,8 +274,8 @@ void fpgrre(
     nrx[it] = number;
   }
 
-  std::cout << "spx = " << spx << std::endl;
-  std::cout << "nrx = " << nrx << std::endl;
+  // std::cout << "spx = " << spx << std::endl;
+  // std::cout << "nrx = " << nrx << std::endl;
 
   ifsx = 1;
   //  calculate the non-zero elements of the matrix (spy) which is the
@@ -576,6 +575,8 @@ int fpregr(int iopt,
   int lay = lbx+nxk;
   int lby = lay+nyest*ky2;
 
+  std::cout << "fpregr called" <<std::endl;
+
   //
   // part 1: determination of the number of knots and their position.
   // ****************************************************************
@@ -621,24 +622,26 @@ int fpregr(int iopt,
   int k3 = kx/2;
   int i = kx1+1;
   int j = k3+2;
-
-  for(int l = 0; l < mk1 -1; ++l){
-  tx[i] = x[j];
-  i = i+1;
-  j = j+1;
+  // std::cout << "Before loop 30 tx = " << tx << std::endl;
+  for(int l = 1; l <= mk1; ++l){
+    tx[i-1] = x[j-1];
+    i = i+1;
+    j = j+1;
   }
-
+  // std::cout << "After loop 30 tx = " << tx << std::endl;
   //  the knots in the y-direction.
   mk1 = my-ky1;
   k3 = ky/2;
   i = ky1+1;
   j = k3+2;
 
-  for(int l = 0; l < mk1 -1; ++l){
-  ty[i] = y[j];
-  i = i+1;
-  j = j+1;
+  // std::cout << "Before loop 70 ty = " << ty << std::endl;
+  for(int l = 1; l <= mk1; ++l){
+    ty[i-1] = y[j-1];
+    i = i+1;
+    j = j+1;
   }
+  // std::cout << "After loop 70 ty = " << ty << std::endl;
 
   int mpm = mx+my;
   int ifsx = 0;
@@ -662,19 +665,23 @@ int fpregr(int iopt,
   int ncof = nk1x*nk1y;
   //  find the position of the additional knots which are needed for the
   //  b-spline representation of s(x,y).
+  // std::cout << "Before loop 130 tx = " << tx << std::endl;
   i = nx;
-  for(j=1; j < kx1; ++j){
-  tx[j-1] = xb;
-  tx[i-1] = xe;
-  i = i-1;
+  for(int j=1; j <= kx1; ++j){
+    tx[j-1] = xb;
+    tx[i-1] = xe;
+    i = i-1;
   }
+  // std::cout << "After loop 130 tx = " << tx << std::endl;
 
+  // std::cout << "Before loop 140 ty = " << ty << std::endl;
   i = ny;
-  for(j=1; j < ky1; ++j){
-  ty[j-1] = yb;
-  ty[i-1] = ye;
-  i = i-1;
+  for(int j=1; j <= ky1; ++j){
+    ty[j-1] = yb;
+    ty[i-1] = ye;
+    i = i-1;
   }
+  // std::cout << "After loop 140 ty = " << ty << std::endl;
   //  find the least-squares spline sinf(x,y) and calculate for each knot
   //  interval tx(j+kx)<=x<=tx(j+kx+1) (ty(j+ky)<=y<=ty(j+ky+1)) the sum
   //  of squared residuals fpintx(j),j=1,2,...,nx-2*kx-1 (fpinty(j),j=1,2,
@@ -731,62 +738,58 @@ int fpregr(int iopt,
   // std::vector<int> nry(my, 0);
   // = nry;
 
-  std::cout << "fpregr ifsx" << ifsx << std::endl;
-  std::cout << "fpregr ifsy" << ifsy << std::endl;
-  std::cout << "fpregr ifbx" << ifbx << std::endl;
-  std::cout << "fpregr ifby" << ifby << std::endl;
-  std::cout << "fpregr x" << x << std::endl;
-  std::cout << "fpregr mx" << mx << std::endl;
-  std::cout << "fpregr y" << y << std::endl;
-  std::cout << "fpregr my" << my << std::endl;
-  std::cout << "fpregr z" << z << std::endl;
-  std::cout << "fpregr mz" << mz << std::endl;
-  std::cout << "fpregr kx" << kx << std::endl;
-  std::cout << "fpregr ky" << ky << std::endl;
-  std::cout << "fpregr tx" << tx << std::endl;
-  std::cout << "fpregr nx" << nx << std::endl;
-  std::cout << "fpregr ty" << ty << std::endl;
-  std::cout << "fpregr ny" << ny << std::endl;
-  std::cout << "fpregr p" << p << std::endl;
-  std::cout << "fpregr C" << C << std::endl;
-  std::cout << "fpregr nc" << nc << std::endl;
-  std::cout << "fpregr fp" << fp << std::endl;
-  std::cout << "fpregr fpx" << fpx << std::endl;
-  std::cout << "fpregr fpy" << fpy << std::endl;
-  std::cout << "fpregr mm" << mm << std::endl;
-  std::cout << "fpregr mynx" << mynx << std::endl;
-  std::cout << "fpregr kx1" << kx1 << std::endl;
-  std::cout << "fpregr kx2" << kx2 << std::endl;
-  std::cout << "fpregr ky1" << ky1 << std::endl;
-  std::cout << "fpregr ky2" << ky2 << std::endl;
-  std::cout << "fpregr spx" << spx << std::endl;
-  std::cout << "fpregr spy" << spy << std::endl;
-  std::cout << "fpregr right" << right << std::endl;
-  std::cout << "fpregr q" << q << std::endl;
-  std::cout << "fpregr ax" << ax << std::endl;
-  std::cout << "fpregr ay" << ay << std::endl;
-  std::cout << "fpregr bx" << bx << std::endl;
-  std::cout << "fpregr by" << by << std::endl;
-  std::cout << "fpregr nrx" << nrx << std::endl;
-  std::cout << "fpregr nry" << nry << std::endl;
-
+  // std::cout << "fpgrre ifsx = " << ifsx << std::endl;
+  // std::cout << "fpgrre ifsy = " << ifsy << std::endl;
+  // std::cout << "fpgrre ifbx = " << ifbx << std::endl;
+  // std::cout << "fpgrre ifby = " << ifby << std::endl;
+  // std::cout << "fpgrre x = " << x << std::endl;
+  // std::cout << "fpgrre mx = " << mx << std::endl;
+  // std::cout << "fpgrre y = " << y << std::endl;
+  // std::cout << "fpgrre my = " << my << std::endl;
+  // std::cout << "fpgrre z = " << z << std::endl;
+  // std::cout << "fpgrre mz = " << mz << std::endl;
+  // std::cout << "fpgrre kx = " << kx << std::endl;
+  // std::cout << "fpgrre ky = " << ky << std::endl;
+  // std::cout << "fpgrre tx = " << tx << std::endl;
+  // std::cout << "fpgrre nx = " << nx << std::endl;
+  // std::cout << "fpgrre ty = " << ty << std::endl;
+  // std::cout << "fpgrre ny = " << ny << std::endl;
+  // std::cout << "fpgrre p = " << p << std::endl;
+  // std::cout << "fpgrre C = " << C << std::endl;
+  // std::cout << "fpgrre nc = " << nc << std::endl;
+  // std::cout << "fpgrre fp = " << fp << std::endl;
+  // std::cout << "fpgrre fpx = " << fpx << std::endl;
+  // std::cout << "fpgrre fpy = " << fpy << std::endl;
+  // std::cout << "fpgrre mm = " << mm << std::endl;
+  // std::cout << "fpgrre mynx = " << mynx << std::endl;
+  // std::cout << "fpgrre kx1 = " << kx1 << std::endl;
+  // std::cout << "fpgrre kx2 = " << kx2 << std::endl;
+  // std::cout << "fpgrre ky1 = " << ky1 << std::endl;
+  // std::cout << "fpgrre ky2 = " << ky2 << std::endl;
+  // std::cout << "fpgrre spx = " << spx << std::endl;
+  // std::cout << "fpgrre spy = " << spy << std::endl;
+  // std::cout << "fpgrre right = " << right << std::endl;
+  // std::cout << "fpgrre q = " << q << std::endl;
+  // std::cout << "fpgrre ax = " << ax << std::endl;
+  // std::cout << "fpgrre ay = " << ay << std::endl;
+  // std::cout << "fpgrre bx = " << bx << std::endl;
+  // std::cout << "fpgrre by = " << by << std::endl;
+  // std::cout << "fpgrre nrx = " << nrx << std::endl;
+  // std::cout << "fpgrre nry = " << nry << std::endl;
+  // std::cout << "fpgrre given tx = " << tx << std::endl;
+  // std::cout << "fpgrre given ty = " << ty << std::endl;
   fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,C,nc,fp,fpx,fpy,mm,mynx,kx1,kx2,ky1,ky2,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
 
   double fpms = fp-s;
 
   //  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
   if((nx==nmaxx) and (ny==nmaxy)){
-  int ier = -1;
-  fp = 0.;
-  return ier;
+    int ier = -1;
+    fp = 0.;
+    return ier;
   } else {
-  throw std::runtime_error("Not enough knots included in spline");
+    throw std::runtime_error("Not enough knots included in spline");
   }
-  // }
-
-
-  // double f1,f2,f3,p1,p2,p3,rn;
-  // int ich1,ich3,iter,l,nplx,nply,npl1;
 };
 
 struct regrid_return{
@@ -1066,6 +1069,8 @@ struct regrid_return{
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
 regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vector<double> z){
 
+  std::cout << "regrid_smth called" <<std::endl;
+
   // Translation of interpolate/src/fitpack.pyf (header)
 
   int iopt = 0;
@@ -1136,13 +1141,13 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
 
   if(xb > x[1-1] or xe < x[mx-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 7");
 
-  for(int i = 1; i<mx-1; ++i){
+  for(int i = 1; i< mx; ++i){
     if(x[i-1] >= x[i]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 8");
   }
 
   if(yb > y[1-1] or ye < y[my-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 9");
 
-  for(int j = 1; j<=my-1; ++j){
+  for(int j = 1; j < my; ++j){
     if(y[j-1] >= y[j]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 10");
   }
 
@@ -1204,9 +1209,9 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
   // std::cout << "maxit       = " << maxit       << std::endl;
   // std::cout << "nc          = " << nc          << std::endl;
   // std::cout << "nx          = " << nx          << std::endl;
-  std::cout << "tx          = " << tx          << std::endl;
+  // std::cout << "tx          = " << tx          << std::endl;
   // std::cout << "ny          = " << ny          << std::endl;
-  std::cout << "ty          = " << ty          << std::endl;
+  // std::cout << "ty          = " << ty          << std::endl;
   // std::cout << "C           = " << C           << std::endl;
   // std::cout << "fp          = " << fp          << std::endl;
   // std::cout << "fp0         = " << fp0         << std::endl;
@@ -1252,7 +1257,7 @@ regrid_return regrid_smth(std::vector<double> x, std::vector<double> y, std::vec
 };
 
 int main(){
-  std::printf("Hello world\n");
+  std::cout << "main called" <<std::endl;
 
   std::vector<double> x = {1,2,3,4,5};
   std::vector<double> y = {1,3,4,7,10};

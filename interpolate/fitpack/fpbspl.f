@@ -21,13 +21,13 @@ c  ..local scalars..
 c  ..local arrays..
       real*8 hh(19)
 c  ..
-      print *, "fpbspl called with "
-      print *, "t", t
-      print *, "n", n
-      print *, "k", k
-      print *, "x", x
-      print *, "l", l
-      print *, "h", h
+C       print *, "fpbspl called with "
+C       print *, "t", t
+C       print *, "n", n
+C       print *, "k", k
+C       print *, "x", x
+C       print *, "l", l
+C       print *, "h", h
 
 
       one = 0.1d+01

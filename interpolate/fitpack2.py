@@ -202,13 +202,13 @@ class RectBivariateSpline(_BivariateSplineBase):
         nx, tx, ny, ty, c, fp, ier = dfitpack.regrid_smth(x, y, z, xb, xe, yb,
                                                           ye, kx, ky, s)
 
-        print("nx: ", nx)
-        print("tx: ", tx)
-        print("ny: ", ny)
-        print("ty: ", ty)
-        print("c: ", c)
-        print("fp: ", fp)
-        print("ier: ", ier)
+        # print("nx: ", nx)
+        # print("tx: ", tx)
+        # print("ny: ", ny)
+        # print("ty: ", ty)
+        # print("c: ", c)
+        # print("fp: ", fp)
+        # print("ier: ", ier)
 
         if ier not in [0, -1, -2]:
             msg = _surfit_messages.get(ier, 'ier=%s' % (ier))

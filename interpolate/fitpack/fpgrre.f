@@ -45,46 +45,44 @@ c       bx,by  : the (nx-2*kx-1) x (nx-kx-1) and (ny-2*ky-1) x (ny-ky-1)
 c                matrices which contain the discontinuity jumps of the
 c                derivatives of the b-splines in the x- and y-direction.
 
-C       print *, "scalar_arguments="
-C       print *, "p="                , p
-C       print *, "fp="               , fp
-C       print *, "ifsx="             , ifsx
-C       print *, "ifsy="             , ifsy
-C       print *, "ifbx="             , ifbx
-C       print *, "ifby="             , ifby
-C       print *, "mx="               , mx
-C       print *, "my="               , my
-C       print *, "mz="               , mz
-C       print *, "kx="               , kx
-C       print *, "ky="               , ky
-C       print *, "nx="               , nx
-C       print *, "ny="               , ny
-C       print *, "nc="               , nc
-C       print *, "mm="               , mm
-C       print *, "mynx="             , mynx
-C       print *, "kx1="              , kx1
-C       print *, "kx2="              , kx2
-C       print *, "ky1="              , ky1
-C       print *, "ky2="              , ky2
-C       print *, "array_arguments="
-C       print *, "x(mx)="            , x
-C       print *, "y(my)="            , y
-C       print *, "z(mz)="            , z
-C       print *, "tx(nx)="           , tx
-C       print *, "ty(ny)="           , ty
-C       print *, "C(nc)="            , C
-C       print *, "spx(mx,kx1)="      , spx
-C       print *, "spy(my,ky1)="      , spy
-C       print *, "right(mm)="        , right
-C       print *, "q(mynx)="          , q
-C       print *, "ax(nx,kx2)="       , ax
-C       print *, "bx(nx,kx2)="       , bx
-C       print *, "ay(ny,ky2)="       , ay
-C       print *, "by(ny,ky2)="       , by
-C       print *, "fpx(nx)="          , fpx
-C       print *, "fpy(ny)="          , fpy
-C       print *, "nrx(mx)="          , nrx
-C       print *, "nry(my)="          , nry
+C       print *, "fpgrre ifsx", ifsx
+C       print *, "fpgrre ifsy", ifsy
+C       print *, "fpgrre ifbx", ifbx
+C       print *, "fpgrre ifby", ifby
+C       print *, "fpgrre x", x
+C       print *, "fpgrre mx", mx
+C       print *, "fpgrre y", y
+C       print *, "fpgrre my", my
+C       print *, "fpgrre z", z
+C       print *, "fpgrre mz", mz
+C       print *, "fpgrre kx", kx
+C       print *, "fpgrre ky", ky
+C       print *, "fpgrre tx", tx
+C       print *, "fpgrre nx", nx
+C       print *, "fpgrre ty", ty
+C       print *, "fpgrre ny", ny
+C       print *, "fpgrre p", p
+C       print *, "fpgrre c", c
+C       print *, "fpgrre nc", nc
+C       print *, "fpgrre fp", fp
+C       print *, "fpgrre fpx", fpx
+C       print *, "fpgrre fpy", fpy
+C       print *, "fpgrre mm", mm
+C       print *, "fpgrre mynx", mynx
+C       print *, "fpgrre kx1", kx1
+C       print *, "fpgrre kx2", kx2
+C       print *, "fpgrre ky1", ky1
+C       print *, "fpgrre ky2", ky2
+C       print *, "fpgrre spx", spx
+C       print *, "fpgrre spy", spy
+C       print *, "fpgrre right", right
+C       print *, "fpgrre q", q
+C       print *, "fpgrre ax", ax
+C       print *, "fpgrre ay", ay
+C       print *, "fpgrre bx", bx
+C       print *, "fpgrre by", by
+C       print *, "fpgrre nrx", nrx
+C       print *, "fpgrre nry", nry
 
 
 
@@ -94,12 +92,12 @@ C       print *, "nry(my)="          , nry
       nk1x = nx-kx1
       nk1y = ny-ky1
 
-      if(p.gt.0.) print *, "BA FPGRRE 1"
+C       if(p.gt.0.) print *, "BA FPGRRE 1"
       if(p.gt.0.) pinv = one/p
 c  it depends on the value of the flags ifsx,ifsy,ifbx and ifby and on
 c  the value of p whether the matrices (spx),(spy),(bx) and (by) still
 c  must be determined.
-      if(ifsx.ne.0) print *, "BA FPGRRE 2"
+C       if(ifsx.ne.0) print *, "BA FPGRRE 2"
       if(ifsx.ne.0) go to 50
 c  calculate the non-zero elements of the matrix (spx) which is the
 c  observation matrix according to the least-squares spline approximat-
@@ -108,12 +106,13 @@ c  ion problem in the x-direction.
       l1 = kx2
       number = 0
 
-      print *, "tx", tx
+C       print *, "tx", tx
 
       do 40 it=1,mx
         arg = x(it)
-  10    if(arg.lt.tx(l1) .or. l.eq.nk1x) print *, "BA FPGRRE 3"
-        if(arg.lt.tx(l1) .or. l.eq.nk1x) go to 20
+  10    if(arg.lt.tx(l1) .or. l.eq.nk1x) go to 20
+C   10    if(arg.lt.tx(l1) .or. l.eq.nk1x) print *, "BA FPGRRE 3"
+C         if(arg.lt.tx(l1) .or. l.eq.nk1x) go to 20
         l = l1
         l1 = l+1
         number = number+1
@@ -125,12 +124,13 @@ c  ion problem in the x-direction.
         nrx(it) = number
   40  continue
 
-      print *, "nrx", nrx
-      print *, "spx", spx
+C       print *, "nrx", nrx
+C       print *, "spx", spx
 
       ifsx = 1
-  50  if(ifsy.ne.0) print *, "BA FPGRRE 4"
-      if(ifsy.ne.0) go to 100
+  50    if(ifsy.ne.0) go to 100   
+C   50  if(ifsy.ne.0) print *, "BA FPGRRE 4"
+C       if(ifsy.ne.0) go to 100
 c  calculate the non-zero elements of the matrix (spy) which is the
 c  observation matrix according to the least-squares spline approximat-
 c  ion problem in the y-direction.
@@ -139,8 +139,9 @@ c  ion problem in the y-direction.
       number = 0
       do 90 it=1,my
         arg = y(it)
-  60    if(arg.lt.ty(l1) .or. l.eq.nk1y)  print *, "BA FPGRRE 5"
-        if(arg.lt.ty(l1) .or. l.eq.nk1y) go to 70
+  60    if(arg.lt.ty(l1) .or. l.eq.nk1y) go to 70
+C   60    if(arg.lt.ty(l1) .or. l.eq.nk1y)  print *, "BA FPGRRE 5"
+C         if(arg.lt.ty(l1) .or. l.eq.nk1y) go to 70
         l = l1
         l1 = l+1
         number = number+1
@@ -152,16 +153,18 @@ c  ion problem in the y-direction.
         nry(it) = number
   90  continue
       ifsy = 1
- 100  if(p.le.0.) print *, "BA FPGRRE 6"
-      if(p.le.0.) go to 120
+ 100  if(p.le.0.) go to 120
+C  100  if(p.le.0.) print *, "BA FPGRRE 6"
+C       if(p.le.0.) go to 120
 c  calculate the non-zero elements of the matrix (bx).
-      if(ifbx.ne.0 .or. nx.eq.2*kx1) print *, "BA FPGRRE 7"
+C       if(ifbx.ne.0 .or. nx.eq.2*kx1) print *, "BA FPGRRE 7"
       if(ifbx.ne.0 .or. nx.eq.2*kx1) go to 110
       call fpdisc(tx,nx,kx2,bx,nx)
       ifbx = 1
 c  calculate the non-zero elements of the matrix (by).
- 110  if(ifby.ne.0 .or. ny.eq.2*ky1) print *, "BA FPGRRE 8"
-      if(ifby.ne.0 .or. ny.eq.2*ky1) go to 120
+ 110  if(ifby.ne.0 .or. ny.eq.2*ky1) go to 120
+C  110  if(ifby.ne.0 .or. ny.eq.2*ky1) print *, "BA FPGRRE 8"
+C       if(ifby.ne.0 .or. ny.eq.2*ky1) go to 120
       call fpdisc(ty,ny,ky2,by,ny)
       ifby = 1
 c  reduce the matrix (ax) to upper triangular form (rx) using givens
@@ -183,9 +186,10 @@ c  ibandx denotes the bandwidth of the matrices (ax) and (rx).
       ibandx = kx1
       do 270 it=1,mx
         number = nrx(it)
- 150    if(nrold.eq.number) print *, "BA FPGRRE 9"
-        if(nrold.eq.number) go to 180
-        if(p.le.0.) print *, "BA FPGRRE 10"
+ 150    if(nrold.eq.number) go to 180
+C  150    if(nrold.eq.number) print *, "BA FPGRRE 9"
+C         if(nrold.eq.number) go to 180
+C         if(p.le.0.) print *, "BA FPGRRE 10"
         if(p.le.0.) go to 260
         ibandx = kx2
 c  fetch a new row of matrix (bx).
@@ -214,7 +218,7 @@ c  rotate the new row of matrix (ax) into triangle.
  210    do 240 i=1,ibandx
           irot = irot+1
           piv = h(i)
-          if(piv.eq.0.) print *, "BA FPGRRE 11"
+C           if(piv.eq.0.) print *, "BA FPGRRE 11"
           if(piv.eq.0.) go to 240
 c  calculate the parameters of the givens transformation.
           call fpgivs(piv,ax(irot,1),cos,sin)
@@ -225,7 +229,7 @@ c  apply that transformation to the rows of matrix q.
             call fprota(cos,sin,right(j),q(iq))
  220      continue
 c  apply that transformation to the columns of (ax).
-          if(i.eq.ibandx) print *, "BA FPGRRE 12"
+C           if(i.eq.ibandx) print *, "BA FPGRRE 12"
           if(i.eq.ibandx) go to 250
           i2 = 1
           i3 = i+1
@@ -234,8 +238,9 @@ c  apply that transformation to the columns of (ax).
             call fprota(cos,sin,h(j),ax(irot,i2))
  230      continue
  240    continue
- 250    if(nrold.eq.number) print *, "BA FPGRRE 13"
-        if(nrold.eq.number) go to 270
+ 250    if(nrold.eq.number) go to 270
+C  250    if(nrold.eq.number) print *, "BA FPGRRE 13"
+C         if(nrold.eq.number) go to 270
  260    nrold = nrold+1
         go to 150
  270  continue
@@ -257,11 +262,12 @@ c  ibandy denotes the bandwidth of the matrices (ay) and (ry).
       ibandy = ky1
       do 420 it=1,my
         number = nry(it)
-        print *, "Number = ", number
-        print *, "nrold = ", nrold
- 300    if(nrold.eq.number) print *, "BA FPGRRE 14"
+C         print *, "Number = ", number
+C         print *, "nrold = ", nrold
+ 300    if(nrold.eq.number) go to 330
+C  300    if(nrold.eq.number) print *, "BA FPGRRE 14"
         if(nrold.eq.number) go to 330
-        if(p.le.0.) print *, "BA FPGRRE 15"
+C         if(p.le.0.) print *, "BA FPGRRE 15"
         if(p.le.0.) go to 410
         ibandy = ky2
 c  fetch a new row of matrix (by).
@@ -291,7 +297,7 @@ c  rotate the new row of matrix (ay) into triangle.
  360    do 390 i=1,ibandy
           irot = irot+1
           piv = h(i)
-          if(piv.eq.0.) print *, "BA FPGRRE 16"
+C           if(piv.eq.0.) print *, "BA FPGRRE 16"
           if(piv.eq.0.) go to 390
 c  calculate the parameters of the givens transformation.
           call fpgivs(piv,ay(irot,1),cos,sin)
@@ -302,7 +308,7 @@ c  apply that transformation to the colums of matrix g.
             ic = ic+nk1y
  370      continue
 c  apply that transformation to the columns of matrix (ay).
-          if(i.eq.ibandy) print *, "BA FPGRRE 17"
+C           if(i.eq.ibandy) print *, "BA FPGRRE 17"
           if(i.eq.ibandy) go to 400
           i2 = 1
           i3 = i+1
@@ -311,8 +317,9 @@ c  apply that transformation to the columns of matrix (ay).
             call fprota(cos,sin,h(j),ay(irot,i2))
  380      continue
  390    continue
- 400    if(nrold.eq.number) print *, "BA FPGRRE 18"
-        if(nrold.eq.number) go to 420
+ 400    if(nrold.eq.number) go to 420
+C  400    if(nrold.eq.number) print *, "BA FPGRRE 18"
+C         if(nrold.eq.number) go to 420
  410    nrold = nrold+1
         go to 300
  420  continue
@@ -321,8 +328,8 @@ c  solution of the linear system    (ry) c (rx)' = h.
 c  first step: solve the system  (ry) (c1) = h.
       k = 1
       do 450 i=1,nk1x
-        print *, "Calling fpback"
-        print *, "c(k)", c(k)
+C         print *, "Calling fpback"
+C         print *, "c(k)", c(k)
         call fpback(ay,c(k),nk1y,ibandy,c(k),ny)
         k = k+nk1y
  450  continue
@@ -389,12 +396,12 @@ c  adjust the different parameters.
           fpx(numx1) = fpx(numx1)+term
           fpy(numy1) = fpy(numy1)+term
           fac = term*half
-          if(numy.eq.nroldy) print *, "BA FPGRRE 19"
+C           if(numy.eq.nroldy) print *, "BA FPGRRE 19"
           if(numy.eq.nroldy) go to 530
           fpy(numy1) = fpy(numy1)-fac
           fpy(numy) = fpy(numy)+fac
  530      nroldy = numy
-          if(numx.eq.nroldx) print *, "BA FPGRRE 20"
+C           if(numx.eq.nroldx) print *, "BA FPGRRE 20"
           if(numx.eq.nroldx) go to 540
           fpx(numx1) = fpx(numx1)-fac
           fpx(numx) = fpx(numx)+fac

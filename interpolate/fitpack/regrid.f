@@ -386,9 +386,9 @@ C       print *, "tol         = tol        = ", tol
 C       print *, "maxit       = maxit      = ", maxit
 C       print *, "nc          = nc         = ", nc
 C       print *, "nx          = nx         = ", nx
-      print *, "tx          = tx         = ", tx
+C       print *, "tx          = tx         = ", tx
 C       print *, "ny          = ny         = ", ny
-      print *, "ty          = ty         = ", ty
+C       print *, "ty          = ty         = ", ty
 C       print *, "C           = c          = ", c
 C       print *, "fp          = fp         = ", fp
 C       print *, "fp0         = wrk(1)     = ", wrk(1)

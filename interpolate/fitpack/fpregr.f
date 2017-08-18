@@ -24,7 +24,7 @@ c  ..subroutine references..
 c    fpgrre,fpknot
 c  ..
       print *, "fpregr called"
-      print *, "fpreger tx = ", tx
+C       print *, "fpreger tx = ", tx
 c   set constants
       one = 1
       half = 0.5e0
@@ -102,12 +102,17 @@ C       print *, "kx", kx, "k3", k3
 C  Checks to see whether kx is even or odd. We always use kx = ky = 3
       if(k3*2.eq.kx) print *, "BA FPREGR 5"
       if(k3*2.eq.kx) go to 40
+      
+  19  format (' ',A20,9(f6.2))
+C       print 19, "Before loop 30 tx = ", tx
       do 30 l=1,mk1
         tx(i) = x(j)
         i = i+1
         j = j+1
   30  continue
+C       print 19, "After loop 30 tx = ", tx
       go to 60
+
   40  do 50 l=1,mk1
         tx(i) = (x(j)+x(j-1))*half
         i = i+1
@@ -122,11 +127,13 @@ c  the knots in the y-direction.
       j = k3+2
       if(k3*2.eq.ky) print *, "BA FPREGR 7"
       if(k3*2.eq.ky) go to 80
+C       print 19, "Before loop 70 ty = ", ty
       do 70 l=1,mk1
         ty(i) = y(j)
         i = i+1
         j = j+1
   70  continue
+C       print 19, "After loop 70 ty = ", ty
       go to 120
   80  do 90 l=1,mk1
         ty(i) = (y(j)+y(j-1))*half
@@ -209,24 +216,30 @@ c  of knots.
 c  find the position of the additional knots which are needed for the
 c  b-spline representation of s(x,y).
         i = nx
+C         print 19, "Before loop 130 tx = ", tx
         do 130 j=1,kx1
           tx(j) = xb
           tx(i) = xe
           i = i-1
  130    continue
+C         print 19, "After loop 130 tx = ", tx
+C         print 19, "Before loop 140 ty = ", ty
         i = ny
         do 140 j=1,ky1
           ty(j) = yb
           ty(i) = ye
           i = i-1
  140    continue
+C         print 19, "After loop 140 ty = ", ty
 c  find the least-squares spline sinf(x,y) and calculate for each knot
 c  interval tx(j+kx)<=x<=tx(j+kx+1) (ty(j+ky)<=y<=ty(j+ky+1)) the sum
 c  of squared residuals fpintx(j),j=1,2,...,nx-2*kx-1 (fpinty(j),j=1,2,
 c  ...,ny-2*ky-1) for the data points having their absciss (ordinate)-
 c  value belonging to that interval.
 c  fp gives the total sum of squared residuals.
-
+        
+C         print 19, "fpgrre given tx = ", tx
+C         print 19, "fpgrre given ty = ", ty
         call fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,
      *  ny,p,c,nc,fp,fpintx,fpinty,mm,mynx,kx1,kx2,ky1,ky2,wrk(lsx),
      *  wrk(lsy),wrk(lri),wrk(lq),wrk(lax),wrk(lay),wrk(lbx),wrk(lby),
@@ -242,9 +255,11 @@ c  test whether the least-squares spline is an acceptable solution.
 c  if f(p=inf) < s, we accept the choice of knots.
         if(fpms.lt.0.) print *, "BA FPREGR 16"
         if(fpms.lt.0.) go to 300
+C  This is always called - exit after one iteration
 c  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
         if(nx.eq.nmaxx .and. ny.eq.nmaxy) print *, "BA FPREGR 17"
         if(nx.eq.nmaxx .and. ny.eq.nmaxy) go to 430
+C         print *, "*****************ALERT****************************"
 c  increase the number of knots.
 c  if nx=nxe and ny=nye we cannot further increase the number of knots
 c  because of the storage capacity limitation.
@@ -409,7 +424,8 @@ c  error codes and messages.
       go to 440
  420  ier = 1
       go to 440
- 430  ier = -1
+ 430  print *, "Exiting FPREGR on GOTO 430"
+      ier = -1
       fp = 0.
  440  return
       end
