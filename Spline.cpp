@@ -562,7 +562,7 @@ void fpgrre(
   for(int j=1; j <= nk1y; ++j){
     k += 1;
     l = k;
-    std::cout << "l=" << l << std::endl;
+    std::cout << "l @1 =" << l << std::endl;
     for(int i=1; i <= nk1x; ++i){
       right[i-1] = C[l-1];
       // std::cout << "right(i)" << right[i-1] << std::endl;
@@ -570,9 +570,13 @@ void fpgrre(
     }
 
     fpback(ax,right,nk1x,ibandx,right,nx);
+    std::cout << "right = " << right << std::endl;
+
     l = k;
     for(int i = 1; i <= nk1x; ++i){
-      C[l-1] = right[i];
+      std::cout << "l @2 = " << l << std::endl;
+      C[l-1] = right[i-1];
+      std::cout << "c(l) = " << C[l-1] << std::endl;
       l += nk1y;
     }
   }

@@ -376,16 +376,19 @@ c  second step: solve the system  c (rx)' = (c1).
       do 480 j=1,nk1y
         k = k+1
         l = k
-        print *, "l = ", l
+        print *, "l @1 = ", l
         do 460 i=1,nk1x
           right(i) = c(l)
 C           print *, 'right(i)', right(i)
           l = l+nk1y
  460    continue
         call fpback(ax,right,nk1x,ibandx,right,nx)
+        print *, "right = ", right
         l = k
         do 470 i=1,nk1x
+          print *, "l @2 = ", l
           c(l) = right(i)
+          print *, "c(l)=", c(l)
           l = l+nk1y
  470    continue
  480  continue
