@@ -388,11 +388,9 @@ c  second step: solve the system  c (rx)' = (c1).
  470    continue
  480  continue
 
-      do 277 i=1,25
-          print *, i, c(i)
-  277 continue
-
-      stop
+C       do 277 i=1,25
+C           print *, i, c(i)
+C   277 continue
 
 
 c  calculate the quantities
@@ -454,6 +452,10 @@ C           if(numx.eq.nroldx) print *, "BA FPGRRE 20"
  540    continue
         nroldx = numx
  550  continue
+      print *, "fp = ", fp
+      print *, "fpx = ", fpx
+      print *, "fpy = ", fpy
+
       return
       end
 

@@ -639,9 +639,18 @@ void fpgrre(
       }
     }
     // 540    continue
+   
     nroldx = numx;
   }
   // 550  continue
+
+  std::cout << "fp = " << fp << std::endl;
+  std::cout << "fpx = " << fpx << std::endl;
+  std::cout << "fpy = " << fpy << std::endl;
+
+
+
+  
 };
 
 int fpregr(int iopt,
