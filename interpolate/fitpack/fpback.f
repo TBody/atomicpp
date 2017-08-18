@@ -12,16 +12,19 @@ c  ..local scalars..
       integer i,i1,j,k1,l,m
 c  ..
 C       print *, "fpback called"
-C       print *, "n:", n
-C       print *, "In fpback: ", z
+
       k1 = k-1
       c(n) = z(n)/a(n,1)
+
       i = n-1
       if(i.eq.0) go to 30
       do 20 j=2,n
         store = z(i)
+
         i1 = k1
+
         if(j.le.k1) i1 = j-1
+
         m = i
         do 10 l=1,i1
           m = m+1

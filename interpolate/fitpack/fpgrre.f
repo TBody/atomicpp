@@ -202,15 +202,6 @@ c  initialization.
 c  ibandx denotes the bandwidth of the matrices (ax) and (rx).
       ibandx = kx1
 
-
-
-
-
-
-
-
-
-
       do 270 it=1,mx
         number = nrx(it)
   150   if(nrold.eq.number) go to 180
@@ -231,9 +222,17 @@ c  find the appropriate column of q.
  200    continue
         irot = number
 c  rotate the new row of matrix (ax) into triangle.
+C         print *, "h = ", h
  210    do 240 i=1,ibandx
+          
           irot = irot+1
           piv = h(i)
+C           print *, ""
+C           print *, "piv", piv
+C           print *, "ax(irot,1)", ax(irot,1)
+C           print *, "cos", cos
+C           print *, "sin", sin
+
 C           if(piv.eq.0.) print *, "BA FPGRRE 11"
           if(piv.eq.0.) go to 240
 c  calculate the parameters of the given transformation.
@@ -261,17 +260,17 @@ C  260    nrold = nrold+1
         go to 150
  270  continue
 
-  19  format (' ',A6,7(f6.2))
-  18  format (' ',A6,9(f6.2))
-  17  format (' ',A6,45(f6.2))
-      print 19, "h", h
-      print 18, "right", right
-      print 17, "ax", ax
+C   19  format (' ',A6,7(f6.2))
+C   18  format (' ',A6,9(f6.2))
+C   17  format (' ',A6,45(f6.2))
+C       print 19, "h", h
+C       print 18, "right", right
+C       do 275 i=1,9
+C         do 276 j=1,5
+C           print *, i, j, ax(i,j)
+C   276   continue
+C   275 continue
 C       stop
-
-
-
-
 
 c  reduce the matrix (ay) to upper triangular form (ry) using givens
 c  rotations. apply the same transformations to the columns of matrix g
@@ -282,34 +281,26 @@ c  initialization.
       do 280 i=1,ncof
         c(i) = 0.
  280  continue
+
       do 290 i=1,nk1y
         do 290 j=1,ky2
           ay(i,j) = 0.
  290  continue
+
+      
+
       nrold = 0
 c  ibandy denotes the bandwidth of the matrices (ay) and (ry).
       ibandy = ky1
+
       do 420 it=1,my
         number = nry(it)
 C         print *, "Number = ", number
 C         print *, "nrold = ", nrold
- 300    if(nrold.eq.number) go to 330
+C         nrold = number
+C  300    if(nrold.eq.number) go to 330
 C  300    if(nrold.eq.number) print *, "BA FPGRRE 14"
-        if(nrold.eq.number) go to 330
-C         if(p.le.0.) print *, "BA FPGRRE 15"
-        if(p.le.0.) go to 410
-        ibandy = ky2
-c  fetch a new row of matrix (by).
-        n1 = nrold+1
-        do 310 j=1,ky2
-          h(j) = by(n1,j)*pinv
- 310    continue
-c  find the appropiate row of g.
-        do 320 j=1,nk1x
-          right(j) = 0.
- 320    continue
-        irot = nrold
-        go to 360
+
 c  fetch a new row of matrix (spy)
  330    h(ibandy) = 0.
         do 340 j=1,ky1
@@ -349,26 +340,46 @@ C           if(i.eq.ibandy) print *, "BA FPGRRE 17"
  400    if(nrold.eq.number) go to 420
 C  400    if(nrold.eq.number) print *, "BA FPGRRE 18"
 C         if(nrold.eq.number) go to 420
- 410    nrold = nrold+1
-        go to 300
+C  410    nrold = nrold+1
+C         go to 300
  420  continue
+
+C   29  format (' ',A6,7(f6.2))
+C   28  format (' ',A6,9(f6.2))
+C       print 29, "h", h
+C       print 28, "right", right
+C       do 275 i=1,9
+C         do 276 j=1,5
+C           print *, i, j, ay(i,j)
+C   276   continue
+C   275 continue
+C       stop
+
+
+
+
+
+
 c  backward substitution to obtain the b-spline coefficients as the
 c  solution of the linear system    (ry) c (rx)' = h.
 c  first step: solve the system  (ry) (c1) = h.
       k = 1
       do 450 i=1,nk1x
-C         print *, "Calling fpback"
-C         print *, "c(k)", c(k)
         call fpback(ay,c(k),nk1y,ibandy,c(k),ny)
         k = k+nk1y
  450  continue
+
+C UP TO HERE!!!
+
 c  second step: solve the system  c (rx)' = (c1).
       k = 0
       do 480 j=1,nk1y
         k = k+1
         l = k
+        print *, "l = ", l
         do 460 i=1,nk1x
           right(i) = c(l)
+C           print *, 'right(i)', right(i)
           l = l+nk1y
  460    continue
         call fpback(ax,right,nk1x,ibandx,right,nx)
@@ -378,6 +389,14 @@ c  second step: solve the system  c (rx)' = (c1).
           l = l+nk1y
  470    continue
  480  continue
+
+      do 277 i=1,25
+          print *, i, c(i)
+  277 continue
+
+      stop
+
+
 c  calculate the quantities
 c    res(i,j) = (z(i,j) - s(x(i),y(j)))**2 , i=1,2,..,mx;j=1,2,..,my
 c    fp = sumi=1,mx(sumj=1,my(res(i,j)))

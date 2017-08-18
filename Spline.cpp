@@ -58,26 +58,64 @@ void fpgivs(const double piv, double& ww, double& cos, double& sin){
   // std::cout << "sin = " << sin << std::endl;
 };
 
-void fpback(std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest){
-  int k1 = k-1;
-  C[n] = z[n]/a[n][0];
-  int i = n-1;
+void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int z_start, const int n, const int k, std::vector<double>& C, const int c_start, const int nest){
+  // Switch from Fortran to C++ indexing
+  // Supply start as '1' to not apply a shift
+  int z_shifted = z_start - 1;
+  int c_shifted = c_start - 1;
 
+  // std::cout << "fpback called" << std::endl;
+
+  int k1 = k-1;
+  C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
+  
+  int i = n-1;
   double store;
 
+  if(i!=0){
+    for(int j=2; j <= n; ++j){
+      store = z[z_shifted + i-1];
+      int i1 = k1;
+
+      if(j <= k1){
+        i1 = j-1;
+      }
+      int m = i;
+      for(int l=1; l <= i1; ++l){
+        m = m+1;
+        store = store - C[c_shifted + m-1]*a[i-1][l+1-1];
+      }
+      C[c_shifted + i-1] = store/a[i-1][0];
+      i -= 1;
+    }
+  }
+};
+void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int n, const int k, std::vector<double>& C, const int nest){
+  //No shift version of fpback - overloaded
+
+  // std::cout << "fpback called" << std::endl;
+
+  int k1 = k-1;
+  C[n-1] = z[n-1]/a[n-1][0];
+  
+  int i = n-1;
+  double store;
 
   if(i!=0){
-    for(int j=1; j< n; ++j){
-      store = z[i];
+    for(int j=2; j <= n; ++j){
+      store = z[i-1];
       int i1 = k1;
-      if(j<=k1){i1 = j-1;}
-        int m = i;
-        for(int l=0; l<i1; ++l){
-          m = m+1;
-          store = store-C[m]*a[i][l+1];
-        }
-      C[i] = store/a[i][0];
-      i = i-1;
+
+      if(j <= k1){
+        i1 = j-1;
+      }
+      int m = i;
+      for(int l=1; l <= i1; ++l){
+        m = m+1;
+        store = store - C[m-1]*a[i-1][l+1-1];
+      }
+      C[i-1] = store/a[i-1][0];
+      i -= 1;
     }
   }
 };
@@ -134,44 +172,44 @@ void fpbspl(const std::vector<double>& t,const int n, const int k, const double 
 };
 
 void fpgrre(
-  int ifsx,
-  int ifsy,
-  int ifbx,
-  int ifby,
-  std::vector<double> x,
-  int mx,
-  std::vector<double> y,
-  int my,
-  std::vector<double> z,
-  int mz,
-  int kx,
-  int ky,
-  std::vector<double> tx,
-  int nx,
-  std::vector<double> ty,
-  int ny,
-  double p,
-  std::vector<double> C,
-  int nc,
-  double fp,
-  std::vector<double> fpx,
-  std::vector<double> fpy,
-  int mm,
-  int mynx,
-  int kx1,
-  int kx2,
-  int ky1,
-  int ky2,
-  std::vector<std::vector<double>> spx,
-  std::vector<std::vector<double>> spy,
-  std::vector<double> right,
-  std::vector<double> q,
-  std::vector<std::vector<double>> ax,
-  std::vector<std::vector<double>> ay,
-  std::vector<std::vector<double>> bx,
-  std::vector<std::vector<double>> by,
-  std::vector<int> nrx,
-  std::vector<int> nry
+    int ifsx,
+    int ifsy,
+    int ifbx,
+    int ifby,
+    std::vector<double> x,
+    int mx,
+    std::vector<double> y,
+    int my,
+    std::vector<double> z,
+    int mz,
+    int kx,
+    int ky,
+    std::vector<double> tx,
+    int nx,
+    std::vector<double> ty,
+    int ny,
+    double p,
+    std::vector<double> C,
+    int nc,
+    double fp,
+    std::vector<double> fpx,
+    std::vector<double> fpy,
+    int mm,
+    int mynx,
+    int kx1,
+    int kx2,
+    int ky1,
+    int ky2,
+    std::vector<std::vector<double>> spx,
+    std::vector<std::vector<double>> spy,
+    std::vector<double> right,
+    std::vector<double> q,
+    std::vector<std::vector<double>> ax,
+    std::vector<std::vector<double>> ay,
+    std::vector<std::vector<double>> bx,
+    std::vector<std::vector<double>> by,
+    std::vector<int> nrx,
+    std::vector<int> nry
   ){
   //  ..subroutine references..
   //    fpback,fpbspl,fpgivs,fpdisc,fprota
@@ -198,412 +236,363 @@ void fpgrre(
   //                matrices which contain the discontinuity jumps of the
   //                derivatives of the b-splines in the x- and y-direction.
 
-  std::cout << "fpgrre called" <<std::endl;
-  std::vector<double> h(7, 0.0);
+  //Verified
+    std::cout << "fpgrre called" <<std::endl;
+    std::vector<double> h(7, 0.0);
 
-  // std::cout << "scalar_arguments=" << std::endl;
-  // std::cout << "p="                << p          << std::endl;
-  // std::cout << "fp="               << fp         << std::endl;
-  // std::cout << "ifsx="             << ifsx       << std::endl;
-  // std::cout << "ifsy="             << ifsy       << std::endl;
-  // std::cout << "ifbx="             << ifbx       << std::endl;
-  // std::cout << "ifby="             << ifby       << std::endl;
-  // std::cout << "mx="               << mx         << std::endl;
-  // std::cout << "my="               << my         << std::endl;
-  // std::cout << "mz="               << mz         << std::endl;
-  // std::cout << "kx="               << kx         << std::endl;
-  // std::cout << "ky="               << ky         << std::endl;
-  // std::cout << "nx="               << nx         << std::endl;
-  // std::cout << "ny="               << ny         << std::endl;
-  // std::cout << "nc="               << nc         << std::endl;
-  // std::cout << "mm="               << mm         << std::endl;
-  // std::cout << "mynx="             << mynx       << std::endl;
-  // std::cout << "kx1="              << kx1        << std::endl;
-  // std::cout << "kx2="              << kx2        << std::endl;
-  // std::cout << "ky1="              << ky1        << std::endl;
-  // std::cout << "ky2="              << ky2        << std::endl;
-  // std::cout << "array_arguments="  << std::endl;
-  // std::cout << "x(mx)="            << x          << std::endl;
-  // std::cout << "y(my)="            << y          << std::endl;
-  // std::cout << "z(mz)="            << z          << std::endl;
-  // std::cout << "tx(nx)="           << tx         << std::endl;
-  // std::cout << "ty(ny)="           << ty         << std::endl;
-  // std::cout << "C(nc)="            << C          << std::endl;
-  // std::cout << "spx(mx,kx1)="      << spx        << std::endl;
-  // std::cout << "spy(my,ky1)="      << spy        << std::endl;
-  // std::cout << "right(mm)="        << right      << std::endl;
-  // std::cout << "q(mynx)="          << q          << std::endl;
-  // std::cout << "ax(nx,kx2)="       << ax         << std::endl;
-  // std::cout << "bx(nx,kx2)="       << bx         << std::endl;
-  // std::cout << "ay(ny,ky2)="       << ay         << std::endl;
-  // std::cout << "by(ny,ky2)="       << by         << std::endl;
-  // std::cout << "fpx(nx)="          << fpx        << std::endl;
-  // std::cout << "fpy(ny)="          << fpy        << std::endl;
-  // std::cout << "nrx(mx)="          << nrx        << std::endl;
-  // std::cout << "nry(my)="          << nry        << std::endl;
-  // std::cout << "local_scalars="    << std::endl;
-  // std::cout << "arg="              << arg        << std::endl;
-  // std::cout << "cos="              << cos        << std::endl;
-  // std::cout << "fac="              << fac        << std::endl;
-  // std::cout << "pinv="             << pinv       << std::endl;
-  // std::cout << "piv="              << piv        << std::endl;
-  // std::cout << "sin="              << sin        << std::endl;
-  // std::cout << "term="             << term       << std::endl;
-  // std::cout << "one="              << one        << std::endl;
-  // std::cout << "half="             << half       << std::endl;
-  // std::cout << "i="                << i          << std::endl;
-  // std::cout << "ibandx="           << ibandx     << std::endl;
-  // std::cout << "ibandy="           << ibandy     << std::endl;
-  // std::cout << "ic="               << ic         << std::endl;
-  // std::cout << "iq="               << iq         << std::endl;
-  // std::cout << "irot="             << irot       << std::endl;
-  // std::cout << "it="               << it         << std::endl;
-  // std::cout << "iz="               << iz         << std::endl;
-  // std::cout << "i1="               << i1         << std::endl;
-  // std::cout << "i2="               << i2         << std::endl;
-  // std::cout << "i3="               << i3         << std::endl;
-  // std::cout << "j="                << j          << std::endl;
-  // std::cout << "k="                << k          << std::endl;
-  // std::cout << "k1="               << k1         << std::endl;
-  // std::cout << "k2="               << k2         << std::endl;
-  // std::cout << "l="                << l          << std::endl;
-  // std::cout << "l1="               << l1         << std::endl;
-  // std::cout << "l2="               << l2         << std::endl;
-  // std::cout << "ncof="             << ncof       << std::endl;
-  // std::cout << "nk1x="             << nk1x       << std::endl;
-  // std::cout << "nk1y="             << nk1y       << std::endl;
-  // std::cout << "nrold="            << nrold      << std::endl;
-  // std::cout << "nroldx="           << nroldx     << std::endl;
-  // std::cout << "nroldy="           << nroldy     << std::endl;
-  // std::cout << "number="           << number     << std::endl;
-  // std::cout << "numx="             << numx       << std::endl;
-  // std::cout << "numx1="            << numx1      << std::endl;
-  // std::cout << "numy="             << numy       << std::endl;
-  // std::cout << "numy1="            << numy1      << std::endl;
-  // std::cout << "n1="               << n1         << std::endl;
-  // std::cout << "local_arrays="     << std::endl;
-  // std::cout << "h(7)="             << h          << std::endl;
+    // Print inspect
+      // std::cout << "scalar_arguments=" << std::endl;
+      // std::cout << "p="                << p          << std::endl;
+      // std::cout << "fp="               << fp         << std::endl;
+      // std::cout << "ifsx="             << ifsx       << std::endl;
+      // std::cout << "ifsy="             << ifsy       << std::endl;
+      // std::cout << "ifbx="             << ifbx       << std::endl;
+      // std::cout << "ifby="             << ifby       << std::endl;
+      // std::cout << "mx="               << mx         << std::endl;
+      // std::cout << "my="               << my         << std::endl;
+      // std::cout << "mz="               << mz         << std::endl;
+      // std::cout << "kx="               << kx         << std::endl;
+      // std::cout << "ky="               << ky         << std::endl;
+      // std::cout << "nx="               << nx         << std::endl;
+      // std::cout << "ny="               << ny         << std::endl;
+      // std::cout << "nc="               << nc         << std::endl;
+      // std::cout << "mm="               << mm         << std::endl;
+      // std::cout << "mynx="             << mynx       << std::endl;
+      // std::cout << "kx1="              << kx1        << std::endl;
+      // std::cout << "kx2="              << kx2        << std::endl;
+      // std::cout << "ky1="              << ky1        << std::endl;
+      // std::cout << "ky2="              << ky2        << std::endl;
+      // std::cout << "array_arguments="  << std::endl;
+      // std::cout << "x(mx)="            << x          << std::endl;
+      // std::cout << "y(my)="            << y          << std::endl;
+      // std::cout << "z(mz)="            << z          << std::endl;
+      // std::cout << "tx(nx)="           << tx         << std::endl;
+      // std::cout << "ty(ny)="           << ty         << std::endl;
+      // std::cout << "C(nc)="            << C          << std::endl;
+      // std::cout << "spx(mx,kx1)="      << spx        << std::endl;
+      // std::cout << "spy(my,ky1)="      << spy        << std::endl;
+      // std::cout << "right(mm)="        << right      << std::endl;
+      // std::cout << "q(mynx)="          << q          << std::endl;
+      // std::cout << "ax(nx,kx2)="       << ax         << std::endl;
+      // std::cout << "bx(nx,kx2)="       << bx         << std::endl;
+      // std::cout << "ay(ny,ky2)="       << ay         << std::endl;
+      // std::cout << "by(ny,ky2)="       << by         << std::endl;
+      // std::cout << "fpx(nx)="          << fpx        << std::endl;
+      // std::cout << "fpy(ny)="          << fpy        << std::endl;
+      // std::cout << "nrx(mx)="          << nrx        << std::endl;
+      // std::cout << "nry(my)="          << nry        << std::endl;
+      // std::cout << "local_scalars="    << std::endl;
+      // std::cout << "arg="              << arg        << std::endl;
+      // std::cout << "cos="              << cos        << std::endl;
+      // std::cout << "fac="              << fac        << std::endl;
+      // std::cout << "pinv="             << pinv       << std::endl;
+      // std::cout << "piv="              << piv        << std::endl;
+      // std::cout << "sin="              << sin        << std::endl;
+      // std::cout << "term="             << term       << std::endl;
+      // std::cout << "one="              << one        << std::endl;
+      // std::cout << "half="             << half       << std::endl;
+      // std::cout << "i="                << i          << std::endl;
+      // std::cout << "ibandx="           << ibandx     << std::endl;
+      // std::cout << "ibandy="           << ibandy     << std::endl;
+      // std::cout << "ic="               << ic         << std::endl;
+      // std::cout << "iq="               << iq         << std::endl;
+      // std::cout << "irot="             << irot       << std::endl;
+      // std::cout << "it="               << it         << std::endl;
+      // std::cout << "iz="               << iz         << std::endl;
+      // std::cout << "i1="               << i1         << std::endl;
+      // std::cout << "i2="               << i2         << std::endl;
+      // std::cout << "i3="               << i3         << std::endl;
+      // std::cout << "j="                << j          << std::endl;
+      // std::cout << "k="                << k          << std::endl;
+      // std::cout << "k1="               << k1         << std::endl;
+      // std::cout << "k2="               << k2         << std::endl;
+      // std::cout << "l="                << l          << std::endl;
+      // std::cout << "l1="               << l1         << std::endl;
+      // std::cout << "l2="               << l2         << std::endl;
+      // std::cout << "ncof="             << ncof       << std::endl;
+      // std::cout << "nk1x="             << nk1x       << std::endl;
+      // std::cout << "nk1y="             << nk1y       << std::endl;
+      // std::cout << "nrold="            << nrold      << std::endl;
+      // std::cout << "nroldx="           << nroldx     << std::endl;
+      // std::cout << "nroldy="           << nroldy     << std::endl;
+      // std::cout << "number="           << number     << std::endl;
+      // std::cout << "numx="             << numx       << std::endl;
+      // std::cout << "numx1="            << numx1      << std::endl;
+      // std::cout << "numy="             << numy       << std::endl;
+      // std::cout << "numy1="            << numy1      << std::endl;
+      // std::cout << "n1="               << n1         << std::endl;
+      // std::cout << "local_arrays="     << std::endl;
+      // std::cout << "h(7)="             << h          << std::endl;
 
-  // double 1 = 1;
-  double half = 0.5;
-  double nk1x = nx-kx1;
-  double nk1y = ny-ky1;
+    // double 1 = 1;
+    double half = 0.5;
+    double nk1x = nx-kx1;
+    double nk1y = ny-ky1;
 
-  double pinv = 0.0;
-  if(p > 0.){pinv = 1/p;}
-  //  calculate the non-zero elements of the matrix (spx) which is the
-  //  observation matrix according to the least-squares spline approximat-
-  //  ion problem in the x-direction.
-  int l = kx1;
-  int l1 = kx2;
-  int number = 0;
+    double pinv = 0.0;
+    if(p > 0.){pinv = 1/p;}
+    //  calculate the non-zero elements of the matrix (spx) which is the
+    //  observation matrix according to the least-squares spline approximat-
+    //  ion problem in the x-direction.
+    int l = kx1;
+    int l1 = kx2;
+    int number = 0;
 
-  for(int it = 1; it <= mx; ++it){
-    double arg = x[it-1];
+    for(int it = 1; it <= mx; ++it){
+      double arg = x[it-1];
 
-    while(not(arg<tx[l1-1] or l==nk1x)){
-      l = l1;
-      l1 = l+1;
-      number = number+1;
+      while(not(arg<tx[l1-1] or l==nk1x)){
+        l = l1;
+        l1 = l+1;
+        number = number+1;
+      }
+
+      fpbspl(tx,nx,kx,arg,l,h);
+      // std::cout << "Check" << h << std::endl;
+      for(int i=1; i <= kx1; ++i){
+        spx[it-1][i-1] = h[i-1];
+      }
+      nrx[it-1] = number;
+    }
+    // std::cout << "spx" << spx << std::endl;
+    // std::cout << "spx[1,3]" << spx[1][3] << std::endl;
+    // std::cout << "nrx" << nrx << std::endl;
+    // std::cout << "h" << h << std::endl;
+    // throw std::runtime_error("Stop");
+
+    ifsx = 1;
+    //  calculate the non-zero elements of the matrix (spy) which is the
+    //  observation matrix according to the least-squares spline approximat-
+    //  ion problem in the y-direction.
+    l = ky1;
+    l1 = ky2;
+    number = 0;
+
+    for(int it = 1; it <= my; ++it){
+      double arg = y[it-1];
+
+      while(not(arg<ty[l1-1] or l==nk1y)){
+        l = l1;
+        l1 = l+1;
+        number +=1;
+      }
+
+      fpbspl(ty,ny,ky,arg,l,h);
+      // std::cout << "Check" << h << std::endl;
+      for(int i=1; i <= ky1; ++i){
+        spy[it-1][i-1] = h[i-1];
+      }
+      nry[it-1] = number;
+    }
+    ifsy = 1;
+    
+    // std::cout << "spy" << spy << std::endl;
+    // std::cout << "spy[1,3]" << spy[1][3] << std::endl;
+    // std::cout << "nry" << nry << std::endl;
+    // std::cout << "h" << h << std::endl;
+    // throw std::runtime_error("Stop");
+
+    //  reduce the matrix (ax) to upper triangular form (rx) using givens
+    //  rotations. apply the same transformations to the rows of matrix q
+    //  to obtain the my x (nx-kx-1) matrix g.
+    //  store matrix (rx) into (ax) and g into q.
+    l = my*nk1x;
+    //  initialization.
+    for(int i = 1; i <= l; ++i){
+      q[i-1] = 0;
+    }
+    for(int i = 1; i <= nk1x; ++i){
+      for(int j = 1; i <= kx2; ++i){
+        ax[i-1][j-1] = 0;
+      }
     }
 
-    fpbspl(tx,nx,kx,arg,l,h);
-    // std::cout << "Check" << h << std::endl;
-    for(int i=1; i <= kx1; ++i){
-      spx[it-1][i-1] = h[i-1];
-    }
-    nrx[it-1] = number;
-  }
-  // std::cout << "spx" << spx << std::endl;
-  // std::cout << "spx[1,3]" << spx[1][3] << std::endl;
-  // std::cout << "nrx" << nrx << std::endl;
-  // std::cout << "h" << h << std::endl;
-  // throw std::runtime_error("Stop");
+    l = 0;
+    // int nrold = 0;
+    int ibandx = kx1;
+    //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
+    
+    for(int it = 1; it <= mx; ++it){
+      number = nrx[it-1];
+      // fetch a new row of matrix (spx).
+      h[ibandx-1] = 0.;
 
-  ifsx = 1;
-  //  calculate the non-zero elements of the matrix (spy) which is the
-  //  observation matrix according to the least-squares spline approximat-
-  //  ion problem in the y-direction.
-  l = ky1;
-  l1 = ky2;
-  number = 0;
+      for(int j = 1; j <= kx1; ++j){
+        h[j-1] = spx[it-1][j-1];
+      }
 
-  for(int it = 1; it <= my; ++it){
-    double arg = y[it-1];
+      // find the appropriate column of q.
+      for(int j = 1; j <= my; ++j){
+        l += 1;
+        right[j-1] = z[l-1];
+      }
 
-    while(not(arg<ty[l1-1] or l==nk1y)){
-      l = l1;
-      l1 = l+1;
-      number +=1;
-    }
+      // std::cout << "\nh = " << h << std::endl;
 
-    fpbspl(ty,ny,ky,arg,l,h);
-    // std::cout << "Check" << h << std::endl;
-    for(int i=1; i <= ky1; ++i){
-      spy[it-1][i-1] = h[i-1];
-    }
-    nry[it-1] = number;
-  }
-  ifsy = 1;
-  
-  // std::cout << "spy" << spy << std::endl;
-  // std::cout << "spy[1,3]" << spy[1][3] << std::endl;
-  // std::cout << "nry" << nry << std::endl;
-  // std::cout << "h" << h << std::endl;
-  // throw std::runtime_error("Stop");
-
-  //  reduce the matrix (ax) to upper triangular form (rx) using givens
-  //  rotations. apply the same transformations to the rows of matrix q
-  //  to obtain the my x (nx-kx-1) matrix g.
-  //  store matrix (rx) into (ax) and g into q.
-  l = my*nk1x;
-  //  initialization.
-  for(int i = 1; i <= l; ++i){
-    q[i-1] = 0;
-  }
-  for(int i = 1; i <= nk1x; ++i){
-    for(int j = 1; i <= kx2; ++i){
-      ax[i-1][j-1] = 0;
-    }
-  }
-
-  l = 0;
-  // int nrold = 0;
-  int ibandx = kx1;
-  //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
-  
-  for(int it = 1; it <= mx; ++it){
-    number = nrx[it-1];
-    // fetch a new row of matrix (spx).
-    h[ibandx-1] = 0.;
-
-    for(int j = 1; j <= kx1; ++j){
-      h[j-1] = spx[it-1][j-1];
-    }
-
-    // find the appropriate column of q.
-    for(int j = 1; j <= my; ++j){
-      l += 1;
-      right[j-1] = z[l-1];
-    }
-
-    int irot = number;
-    // rotate the new row of matrix (ax) into triangle.
-    for(int i = 1; i <= ibandx; ++i){
-      irot += 1;
-      double piv = h[i];
-      if(piv == 0){continue;}
+      int irot = number;
+      // rotate the new row of matrix (ax) into triangle.
       double sin = 0.0;
       double cos = 0.0;
-      //calculate the parameters of the given transformation.
-      fpgivs(piv, ax[irot-1][1-1], cos, sin);
-      //apply that transformation to the rows of matrix q.
-      int iq = (irot - 1) * my;
-      for(int j = 1; j <= my; ++j){
-        iq += 1;
-        fprota(cos, sin, right[j-1], q[iq-1]);
+      for(int i = 1; i <= ibandx; ++i){
+        irot += 1;
+        double piv = h[i-1];
+        // std::cout << "\npiv = " << piv << std::endl;
+        // std::cout << "ax(irot,1) = " << ax[irot-1][1-1] << std::endl;
+        // std::cout << "cos = " << cos << std::endl;
+        // std::cout << "sin = " << sin << std::endl;
+
+        if(piv == 0){continue;}
+        //calculate the parameters of the given transformation.
+        fpgivs(piv, ax[irot-1][1-1], cos, sin);
+        //apply that transformation to the rows of matrix q.
+        int iq = (irot - 1) * my;
+        for(int j = 1; j <= my; ++j){
+          iq += 1;
+          fprota(cos, sin, right[j-1], q[iq-1]);
+        }
+        //apply that transformation to the columns of (ax).
+        if(i == ibandx){break;} //Break out of inner loop, continue on outer loop
+        int i2 = 1;
+        int i3 = i+1;
+        for(int j = i3; j <= ibandx; ++j){
+          i2 += 1;
+          fprota(cos, sin, h[j-1], ax[irot-1][i2-1]);
+        }
       }
-      //apply that transformation to the columns of (ax).
-      if(i == ibandx){break;} //Break out of inner loop, continue on outer loop
-      int i2 = 1;
-      int i3 = i+1;
-      for(int j = i3; j <= ibandx; ++j){
-        i2 += 1;
-        fprota(cos, sin, h[j-1], ax[irot-1][i2-1]);
+    }
+
+    // std::cout << "h =" << h << std::endl;
+    // std::cout << "right = " <<right << std::endl;
+    // // std::cout << "piv = " << piv << std::endl;
+    // for(int i=0; i<9; ++i){
+    //   for(int j=0; j<5; ++j){
+    //     std::cout << i+1 << " " << j+1 << " " << ax[i][j] << std::endl;
+    //   }
+    // }
+    // throw std::runtime_error("Stop");
+
+
+    // !  reduce the matrix (ay) to upper triangular form (ry) using givens
+    // !  rotations. apply the same transformations to the columns of matrix g
+    // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
+    // !  store matrix (ry) into (ay) and h into C.
+    int ncof = nk1x * nk1y;
+    // !  initialization.
+
+    for(int i = 1; i<= ncof; ++i){
+      C[i-1] = 0;
+    }
+
+    for(int i=1; i<=nk1y; ++i){
+      for(int j=1; j<=nk1x; ++j){
+        ay[i-1][j-1] = 0;
       }
+    }
+
+    int ibandy = ky1;
+
+    for(int it = 1; it <= my; ++it){
+      number = nry[it-1];
+      // fetch a new row of matrix (spx).
+      h[ibandy-1] = 0.;
+
+      for(int j = 1; j <= ky1; ++j){
+        h[j-1] = spy[it-1][j-1];
+      }
+
+      l = it;
+      // find the appropriate column of q.
+      for(int j = 1; j <= nk1x; ++j){
+        right[j-1] = q[l-1];
+        l += my;
+      }
+
+      // std::cout << "\nh = " << h << std::endl;
+
+      int irot = number;
+      // rotate the new row of matrix (ay) into triangle.
+      double sin = 0.0;
+      double cos = 0.0;
+      for(int i = 1; i <= ibandy; ++i){
+        irot += 1;
+        double piv = h[i-1];
+        // std::cout << "\npiv = " << piv << std::endl;
+        // std::cout << "ay(irot,1) = " << ay[irot-1][1-1] << std::endl;
+        // std::cout << "cos = " << cos << std::endl;
+        // std::cout << "sin = " << sin << std::endl;
+
+        if(piv == 0){continue;}
+        //calculate the parameters of the given transformation.
+        fpgivs(piv, ay[irot-1][1-1], cos, sin);
+        //apply that transformation to the rows of matrix q.
+        int ic = irot;
+        for(int j = 1; j <= nk1x; ++j){
+          fprota(cos, sin, right[j-1], C[ic-1]);
+          ic += nk1y;
+        }
+        //apply that transformation to the columns of (ay).
+        if(i == ibandy){break;} //Break out of inner loop, continue on outer loop
+        int i2 = 1;
+        int i3 = i+1;
+        for(int j = i3; j <= ibandy; ++j){
+          i2 += 1;
+          fprota(cos, sin, h[j-1], ay[irot-1][i2-1]);
+        }
+      }
+    }
+
+    // std::cout << "h =" << h << std::endl;
+    // std::cout << "right = " <<right << std::endl;
+    // // std::cout << "piv = " << piv << std::endl;
+    // for(int i=0; i<9; ++i){
+    //   for(int j=0; j<5; ++j){
+    //     std::cout << i+1 << " " << j+1 << " " << ay[i][j] << std::endl;
+    //   }
+    // }
+    // throw std::runtime_error("Stop");
+
+
+  int k = 1;
+  for(int i=1; i <= nk1x; ++i){
+    fpback(ay,C,k,nk1y,ibandy,C,k,ny);
+    k = k + nk1y;
+  }
+
+  k = 0;
+  for(int j=1; j <= nk1y; ++j){
+    k += 1;
+    l = k;
+    std::cout << "l=" << l << std::endl;
+    for(int i=1; i <= nk1x; ++i){
+      right[i-1] = C[l-1];
+      // std::cout << "right(i)" << right[i-1] << std::endl;
+      l += nk1y;
+    }
+
+    fpback(ax,right,nk1x,ibandx,right,nx);
+    l = k;
+    for(int i = 1; i <= nk1x; ++i){
+      C[l-1] = right[i];
+      l += nk1y;
     }
   }
 
-  // std::cout << << std::endl;
-  std::cout << "h =" << h << std::endl;
-  std::cout << "right = " <<right << std::endl;
-  // std::cout << "piv = " << piv << std::endl;
-  std::cout << " ax = " << ax << std::endl;
+  for(int i = 0; i<25; ++i){
+    std::cout << i+1 << " " << C[i] << std::endl;
+  }
+  
 
-  throw std::runtime_error("Stop");
 
-  // for(int it = 0; it< mx; ++it){
-  //   number = nrx[it];
-  //   // 50
-  //   bool repeat_loop = true;
-  //   while(repeat_loop){
-  //     if( nrold==number ){
-  //         // !  fetch a new row of matrix (spx).
-  //         h[ibandx] = 0.;
-  //         for(int j = 1 ; j< kx1; ++j){
-  //           h[j] = spx[it][j];
-  //         };
-  //         // !  find the appropriate column of q.
-  //         for(int j = 0; j< my; ++j){
-  //           l = l + 1;
-  //           right[j] = z[l];
-  //         };
-  //         irot = number;
-  //       } else {
-  //         // if ( p<=0. ) print * , "ba fpgrre 10"
-  //         // if ( p<=0. ){ goto 150};
-  //         if ( p<=0. ){
-  //           nrold = nrold + 1;
-  //           continue; //go back to start of while loop
-  //         }
-  //         ibandx = kx2;
-  //         // !  fetch a new row of matrix (bx).
-  //         n1 = nrold + 1;
-  //         for(int j = 0; j < kx2; ++j){
-  //           h[j] = bx[n1][j]*pinv;
-  //         }
-  //         // !  find the appropriate column of q.
-  //         for(int j = 0; j < my; ++j){
-  //           right[j] = 0.;
-  //         }
-  //         irot = nrold;
-  //       };
-  //       // !  rotate the new row of matrix (ax) into triangle.
-  //       for(int i = 0; i< ibandx; ++i){
-  //       irot = irot + 1;
-  //       piv = h[i];
-  //       // if ( piv==0. ) print * , "ba fpgrre 11"
-  //       if ( piv != 0. ){
-  //         // !  calculate the parameters of the givens transformation.
-  //         fpgivs(piv,ax[irot][1],cos,sin);
-  //         // !  apply that transformation to the rows of matrix q.
-  //         int iq = (irot-1)*my;
-  //         for(int j = 0; j< my; ++j){
-  //           iq = iq + 1;
-  //           fprota(cos,sin,right[j],q[iq]);
-  //         }
-  //         // !  apply that transformation to the columns of (ax).
-  //         // if ( i==ibandx ) print * , "ba fpgrre 12"
-  //         // if ( i==ibandx ){ goto 100};
-  //         if (not( i==ibandx )){
-  //           i2 = 1;
-  //           i3 = i + 1;
-  //           for(int j = i3-1; j< ibandx; ++j){
-  //             i2 = i2 + 1;
-  //             fprota(cos,sin,h[j],ax[irot][i2]);
-  //           }
-  //         }
-  //       }
-  //     }
-  //     // if ( nrold==number ) print * , "ba fpgrre 13"
-  //     if ( nrold==number ){
-  //       break;
-  //     } else {
-  //       nrold = nrold + 1;
-  //     }
-  //   }
-  // }
+  // Old code
+    // }
+    // //  backward substitution to obtain the b-spline coefficients as the
+    // //  solution of the linear system    (ry) c (rx)' = h.
+    // //  first step: solve the system  (ry) (c1) = h.
 
-  // // !  reduce the matrix (ay) to upper triangular form (ry) using givens
-  // // !  rotations. apply the same transformations to the columns of matrix g
-  // // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
-  // // !  store matrix (ry) into (ay) and h into C.
-  // int ncof = nk1x * nk1y;
-  // // !  initialization.
 
-  // for(int i = 0; i< ncof; ++i){
-  //   C[i] = 0;
-  // }
-
-  // for(int i=0; i<nk1y; ++i){
-  //   for(int j=0; j<nk1x; ++j){
-  //     ay[i][j] = 0;
-  //   }
-  // }
-
-  // nrold = 0;
-  // //  ibandy denotes the bandwidth of the matrices (ay) and (ry).
-  // int ibandy = ky1;
-
-  // for(int it=0; it < my; ++it){
-  //   number = nry[it];
-  //   bool repeat_loop = true;
-  //   while(repeat_loop){
-  // // 300    if(nrold.eq.number) print *, "BA FPGRRE 14"
-  //   // if(nrold.eq.number) go to 330
-  //   if(nrold != number){
-  //     if(p <= 0){
-  //       // if(p.le.0.) print *, "BA FPGRRE 15"
-  //       // if(p.le.0.) go to 410
-  //       nrold += 1;
-  //       continue;
-  //     }
-  //   ibandy = ky2;
-  //   // fetch a new row of matrix (by).
-  //   n1 = nrold+1;
-  //   for(int j=0; j < ky2; ++j){
-  //       h[j] = by[n1][j]*pinv;
-  //     }
-
-  //     //  find the appropiate row of g.
-  //     for(int j=0; j < nk1x; ++j){
-  //       right[j] = 0.;
-  //     }
-
-  //     irot = nrold;
-  //   } else {
-  //     //  fetch a new row of matrix (spy)
-  //     h[ibandy] = 0.;
-  //     //  find the appropriate row of g.
-  //     for(int j=0; j< ky1; ++j){
-  //       h[j] = spy[it][j];
-  //     }
-  //     l = it;
-  //     for(int j=0; j< nk1x; ++j){
-  //       right[j] = q[l];
-  //       l = l+my;
-  //     }
-  //     irot = number;
-  //   }
-
-  //   //  rotate the new row of matrix (ay) into triangle.
-  //   for(int i=0; i<ibandy; ++i){
-  //     irot = irot+1;
-  //     piv = h[i];
-  //     if(piv==0.){continue;}
-  //     fpgivs(piv,ay[irot][1],cos,sin);
-  //     //  calculate the parameters of the givens transformation.
-  //     //  apply that transformation to the colums of matrix g.
-  //     int ic = irot;
-  //     for(int j=0; j<nk1x; ++j){
-  //       fprota(cos,sin,right[j],C[ic]);
-  //       ic = ic+nk1y;
-  //     }
-  //     if(i==ibandy){
-  //       break;
-  //     }
-  //     //  apply that transformation to the columns of matrix (ay).
-  //     i2 = 1;
-  //     i3 = i+1;
-  //     for(int j = i3-1; j<ibandy; ++j){
-  //       i2 = i2+1;
-  //       fprota(cos,sin,h[j],ay[irot][i2]);
-  //     }
-  //   }
-  //   std::printf("%d == %d\n", nrold, number);
-  //   if(nrold==number){
-  //     repeat_loop = false;
-  //   }
-  //   nrold = nrold+1;
-  //   }
-  // }
-  // //  backward substitution to obtain the b-spline coefficients as the
-  // //  solution of the linear system    (ry) c (rx)' = h.
-  // //  first step: solve the system  (ry) (c1) = h.
-
-  // int k = 1;
-
-  // for(int i=1; i<nk1x; ++i){
-  //   // std::vector<std::vector<double>> a, std::vector<double> z, int n, int k, std::vector<double> C, int nest
-  //   // In .f as 
-  //   // fpback(ay,C[k],nk1y,ibandy,C[k],ny);
-  //   // But needs vector not scalar for C[k] arguments
-  //   fpback(ay,C,nk1y,ibandy,C,ny);
-  //   k = k+nk1y;
-  // }
-
-  // double arg,fac,term;
-  // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;
+    // double arg,fac,term;
+    // int i,ibandy,ic,it,iz,i1,j,k,k1,k2,l2,ncof,nroldx,nroldy,numx,numx1,numy,numy1;
+    // }
 };
 
 int fpregr(int iopt,
