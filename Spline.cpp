@@ -197,13 +197,9 @@ void fpgrre(
 
     std::vector<double> h(7, 0.0);
 
-    // double 1 = 1;
-    double half = 0.5;
     double nk1x = nx-kx1;
     double nk1y = ny-ky1;
 
-    double pinv = 0.0;
-    if(p > 0.){pinv = 1/p;}
     //  calculate the non-zero elements of the matrix (spx) which is the
     //  observation matrix according to the least-squares spline approximat-
     //  ion problem in the x-direction.
@@ -445,7 +441,7 @@ void fpgrre(
       fp = fp+term;
       fpx[numx1-1] = fpx[numx1-1]+term;
       fpy[numy1-1] = fpy[numy1-1]+term;
-      double fac = term*half;
+      double fac = term*0.5;
       if(numy!=nroldy){
         fpy[numy1-1] = fpy[numy1-1]-fac;
         fpy[numy-1] = fpy[numy-1]+fac;
@@ -503,28 +499,13 @@ int fpregr(
   const std::vector<double>& wrk,
   const int& lwrk
   ){
-  //   set constants
-  // double 1 = 1;
-  double half = 0.5e0;
-  double con1 = 0.1e0;
-  double con9 = 0.9e0;
-  double con4 = 0.4e-01;
   //  we partition the working space.
   int kx1 = kx+1;
   int ky1 = ky+1;
   int kx2 = kx1+1;
   int ky2 = ky1+1;
-  int lsx = 1;
-  int lsy = lsx+mx*kx1;
-  int lri = lsy+my*ky1;
   int mm = std::max(nxest,my);
-  int lq = lri+mm;
   int mynx = nxest*my;
-  int lax = lq+mynx;
-  int nxk = nxest*kx2;
-  int lbx = lax+nxk;
-  int lay = lbx+nxk;
-  int lby = lay+nyest*ky2;
 
   // std::cout << "fpregr called" <<std::endl;
 
@@ -549,21 +530,10 @@ int fpregr(
   //      the least-squares polynomial directly.
   //
 
-  //  determine the number of knots for polynomial approximation.
-
-  int nminx = 2*kx1;
-  int nminy = 2*ky1;
-
-  //  acc denotes the absolute tolerance for the root of f(p)=s.
-  double acc = tol*s;
   //  find nmaxx and nmaxy which denote the number of knots in x- and y-
   //  direction in case of spline interpolation.
   int nmaxx = mx+kx1;
   int nmaxy = my+ky1;
-  //  find nxe and nye which denote the maximum number of knots
-  //  allowed in each direction
-  int nxe = std::min(nmaxx,nxest);
-  int nye = std::min(nmaxy,nyest);
   //  if s = 0, s(x,y) is an interpolating spline.
   nx = nmaxx;
   ny = nmaxy;
@@ -590,7 +560,6 @@ int fpregr(
     j = j+1;
   }
 
-  int mpm = mx+my;
   int ifsx = 0;
   int ifsy = 0;
   int ifbx = 0;
@@ -600,16 +569,6 @@ int fpregr(
   //  main loop for the different sets of knots.mpm=mx+my is a save upper
   //  bound for the number of trials.
 
-  // for(int iter = 0; iter < mpm; ++iter){
-  //  find nrintx (nrinty) which is the number of knot intervals in the
-  //  x-direction (y-direction).
-  int nrintx = nx-nminx+1;
-  int nrinty = ny-nminy+1;
-  //  find ncof, the number of b-spline coefficients for the current set
-  //  of knots.
-  int nk1x = nx-kx1;
-  int nk1y = ny-ky1;
-  int ncof = nk1x*nk1y;
   //  find the position of the additional knots which are needed for the
   //  b-spline representation of s(x,y).
   i = nx;
@@ -645,8 +604,6 @@ int fpregr(
   std::vector<std::vector<double>> by(ny, std::vector<double>(ky2,0.0));
 
   fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,C,nc,fp,fpx,fpy,mm,mynx,kx1,kx2,ky1,ky2,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
-
-  double fpms = fp-s;
 
   //  if nx=nmaxx and ny=nmaxy, sinf(x,y) is an interpolating spline.
   if((nx==nmaxx) and (ny==nmaxy)){
@@ -1028,14 +985,7 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
   ier = 0;
   //  we partition the working space and determine the spline approximation;
 
-  int lfpx = 5;
-  int lfpy = lfpx+nxest;
-  int lww = lfpy+nyest;
   int jwrk = lwrk-4-nxest-nyest;
-  int knrx = 4;
-  int knry = knrx+mx;
-  int kndx = knry+my;
-  int kndy = kndx+nxest;
 
   int nx     = 0;
   int ny     = 0;
@@ -1093,9 +1043,6 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
   double te = tx[nkx1+1-1];
   int l = kx1;
   int l1 = l+1;
-  
-  int mx = 1;
-  int my = 1;
 
   double arg = x;
   if(arg < tb){
@@ -1159,7 +1106,6 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
   }
   m = m+1;
   z = sp;
-  std::cout << z << std::endl;
   return z;
 }
 
@@ -1247,6 +1193,8 @@ int main(){
   double eval_y = 5;
 
   double z_returned = bispeu(tx,ty,C,eval_x,eval_y);
+
+  std::cout << z_returned << std::endl;
 }
 
 
