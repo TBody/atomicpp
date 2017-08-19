@@ -325,7 +325,13 @@ if __name__ == '__main__':
 	y_in_max = y_values[-2]
 
 	k=0
-	z_values = log_coeff[k][:][:].transpose()
+	z_values = log_coeff[k][:][:]
+
+	print(x_values)
+
+	print(y_values)
+
+	print(z_values)
 
 	source = {'x': x_values, 'y': y_values, 'z': z_values}
 
