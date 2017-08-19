@@ -154,3 +154,7 @@ Prad
 atomicpp/atomicpy\.cpp
 
 bicubic_spline\.dSYM/*
+
+traceback\.dSYM/Contents/Resources/DWARF/
+
+test_bicubic\.dSYM/Contents/Resources/DWARF/
