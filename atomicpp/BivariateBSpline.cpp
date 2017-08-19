@@ -1,132 +1,199 @@
-#include <stdio.h>
 #include <vector>
-#include <string>
 #include <math.h>
 #include <algorithm> //for upper/lower_bound
 #include <stdexcept> //For error-throwing
 #include <sstream>
-#include <iostream>
-#include "prettyprint.hpp"
+#include "BivariateBSpline.hpp"
 
-void fprota(const double cos, const double sin, double& a, double& b){
-    //  subroutine fprota applies a given rotation to a and b.
-    double stor1 = a;
-    double stor2 = b;
-
-    b = cos * stor2 + sin * stor1;
-    a = cos * stor1 - sin * stor2;
+using namespace atomicpp;
+BivariateBSpline::BivariateBSpline(){//Default constructor
 };
+BivariateBSpline::BivariateBSpline(
+  std::vector<double>& _x_values,
+  std::vector<double>& _y_values,
+  std::vector< std::vector<double> > & _z_values
+  ){
+  x_values = _x_values;
+  y_values = _y_values;
+  z_values = _z_values;
 
-void fpgivs(const double piv, double& ww, double& cos, double& sin){
-    //  subroutine fpgivs calculates the parameters of a given
-    //  transformation .
+  // __INIT__ BBSpline
+  //Flatten z to a 1D vector - i.e. 'ravel'
+  std::vector<double> z_flattened(begin(z_values[0]), end(z_values[0]));
+  for(int i = 1; i < (int)(x_values.size()); ++i){
+    z_flattened.insert(end(z_flattened), begin(z_values[i]), end(z_values[i]));
+  }
 
-    double dd;
-    if(abs(piv)>=ww){
-      dd = abs(piv)*sqrt(1+(ww/piv)*(ww/piv));
-    } else {
-      dd = ww*sqrt(1+(piv/ww)*(piv/ww));
+  regrid_return setup_spline = regrid_smth(x_values, y_values, z_flattened);
+
+  tx = setup_spline.tx;
+  ty = setup_spline.ty;
+  C = setup_spline.C;
+};
+double BivariateBSpline::call0D(const double eval_x, const double eval_y){
+  
+  // Bounds checking -- make sure you haven't dropped off the end of the array
+  if ((eval_x <= x_values[0]) or (eval_x >= x_values[x_values.size()-1])){
+    // An easy error to make is supplying the function arguments already having taken the log10
+    std::stringstream errMsg;
+    errMsg << "X value off grid - require (" << x_values[0] << " < " << eval_x << " < " << x_values[x_values.size()-1] << ")";
+    throw std::runtime_error(errMsg.str());
+  };
+  if ((eval_y <= y_values[0]) or (eval_y >= y_values[y_values.size()-1])){
+    // An easy error to make is supplying the function arguments already having taken the log10
+    std::stringstream errMsg;
+    errMsg << "Y value off grid - require (" << y_values[0] << " < " << eval_y << " < " << y_values[y_values.size()-1] << ")";
+    throw std::runtime_error(errMsg.str());
+  };
+
+  // __CALL__ BBSpline
+  double eval_coeff = bispeu(tx,ty,C,eval_x,eval_y);
+
+  return eval_coeff;
+};
+std::vector< std::vector<double> > BivariateBSpline::get_z_values(){
+  return z_values;
+};
+std::vector<double> BivariateBSpline::get_x_values(){
+  return x_values;
+};
+std::vector<double> BivariateBSpline::get_y_values(){
+  return y_values;
+};
+void BivariateBSpline::set_x_values(std::vector<double>& _x_values){
+  x_values = _x_values;
+};
+void BivariateBSpline::set_y_values(std::vector<double>& _y_values){
+  y_values = _y_values;
+};
+void BivariateBSpline::zero_z_values(){
+  for(int i = 0; i<(int)(z_values.size()); ++i){
+    for(int j = 0; j<(int)(z_values[0].size()); ++j){
+      z_values[i][j] = 0.0;
     }
-    cos = ww/dd;
-    sin = piv/dd;
-    ww = dd;
+  }
 };
 
-void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int z_start, const int n, const int k, std::vector<double>& C, const int c_start, const int nest){
-    // Switch from Fortran to C++ indexing
-    // Supply start as '1' to not apply a shift
-    int z_shifted = z_start - 1;
-    int c_shifted = c_start - 1;
+void BivariateBSpline::fprota(const double cos, const double sin, double& a, double& b){
+  //  subroutine fprota applies a given rotation to a and b.
+  double stor1 = a;
+  double stor2 = b;
 
-    C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
-    
-    int i = n-1;
-    double store;
+  b = cos * stor2 + sin * stor1;
+  a = cos * stor1 - sin * stor2;
+};
 
-    if(i!=0){
-      for(int j=2; j <= n; ++j){
-        store = z[z_shifted + i-1];
-        int i1 = k-1;
+void BivariateBSpline::fpgivs(const double piv, double& ww, double& cos, double& sin){
+  //  subroutine fpgivs calculates the parameters of a given
+  //  transformation .
 
-        if(j <= k-1){
-          i1 = j-1;
-        }
-        int m = i;
-        for(int l=1; l <= i1; ++l){
-          m = m+1;
-          store = store - C[c_shifted + m-1]*a[i-1][l];
-        }
-        C[c_shifted + i-1] = store/a[i-1][0];
-        i -= 1;
+  double dd;
+  if(abs(piv)>=ww){
+    dd = abs(piv)*sqrt(1+(ww/piv)*(ww/piv));
+  } else {
+    dd = ww*sqrt(1+(piv/ww)*(piv/ww));
+  }
+  cos = ww/dd;
+  sin = piv/dd;
+  ww = dd;
+};
+
+void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int z_start, const int n, const int k, std::vector<double>& C, const int c_start, const int nest){
+  // Switch from Fortran to C++ indexing
+  // Supply start as '1' to not apply a shift
+  int z_shifted = z_start - 1;
+  int c_shifted = c_start - 1;
+
+  C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
+  
+  int i = n-1;
+  double store;
+
+  if(i!=0){
+    for(int j=2; j <= n; ++j){
+      store = z[z_shifted + i-1];
+      int i1 = k-1;
+
+      if(j <= k-1){
+        i1 = j-1;
+      }
+      int m = i;
+      for(int l=1; l <= i1; ++l){
+        m = m+1;
+        store = store - C[c_shifted + m-1]*a[i-1][l];
+      }
+      C[c_shifted + i-1] = store/a[i-1][0];
+      i -= 1;
+    }
+  }
+};
+
+void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int n, const int k, std::vector<double>& C, const int nest){
+  //No shift version of fpback - overloaded
+
+  // std::cout << "fpback called" << std::endl;
+
+  C[n-1] = z[n-1]/a[n-1][0];
+  
+  int i = n-1;
+  double store;
+
+  if(i!=0){
+    for(int j=2; j <= n; ++j){
+      store = z[i-1];
+      int i1 = k-1;
+
+      if(j <= k-1){
+        i1 = j-1;
+      }
+      int m = i;
+      for(int l=1; l <= i1; ++l){
+        m = m+1;
+        store = store - C[m-1]*a[i-1][l];
+      }
+      C[i-1] = store/a[i-1][0];
+      i -= 1;
+    }
+  }
+};
+
+void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const int k, const double x, const int l, std::vector<double>& h){
+  std::vector<double> hh(19,0.0);
+
+  //  subroutine fpbspl evaluates the (k+1) non-zero b-splines of
+  //  degree k at t(l) <= x < t(l+1) using the stable recurrence
+  //  relation of de boor and cox.
+  //  Travis Oliphant  2007
+  //    changed so that weighting of 0 is used when knots with
+  //      multiplicity are present.
+  //    Also, notice that l+k <= n and 1 <= l+1-k
+  //      or else the routine will be accessing memory outside t
+  //      Thus it is imperative that that k <= l <= n-k but this
+  //      is not checked.
+
+  h[1-1] = 1;
+
+  for(int j = 1; j <= k; ++j){
+    for(int i = 1; i <= j; ++i){
+      hh[i-1] = h[i-1];
+    }
+    h[1-1] = 0;
+    for(int i = 1; i <= j; ++i){
+      int li = l+i;
+      int lj = li-j;
+
+      if(t[li-1] != t[lj-1]){
+        double f = hh[i-1] / (t[li-1]-t[lj-1]);
+        h[i-1] = h[i-1]+f*(t[li-1]-x);
+        h[i] = f*(x-t[lj-1]);
+      } else {
+        h[i] = 0;
       }
     }
-};
-void fpback(const std::vector<std::vector<double>>& a, const std::vector<double>& z, const int n, const int k, std::vector<double>& C, const int nest){
-    //No shift version of fpback - overloaded
-
-    // std::cout << "fpback called" << std::endl;
-
-    C[n-1] = z[n-1]/a[n-1][0];
-    
-    int i = n-1;
-    double store;
-
-    if(i!=0){
-      for(int j=2; j <= n; ++j){
-        store = z[i-1];
-        int i1 = k-1;
-
-        if(j <= k-1){
-          i1 = j-1;
-        }
-        int m = i;
-        for(int l=1; l <= i1; ++l){
-          m = m+1;
-          store = store - C[m-1]*a[i-1][l];
-        }
-        C[i-1] = store/a[i-1][0];
-        i -= 1;
-      }
-    }
+  }
 };
 
-void fpbspl(const std::vector<double>& t,const int n, const int k, const double x, const int l, std::vector<double>& h){
-    std::vector<double> hh(19,0.0);
-
-    //  subroutine fpbspl evaluates the (k+1) non-zero b-splines of
-    //  degree k at t(l) <= x < t(l+1) using the stable recurrence
-    //  relation of de boor and cox.
-    //  Travis Oliphant  2007
-    //    changed so that weighting of 0 is used when knots with
-    //      multiplicity are present.
-    //    Also, notice that l+k <= n and 1 <= l+1-k
-    //      or else the routine will be accessing memory outside t
-    //      Thus it is imperative that that k <= l <= n-k but this
-    //      is not checked.
-
-    h[1-1] = 1;
-
-    for(int j = 1; j <= k; ++j){
-      for(int i = 1; i <= j; ++i){
-        hh[i-1] = h[i-1];
-      }
-      h[1-1] = 0;
-      for(int i = 1; i <= j; ++i){
-        int li = l+i;
-        int lj = li-j;
-
-        if(t[li-1] != t[lj-1]){
-          double f = hh[i-1] / (t[li-1]-t[lj-1]);
-          h[i-1] = h[i-1]+f*(t[li-1]-x);
-          h[i] = f*(x-t[lj-1]);
-        } else {
-          h[i] = 0;
-        }
-      }
-    }
-};
-
-void fpgrre(
+void BivariateBSpline::fpgrre(
   int& ifsx,
   int& ifsy,
   int& ifbx,
@@ -445,7 +512,7 @@ void fpgrre(
     }
 };
 
-int fpregr(
+int BivariateBSpline::fpregr(
   const int& iopt,
   const std::vector<double>& x,
   const int& mx,
@@ -571,38 +638,7 @@ int fpregr(
       std::vector<std::vector<double>> bx(nx, std::vector<double>((kx+2),0.0));
       std::vector<std::vector<double>> by(ny, std::vector<double>((ky+2),0.0));
 
-    fpgrre(ifsx,
-           ifsy,
-           ifbx,
-           ifby,
-           x,
-           mx,
-           y,
-           my,
-           z,
-           mz,
-           kx,
-           ky,
-           tx,
-           nx,
-           ty,
-           ny,
-           p,
-           C,
-           nc,
-           fp,
-           fpx,
-           fpy,
-           spx,
-           spy,
-           right,
-           q,
-           ax,
-           ay,
-           bx,
-           by,
-           nrx,
-           nry);
+    fpgrre(ifsx,ifsy,ifbx,ifby,x,mx,y,my,z,mz,kx,ky,tx,nx,ty,ny,p,C,nc,fp,fpx,fpy,spx,spy,right,q,ax,ay,bx,by,nrx,nry);
 
     //  if nx=mx+kx+1 and ny=my+ky+1, sinf(x,y) is an interpolating spline.
     if((nx==mx+kx+1) and (ny==my+ky+1)){
@@ -612,16 +648,6 @@ int fpregr(
     } else {
       throw std::runtime_error("Not enough knots included in spline");
     }
-};
-
-struct regrid_return{
-  int nx;
-  int ny;
-  std::vector<double> tx;
-  std::vector<double> ty;
-  std::vector<double> C;
-  double fp;
-  int ier;
 };
 
 /**
@@ -885,7 +911,7 @@ struct regrid_return{
   latest update : march 1989
   **/
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
-regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
+regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
   //Up to fpregr
     // std::cout << "regrid_smth called" <<std::endl;
 
@@ -958,7 +984,6 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
     if(not(iopt >= 0)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 11");
     if((nxest < (mx+(kx+1)) or nyest < (my+(ky+1))) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
 
-    ier = 0;
     //  we partition the working space and determine the spline approximation;
 
     int nx     = 0; //These variables are modified by fpregr
@@ -985,7 +1010,7 @@ regrid_return regrid_smth(const std::vector<double>& x, const std::vector<double
 };
 
 // fpbisp(tx,nx,ty,ny,c,kx,ky,x,mx,y,my,z,wx,wy,lx,ly)
-double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<double>& ty, const int& ny, const std::vector<double>& c, const int& kx, const int& ky, const double& x, const double& y){
+double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<double>& ty, const int& ny, const std::vector<double>& c, const int& kx, const int& ky, const double& x, const double& y){
 
   std::vector<double> h(6, 0.0);
   int lx = 0;
@@ -1095,7 +1120,7 @@ double fpbisp(const std::vector<double>& tx, const int& nx, const std::vector<do
     tx(kx+1) <= x(i-1) <= x(i) <= tx(nx-kx), i=2,...,mx
     ty(ky+1) <= y(j-1) <= y(j) <= ty(ny-ky), j=2,...,my
  **/
-double bispeu(const std::vector<double>& tx,const std::vector<double>& ty,const std::vector<double>& c,const double& x,const double& y){
+double BivariateBSpline::bispeu(const std::vector<double>& tx,const std::vector<double>& ty,const std::vector<double>& c,const double& x,const double& y){
   // z = bispeu(tx,ty,c,kx,ky,x,y)
 
   int nx = tx.size();
@@ -1108,48 +1133,48 @@ double bispeu(const std::vector<double>& tx,const std::vector<double>& ty,const 
   return z;
 }
 
-int main(){
-  std::cout << "main called" <<std::endl;
+// int main(){
+//   std::cout << "main called" <<std::endl;
 
-  std::vector<double> x = {1,2,3,4,5};
-  std::vector<double> y = {1,3,4,7,10};
-  int mx = x.size();
-  int my = y.size();
-  std::vector<std::vector<double>> z(mx, std::vector<double>(my, 0.0));
+//   std::vector<double> x = {1,2,3,4,5};
+//   std::vector<double> y = {1,3,4,7,10};
+//   int mx = x.size();
+//   int my = y.size();
+//   std::vector<std::vector<double>> z(mx, std::vector<double>(my, 0.0));
 
-  for(int i = 0; i < mx; ++i){
-    for(int j = 0; j < my; ++j){
-      z[i][j] = x[i] * x[i] + y[j] * y[j] + x[i] * y[j];
-      // std::printf("z(%d, %d) = %f\n", i, j, z[i][j]);
-    }
-  }
+//   for(int i = 0; i < mx; ++i){
+//     for(int j = 0; j < my; ++j){
+//       z[i][j] = x[i] * x[i] + y[j] * y[j] + x[i] * y[j];
+//       // std::printf("z(%d, %d) = %f\n", i, j, z[i][j]);
+//     }
+//   }
 
-  std::vector<double> z_flattened(begin(z[0]), end(z[0]));
-  for(int i = 1; i < mx; ++i){
-    z_flattened.insert(end(z_flattened), begin(z[i]), end(z[i]));
-  }
+//   std::vector<double> z_flattened(begin(z[0]), end(z[0]));
+//   for(int i = 1; i < mx; ++i){
+//     z_flattened.insert(end(z_flattened), begin(z[i]), end(z[i]));
+//   }
 
-  regrid_return setup_spline = regrid_smth(x, y, z_flattened);
+//   regrid_return setup_spline = regrid_smth(x, y, z_flattened);
 
-  std::cout << "nx  = " << setup_spline.nx  << std::endl;
-  std::cout << "ny  = " << setup_spline.ny  << std::endl;
-  std::cout << "tx  = " << setup_spline.tx  << std::endl;
-  std::cout << "ty  = " << setup_spline.ty  << std::endl;
-  std::cout << "C   = " << setup_spline.C   << std::endl;
-  std::cout << "fp  = " << setup_spline.fp  << std::endl;
-  std::cout << "ier = " << setup_spline.ier << std::endl;
+//   std::cout << "nx  = " << setup_spline.nx  << std::endl;
+//   std::cout << "ny  = " << setup_spline.ny  << std::endl;
+//   std::cout << "tx  = " << setup_spline.tx  << std::endl;
+//   std::cout << "ty  = " << setup_spline.ty  << std::endl;
+//   std::cout << "C   = " << setup_spline.C   << std::endl;
+//   std::cout << "fp  = " << setup_spline.fp  << std::endl;
+//   std::cout << "ier = " << setup_spline.ier << std::endl;
 
-  std::vector<double> tx = setup_spline.tx;
-  std::vector<double> ty = setup_spline.ty;
-  std::vector<double> C = setup_spline.C;
+//   std::vector<double> tx = setup_spline.tx;
+//   std::vector<double> ty = setup_spline.ty;
+//   std::vector<double> C = setup_spline.C;
 
-  double eval_x = 1.5;
-  double eval_y = 5;
+//   double eval_x = 1.5;
+//   double eval_y = 5;
 
-  double z_returned = bispeu(tx,ty,C,eval_x,eval_y);
+//   double z_returned = bispeu(tx,ty,C,eval_x,eval_y);
 
-  std::cout << z_returned << std::endl;
-}
+//   std::cout << z_returned << std::endl;
+// }
 
 
 
