@@ -1,4 +1,4 @@
-#include "atomicpp/BicubicSpline.hpp"
+#include "atomicpp/BivariateBSpline.hpp"
 #include <vector>
 #include <string>
 
@@ -26,12 +26,12 @@ int main(){
 		{0,0,0,0},
 	};
 
-	BicubicSpline interpolator(x_values, y_values, z_values);
+	BivariateBSpline interpolator(x_values, y_values, z_values);
 
 	int i = 1;
 	int j = 2;
 	double x = x_values[i];
-	double y = y_values[j];	
+	double y = y_values[j]+0.5;	
 	std::printf("(%f,%f) = %f \n", x, y, interpolator.call0D(x, y));
 
 

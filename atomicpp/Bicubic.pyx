@@ -15,7 +15,10 @@ from cython.operator cimport dereference as deref
 # Note - only need to declare the functions that you will use. Internal functions and attributes do not need to be declared.
 # See https://dmtn-013.lsst.io/ for the use of unique_ptr in classes
 
-cdef extern from "RateEquations.hpp" namespace "atomicpp":
+
+
+
+cdef extern from "BicubicSpline.hpp" namespace "atomicpp":
 	cdef struct interp_data:
 		pair[int, int] coord
 		pair[double, double] datapoint

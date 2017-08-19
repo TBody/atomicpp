@@ -1,6 +1,7 @@
 import numpy as np
 from atomicpp.Bicubic import PyBicubicSpline
 from atomicpp.Bicubic import PyBilinearSpline
+from atomicpp.Bicubic import PyBivariateBSpline
 from scipy.interpolate import RectBivariateSpline
 from scipy.interpolate import RegularGridInterpolator
 
@@ -358,7 +359,7 @@ if __name__ == '__main__':
 	# pyx_hi_res = generate_from_func(pyx_interp, x_highres, y_highres, x_min, x_max, y_min, y_max)
 	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, low_res['x'], low_res['y'])
 
-	plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
+	# plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
 
 	# plot_difference(pyx_hi_res, cpp_hi_res)
 
@@ -366,8 +367,8 @@ if __name__ == '__main__':
 
 	# cpp_hi_res = generate_from_func(cpp_interp.call0D, len(x_values), len(y_values), x_values.min(), x_values.max(), y_values.min(), y_values.max())
 
-	x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
-	y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
+	# x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
+	# y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
 
 
 	# plt.pcolor(z_values[0] - cpp_hi_res['z'],cmap='RdBu',
