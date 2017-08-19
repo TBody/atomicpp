@@ -345,11 +345,13 @@ if __name__ == '__main__':
 	# plt.show()
 
 	if True:
+		cpp_interp = PyBivariateBSpline(x_values, y_values, z_values.transpose())
+		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
+	elif True:
 		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
 		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
 	else:
 		cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
-		# x_grid, y_grid = np.meshgrid(x_values, y_values)
 		pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
 
 	# inspect_grid_coeff(hi_res, cpp_interp)
