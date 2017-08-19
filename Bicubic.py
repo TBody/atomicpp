@@ -344,6 +344,13 @@ if __name__ == '__main__':
 
 	# plt.show()
 
+	print(x_values)
+
+	print(y_values)
+
+	print(z_values)
+
+
 	if True:
 		cpp_interp = PyBivariateBSpline(x_values, y_values, z_values.transpose())
 		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
