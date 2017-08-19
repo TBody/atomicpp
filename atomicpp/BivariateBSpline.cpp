@@ -235,7 +235,7 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
   creation date : may 1979
   latest update : march 1989
   **/
-// nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,[xb,xe,yb,ye,kx,ky,s])
+// nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at[xb,xe,yb,ye,kx,ky,s]))
 regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
   // std::cout << "regrid_smth called" <<std::endl;
 
@@ -248,8 +248,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   if (not((mx > kx) and (my > ky))){
   throw std::runtime_error("Grid too small for bicubic interpolation");
   };
-
-  const double s = 0.0;
 
   const double xb = x[0];
   const double xe = x[mx-1];
@@ -268,17 +266,10 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   std::vector<double> wrk(lwrk, 0.0);
   int kwrk = 3 + mx + my + nxest + nyest;
   std::vector<int> iwrk(kwrk, 0);
-
-  int ier = 0;
-
-  int maxit = 20;
-  double tol = 0.1e-02;
-  ier = 10;
+  
   int nminx = 2*(kx+1);
   int nminy = 2*(ky+1);
-
-  int mz = mx*my;
-  int nc = (nxest-(kx+1))*(nyest-(ky+1));
+  
   int lwest = 4+nxest*(my+2*(kx+2)+1)+nyest*(2*(ky+2)+1)+mx*(kx+1)+ my*(ky+1)+std::max(nxest,my);
   int kwest = 3+mx+my+nxest+nyest;
   //  before starting computations a data check is made. if the input data
@@ -348,12 +339,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     i = i+1;
     j = j+1;
   }
-
-  int ifsx = 0;
-  int ifsy = 0;
-  int ifbx = 0;
-  int ifby = 0;
-  double p = -1;
 
   //  main loop for the different sets of knots.mpm=mx+my is a save upper
   //  bound for the number of trials.
@@ -445,7 +430,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     nrx[it-1] = number;
   }
 
-  ifsx = 1;
   //  calculate the non-zero elements of the matrix (spy) which is the
   //  observation matrix according to the least-squares spline approximat-
   //  ion problem in the y-direction.
@@ -469,7 +453,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     }
     nry[it-1] = number;
   }
-  ifsy = 1;
 
   //  reduce the matrix (ax) to upper triangular form (rx) using givens
   //  rotations. apply the same transformations to the rows of matrix q
@@ -656,11 +639,11 @@ for(int i1 = 1; i1 <= mx; ++i1){
         // std::cout << "fac = " << fac << std::endl;
         // std::cout << "i2-1 = " << i2-1 << std::endl;
         // std::cout << "l2-1 = " << l2-1 << std::endl;
-        // std::cout << "spy[i2-1][l2-1] = " << spy[i2-1][l2-1] << std::endl;
+        // std::cout << "spy[i2-1])[l2-1]) = " << spy[i2-1])[l2-1]) << std::endl;
         // std::cout << "k2-1 = " << k2-1 << std::endl;
-        // std::cout << "C[k2-1] = " << C[k2-1] << std::endl;
+        // std::cout << "C[k2-1]) = " << C[k2-1]) << std::endl;
         term = term + fac * spy[i2-1][l2-1] * C[k2-1];
-      }
+     }
       k1 = k1+ny-(ky+1);
     }
     //  calculate the squared residual at the current grid point.
@@ -692,7 +675,7 @@ for(int i1 = 1; i1 <= mx; ++i1){
   setup_spline.ty = ty;
   setup_spline.C = C;
   setup_spline.fp = fp;
-  setup_spline.ier = ier;
+
   return setup_spline;
   // End of translation of fitpack/regrid.f (implementation)
 };
@@ -708,7 +691,7 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
 
   // int (kx+1) = kx+1;
   int nkx1 = nx-(kx+1);
-  double tb = tx[(kx+1)-1];
+  double tb = tx[kx];
   double te = tx[nkx1];
   int l = (kx+1);
   int l1 = l+1;
@@ -732,7 +715,7 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
     wx[j-1] = h[j-1];
   }
 
-  tb = ty[(ky+1)-1];
+  tb = ty[ky];
   te = ty[(ny-(ky+1))];
   l = (ky+1);
   l1 = l+1;
@@ -799,9 +782,6 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
     z     : real array of dimension m.
            on successful exit z(i) contains the value of s(x,y)
            at the point (x(i),y(i)), i=1,...,m.
-    ier   : integer error flag
-    ier=0 : normal return
-    ier=10: invalid input data (see restrictions)
 
   restrictions:
     m >=1, lwrk>=mx*(kx+1)+my*(ky+1), kwrk>=mx+my
