@@ -1,0 +1,15 @@
+{
+	"folders":
+	[
+		{
+			"folder_exclude_patterns":
+			[
+				"Store",
+				"build",
+				"interpolate/dfitpack.cpython-36m-darwin.so.dSYM",
+				"interpolate/__pycache__"
+			],
+			"path": "."
+		}
+	]
+}
