@@ -5,6 +5,10 @@
 #include <sstream>
 #include "BivariateBSpline.hpp"
 
+#include <stdio.h>
+#include <string>
+#include <iostream>
+
 using namespace atomicpp;
 BivariateBSpline::BivariateBSpline(){//Default constructor
 };
@@ -479,15 +483,21 @@ void BivariateBSpline::fpgrre(
         iz = iz+1;
         //  evaluate s(x,y) at the current grid point by making the sum of the
         //  cross products of the non-zero b-splines at (x,y), multiplied with
-        //  the appropiate b-spline coefficients.
+        //  the appropriate b-spline coefficients.
         double term = 0.;
-        int k1 = numx*ny-(ky+1)+numy;
+        int k1 = numx*(ny-(ky+1))+numy;
         for(int l1=1; l1<=(kx+1);++l1){
           int k2 = k1;
           double fac = spx[i1-1][l1-1];
           for(int l2=1; l2<=(ky+1);++l2){
             k2 = k2+1;
-            term = term+fac*spy[i2-1][l2-1]*C[k2-1];
+            // std::cout << "fac = " << fac << std::endl;
+            // std::cout << "i2-1 = " << i2-1 << std::endl;
+            // std::cout << "l2-1 = " << l2-1 << std::endl;
+            // std::cout << "spy[i2-1][l2-1] = " << spy[i2-1][l2-1] << std::endl;
+            // std::cout << "k2-1 = " << k2-1 << std::endl;
+            // std::cout << "C[k2-1] = " << C[k2-1] << std::endl;
+            term = term + fac * spy[i2-1][l2-1] * C[k2-1];
           }
           k1 = k1+ny-(ky+1);
         }
