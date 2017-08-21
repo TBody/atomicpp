@@ -31,6 +31,11 @@ int main(){
 	std::vector<double> y_values = {10, 20, 30, 40};
 
 	std::vector< std::vector<double>> z_values = 
+	// x^2 + (y-39)^2 +(x+7)*y, transposed
+	// {{ 922.,  935.,  950.,  967.,  986.},
+	//  { 522.,  545.,  570.,  597.,  626.},
+	//  { 322.,  355.,  390.,  427.,  466.},
+	//  { 322.,  365.,  410.,  457.,  506.}};
 	// x^2 + (y-39)^2 +(x+7)*y
 	{{ 922.,  522.,  322.,  322.},
  	 { 935.,  545.,  355.,  365.},
@@ -50,7 +55,7 @@ int main(){
  // 	 { 14.,  24.,  34.,  44.},
  // 	 { 15.,  25.,  35.,  45.}};
 
-	BivariateBSpline interpolator(x_values, y_values, z_values);
+	BivariateBSpline interpolator(x_values, y_values, z_values, true, true);
 
 	double eval_x = 1.9;
 	double eval_y = 37;

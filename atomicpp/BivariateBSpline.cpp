@@ -17,7 +17,9 @@ BivariateBSpline::BivariateBSpline(){//Default constructor
 BivariateBSpline::BivariateBSpline(
   std::vector<double>& _x_values,
   std::vector<double>& _y_values,
-  std::vector< std::vector<double> > & _z_values
+  std::vector< std::vector<double> > & _z_values,
+  bool auto_transpose /* = true */,
+  bool warn_transpose /* = true */
   ){
   x_values = _x_values;
   y_values = _y_values;
@@ -52,17 +54,16 @@ BivariateBSpline::BivariateBSpline(
     // Flatten z and allocate it to z_flattened
     for(int i = 0; i < mx; ++i){
       for(int j = 0; j < my; ++j){
-        std::printf("%d, %d => %f\n", i, j, z_values.at(i).at(j));
         z_flattened.at(my*i + j) = z_values.at(i).at(j);
       }
     }
-  } else if((mx == zy_length) and (my == zx_length)) {
+  } else if((auto_transpose) and (mx == zy_length) and (my == zx_length)){
     // Easy to supply the transpose of z_values, since row and column indices swap
-    std::cout << "BivariateBSpline initialization warning: z_values has been transposed to have the correct number of elements in x and y dimensions\n";
+    if(warn_transpose){std::cout << "BivariateBSpline initialization warning: z_values has been transposed to have the correct number of elements in x and y dimensions\n";}
     // Flatten the transpose of z and allocate it to z_flattened
     for(int i = 0; i < mx; ++i){
       for(int j = 0; j < my; ++j){
-        z_flattened.at(i + mx*j) = z_values.at(j).at(i);
+        z_flattened.at(my*i + j) = z_values.at(j).at(i);
       }
     }
   // Transpose doesn't work - throw an error

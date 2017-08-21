@@ -22,7 +22,9 @@
 		BivariateBSpline(
 			std::vector<double>& _x_values,
 			std::vector<double>& _y_values,
-			std::vector< std::vector<double> >& _z_values
+			std::vector< std::vector<double> >& _z_values,
+			bool auto_transpose  = true,
+			bool warn_transpose  = true
 			);
 		double call0D(const double eval_x, const double eval_y);
 		std::vector< std::vector<double> > get_z_values();
