@@ -37,7 +37,6 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 
 	// Set parameters that are useful for multiple functions
 	rate_coefficients        = impurity.get_rate_coefficients();
-	use_shared_interpolation = impurity.get_has_shared_interpolation();
 	use_charge_exchange      = impurity.get_has_charge_exchange();
 	Z                        = impurity.get_atomic_number();
 	mz                       = impurity.get_mass();
@@ -95,22 +94,10 @@ DerivStruct RateEquations::computeDerivs(
 
 	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
 
-	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
-	std::pair<int, double> Te_interp, Ne_interp;
-	if (use_shared_interpolation){
-		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temp(), Te);
-		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_dens(), Ne);
-	} else {
-		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
-		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
-		// double Te_interp = Te;
-		// double Ne_interp = Ne;
-	}
-
-	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te_interp, Ne_interp);
+	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te);
 
 	if (use_charge_exchange){
-		calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te_interp, Ne_interp);
+		calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te, Ne);
 	}
 
 	//Apply neumairSum corrections
@@ -123,10 +110,10 @@ DerivStruct RateEquations::computeDerivs(
 
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
 	
-	calculateElectronImpactPowerEquation(Ne, Nzk, Te_interp, Ne_interp);
+	calculateElectronImpactPowerEquation(Ne, Nzk, Te);
 	
 	if (use_charge_exchange){
-		calculateChargeExchangePowerEquation(Nn, Nzk, Te_interp, Ne_interp);
+		calculateChargeExchangePowerEquation(Nn, Nzk, Te, Ne);
 	}
 
 	// auto derivative_tuple = makeDerivativeTuple();
@@ -142,19 +129,7 @@ DerivStruct RateEquations::computeDerivsHydrogen(
 
 	resetDerivatives(); //Reset all the derivatives to zero, since the object has a memory of the previous step
 
-	// Perform 'sharedInterpolation' - find the lower-bound gridpoint and fraction into the grid for both Te and Ne
-	std::pair<int, double> Te_interp, Ne_interp;
-	if (use_shared_interpolation){
-		Te_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_temp(), Te);
-		Ne_interp = findSharedInterpolation(rate_coefficients["blank"]->get_log_dens(), Ne);
-	} else {
-		throw std::runtime_error("Non-shared interpolation method requires switching of method. Declare Te_interp and Ne_interp as doubles instead of <int, double> pairs.");
-		// //Pass Te_interp and Ne_interp as doubles instead of pairs and the program will auto-switch to the full interpolation method.
-		// double Te_interp = Te;
-		// double Ne_interp = Ne;
-	}
-
-	calculateElectronImpactPopulationEquation(Ne, Nhk, Vhk, Te_interp, Ne_interp);
+	calculateElectronImpactPopulationEquation(Ne, Nhk, Vhk, Te);
 
 	//Apply neumairSum corrections
 	for(int k=0; k<=Z; ++k){
@@ -164,7 +139,7 @@ DerivStruct RateEquations::computeDerivsHydrogen(
 
 	verifyNeumaierSummation();
 	
-	calculateElectronImpactPowerEquation(Ne, Nhk, Te_interp, Ne_interp);
+	calculateElectronImpactPowerEquation(Ne, Nhk, Te);
 
 	// auto derivative_tuple = makeDerivativeTuple();
 	// return derivative_tuple;
@@ -213,8 +188,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 	const double Ne,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
-	const std::pair<int, double>& Te_interp,
-	const std::pair<int, double>& Ne_interp
+	const double Te
 	){
 	
 	// Initialise vectors as all zeros (this is default, but it doesn't hurt to be explicit)
@@ -236,8 +210,8 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 	
 	//N.b. iterating over all data indices of the rate coefficient, hence the <
 	for(int k=0; k < Z; ++k){
-		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D(k, Te_interp, Ne_interp);
-		double recombination_coefficient_evaluated = recombination_coefficient->call0D(k, Te_interp, Ne_interp);
+		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D(k, Te, Ne);
+		double recombination_coefficient_evaluated = recombination_coefficient->call0D(k, Te, Ne);
 		
 		// Note that recombination coefficients are indexed from 1 to Z, while ionisation is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -288,7 +262,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		F_zk[k]                                          = neumaier_pair_momentum.first;
 		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
 
-		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te_interp, Ne_interp);
+		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
@@ -312,8 +286,8 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	const double Nn,
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
-	const std::pair<int, double>& Te_interp,
-	const std::pair<int, double>& Ne_interp
+	const double Te,
+	const double Ne
 	){
 	// Consider charge exchange after calculating Pcool
 	
@@ -324,7 +298,7 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 
 	std::shared_ptr<RateCoefficient> cx_recombination_coefficient = rate_coefficients["cx_rec"];
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te_interp, Ne_interp);
+		double cx_recombination_coefficient_evaluated = cx_recombination_coefficient->call0D(k, Te, Ne);
 		
 		// Note that cx_recombination coefficients are indexed from 1 to Z
 		int k_rec = k + 1; //The target charge state for recombination -- makes it a bit easier to understand
@@ -401,15 +375,14 @@ void RateEquations::calculateIonIonDrag(
 void RateEquations::calculateElectronImpactPowerEquation(
 	const double Ne,
 	const std::vector<double>& Nzk,
-	const std::pair<int, double>& Te_interp,
-	const std::pair<int, double>& Ne_interp
+	const double Te
 	){
 	//Calculate the power - doesn't need as high precision since everything is positive
 	std::shared_ptr<RateCoefficient> line_power_coefficient = rate_coefficients["line_power"];
 	std::shared_ptr<RateCoefficient> continuum_power_coefficient = rate_coefficients["continuum_power"];
 	for(int k=0; k < Z; ++k){//N.b. iterating over all data indicies of the rate coefficient, hence the <
-		double line_power_coefficient_evaluated = line_power_coefficient->call0D(k, Te_interp, Ne_interp);
-		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D(k, Te_interp, Ne_interp);
+		double line_power_coefficient_evaluated = line_power_coefficient->call0D(k, Te, Ne);
+		double continuum_power_coefficient_evaluated = continuum_power_coefficient->call0D(k, Te, Ne);
 		
 		// Note that continuum_power coefficients are indexed from 1 to Z, while line_power is indexed from 0 to Z-1 (consider what 
 		// charge the target must have in each case)
@@ -424,14 +397,14 @@ void RateEquations::calculateElectronImpactPowerEquation(
 void RateEquations::calculateChargeExchangePowerEquation(
 	const double Nn,
 	const std::vector<double>& Nzk,
-	const std::pair<int, double>& Te_interp,
-	const std::pair<int, double>& Ne_interp
+	const double Te,
+	const double Ne
 	){
 	//Calculate the power - doesn't need as high precision since everything is positive
 	
 	std::shared_ptr<RateCoefficient> cx_power_coefficient = rate_coefficients["cx_power"];
 	for(int k=0; k < Z; ++k){
-		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te_interp, Ne_interp);
+		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
 	}

@@ -139,8 +139,7 @@
 		const double Ne,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te
 		);
 
 	/**
@@ -159,8 +158,8 @@
 		const double Nn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te,
+		const double Ne
 		);
 
 	/**
@@ -182,8 +181,7 @@
 	void calculateElectronImpactPowerEquation(
 		const double Ne,
 		const std::vector<double>& Nzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te
 	);
 
 	/**
@@ -192,8 +190,8 @@
 	void calculateChargeExchangePowerEquation(
 		const double Nn,
 		const std::vector<double>& Nzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te,
+		const double Ne
 	);
 
 	DerivStruct makeDerivativeStruct();

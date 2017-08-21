@@ -77,10 +77,6 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Uses the same keys as .adas_file_dict
 	makeRateCoefficients();
 
-	// Checks to see whether shared interpolation can be used - i.e. whether log_temp and log_dens are the same for all
-	// the rate coefficients in the dictionary. Sets the flag ImpuritySpecies::has_shared_interpolation accordingly.
-	initialiseSharedInterpolation();
-
 };
 void ImpuritySpecies::addJSONFiles(const std::string& physics_process, const std::string& filetype_code, const std::string& json_database_path, const int year_fallback /* = 1996*/){
 	// # 1. Make the filename std::string expected for the json adas file
@@ -150,38 +146,9 @@ void ImpuritySpecies::makeRateCoefficients(){
 	std::map<std::string,std::shared_ptr<RateCoefficient> > ImpuritySpecies::get_rate_coefficients(){
 		return rate_coefficients;
 	};
-	bool ImpuritySpecies::get_has_shared_interpolation(){
-		return has_shared_interpolation;
-	};
 	void ImpuritySpecies::add_to_rate_coefficients(std::string key, std::shared_ptr<RateCoefficient> value){
 		rate_coefficients[key] = value;
 	};
 	std::shared_ptr<RateCoefficient> ImpuritySpecies::get_rate_coefficient(const std::string& key){
 		return rate_coefficients[key];
 	};
-	void ImpuritySpecies::initialiseSharedInterpolation(){
-		// Make a blank RateCoefficient object by calling the RateCoefficient constructor on another RateCoefficient object
-		//   (Choose ionisation as source since this is one of the processes always included in the model)
-		//   (Might consider pushing this into seperate method and constructor, but this works for now)
-		// Create a smart pointer 'RC' that points to this object
-		std::shared_ptr<RateCoefficient> blank_RC(new RateCoefficient(rate_coefficients["ionisation"]));
-		// Add 'blank_RC' to the rate_coefficients attribute of ImpuritySpecies
-		// (n.b. this is a std::map from a std::string 'physics_process' to a smart pointer which points to a RateCoefficient object)
-		blank_RC->zero_interpolator();
-		rate_coefficients["blank"] = blank_RC;//Zero the grid values, so that it should be reasonably obvious if the ["blank"] rate-coefficient is accessed
-
-		has_shared_interpolation = true;
-		for (auto& kv : rate_coefficients) {
-			std::string physics_process = kv.first;
-			std::shared_ptr<RateCoefficient> RC_to_compare = kv.second;
-			// Seems to implicitly compare based on a small tolerance -- works for now
-			if (not(blank_RC->get_log_temp() == RC_to_compare->get_log_temp())){
-				std::cout << "\n Warning: log_temp doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				has_shared_interpolation = false;
-			}
-			if (not(blank_RC->get_log_dens() == RC_to_compare->get_log_dens())){
-				std::cout << "\n Warning: log_dens doesn't match between ionisation and " << physics_process << ". Can't use shared interpolation." << std::endl;
-				has_shared_interpolation = false;
-			}
-		}
-	}
