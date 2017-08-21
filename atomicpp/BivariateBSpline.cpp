@@ -237,7 +237,7 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
   **/
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at[xb,xe,yb,ye,kx,ky,s]))
 regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
-  // std::cout << "regrid_smth called" <<std::endl;
+  std::cout << "regrid_smth called" <<std::endl;
 
   int mx = x.size();
   int my = y.size();
@@ -270,8 +270,8 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int nminx = 2*(kx+1);
   int nminy = 2*(ky+1);
   
-  int lwest = 4+nxest*(my+2*(kx+2)+1)+nyest*(2*(ky+2)+1)+mx*(kx+1)+ my*(ky+1)+std::max(nxest,my);
-  int kwest = 3+mx+my+nxest+nyest;
+  int lwest = 4 + nxest * (my + 2 * (kx + 2) + 1) + nyest * (2 * (ky + 2) + 1) + mx * (kx + 1) +  my * (ky + 1)+std::max(nxest,my);
+  int kwest = 3 + mx + my + nxest + nyest;
   //  before starting computations a data check is made. if the input data
   if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 1");
   if(ky <= 0 or ky > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 2");
@@ -291,8 +291,8 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
   //  we partition the working space and determine the spline approximation;
 
-  int nx     = 0; //These variables are modified by fpregr
-  int ny     = 0; //
+  int nx     = 0;
+  int ny     = 0;
 
   std::vector<double> fpintx(nxest, 0.0);
   std::vector<double> fpinty(nyest, 0.0);
@@ -303,7 +303,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int mm = std::max(nxest,my);
   int mynx = nxest*my;
 
-  // std::cout << "fpregr called" <<std::endl;
+  std::cout << "fpregr called" <<std::endl;
 
   //
   // part 1: determination of the number of knots and their position.
@@ -368,14 +368,15 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
   std::vector<double>  fpx = fpintx;
   std::vector<double>  fpy = fpinty;
-  std::vector<std::vector<double>> spx(mx, std::vector<double>((kx+1), 0.0));
-  std::vector<std::vector<double>> spy(my, std::vector<double>((ky+1), 0.0));
+  std::vector<std::vector<double>> spx(mx, std::vector<double>(kx+1, 0.0));
+  std::vector<std::vector<double>> spy(my, std::vector<double>(ky+1, 0.0));
   std::vector<double> right(mm, 0.0);
   std::vector<double> q(mynx, 0.0);
-  std::vector<std::vector<double>> ax(nx, std::vector<double>((kx+2),0.0));
-  std::vector<std::vector<double>> ay(ny, std::vector<double>((ky+2),0.0));
-  std::vector<std::vector<double>> bx(nx, std::vector<double>((kx+2),0.0));
-  std::vector<std::vector<double>> by(ny, std::vector<double>((ky+2),0.0));
+  std::vector<std::vector<double>> ax(nx, std::vector<double>(kx+2, 0.0));
+  std::vector<std::vector<double>> ay(ny, std::vector<double>(ky+2, 0.0));
+  std::vector<std::vector<double>> bx(nx, std::vector<double>(kx+2, 0.0));
+  std::vector<std::vector<double>> by(ny, std::vector<double>(ky+2, 0.0));
+
 
   //  ..subroutine references..
     //    fpback,fpbspl,fpgivs,fpdisc,fprota
@@ -402,7 +403,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     //                matrices which contain the discontinuity jumps of the
     //                derivatives of the b-splines in the x- and y-direction.
 
-  // std::cout << "fpgrre called" <<std::endl;
+  std::cout << "fpgrre called" <<std::endl;
 
   std::vector<double> h(7, 0.0);
 
@@ -412,6 +413,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int l = (kx+1);
   int l1 = (kx+2);
   int number = 0;
+
 
   for(int it = 1; it <= mx; ++it){
     double arg = x[it-1];
@@ -423,7 +425,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     }
 
     fpbspl(tx,nx,kx,arg,l,h);
-    // std::cout << "Check" << h << std::endl;
     for(int i=1; i <= (kx+1); ++i){
       spx[it-1][i-1] = h[i-1];
     }
@@ -447,7 +448,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     }
 
     fpbspl(ty,ny,ky,arg,l,h);
-    // std::cout << "Check" << h << std::endl;
     for(int i=1; i <= (ky+1); ++i){
       spy[it-1][i-1] = h[i-1];
     }
@@ -458,7 +458,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   //  rotations. apply the same transformations to the rows of matrix q
   //  to obtain the my x (nx-kx-1) matrix g.
   //  store matrix (rx) into (ax) and g into q.
-  l = my*nx-(kx+1);
+  l = my * (nx-(kx+1));
   //  initialization.
   for(int i = 1; i <= l; ++i){
     q[i-1] = 0;
@@ -473,12 +473,10 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   // int nrold = 0;
   int ibandx = (kx+1);
   //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
-  
   for(int it = 1; it <= mx; ++it){
     number = nrx[it-1];
     // fetch a new row of matrix (spx).
     h[ibandx-1] = 0.;
-
     for(int j = 1; j <= (kx+1); ++j){
       h[j-1] = spx[it-1][j-1];
     }
@@ -517,23 +515,22 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     }
   }
 
-
   // !  reduce the matrix (ay) to upper triangular form (ry) using givens
   // !  rotations. apply the same transformations to the columns of matrix g
   // !  to obtain the (ny-ky-1) x (nx-kx-1) matrix h.
   // !  store matrix (ry) into (ay) and h into C.
-  int ncof = nx-(kx+1) * ny-(ky+1);
+  // int ncof = (nx-(kx+1)) * (ny-(ky+1));
   // !  initialization.
 
-  for(int i = 1; i<= ncof; ++i){
-    C[i-1] = 0;
-  }
+  // for(int i = 1; i<= ncof; ++i){
+  //   C[i-1] = 0;
+  // }
 
-  for(int i=1; i<=ny-(ky+1); ++i){
-    for(int j=1; j<=nx-(kx+1); ++j){
-      ay[i-1][j-1] = 0;
-    }
-  }
+  // for(int i=1; i <= ny-(ky+1); ++i){
+  //   for(int j=1; j <= nx-(kx+1); ++j){
+  //     ay[i-1][j-1] = 0;
+  //   }
+  // }
 
   int ibandy = (ky+1);
 
@@ -581,91 +578,80 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     }
   }
 
-int k = 1;
-for(int i=1; i <= nx-(kx+1); ++i){
-  fpback(ay,C,k,ny-(ky+1),ibandy,C,k,ny);
-  k = k + ny-(ky+1);
-}
-
-k = 0;
-for(int j=1; j <= ny-(ky+1); ++j){
-  k += 1;
-  l = k;
+  int k = 1;
   for(int i=1; i <= nx-(kx+1); ++i){
-    right[i-1] = C[l-1];
-    l += ny-(ky+1);
+    fpback(ay,C,k,ny-(ky+1),ibandy,C,k,ny);
+    k = k + ny-(ky+1);
   }
-
-  fpback(ax,right,nx-(kx+1),ibandx,right,nx);
-
-  l = k;
-  for(int i = 1; i <= nx-(kx+1); ++i){
-    C[l-1] = right[i-1];
-    l += ny-(ky+1);
-  }
-}
-
-fp = 0.;
-for(int i=1;i <= nx;++i){
-  fpx[i-1] = 0.;
-}
-for(int i=1;i <= ny;++i){
-  fpy[i-1] = 0.;
-}
-
-int iz = 0;
-int nroldx = 0;
-
-//  main loop for the different grid points.
-for(int i1 = 1; i1 <= mx; ++i1){
-  int numx = nrx[i1-1];
-  int numx1 = numx+1;
-  int nroldy = 0;
-  for(int i2 = 1; i2 <= my; ++i2){
-    int numy = nry[i2-1];
-    int numy1 = numy+1;
-    iz = iz+1;
-    //  evaluate s(x,y) at the current grid point by making the sum of the
-    //  cross products of the non-zero b-splines at (x,y), multiplied with
-    //  the appropriate b-spline coefficients.
-    double term = 0.;
-    int k1 = numx*(ny-(ky+1))+numy;
-    for(int l1 = 1; l1 <= (kx+1); ++l1){
-      int k2 = k1;
-      // std::cout << spx << std::endl;
-      double fac = spx[i1-1][l1-1];
-      for(int l2 = 1; l2 <= (ky+1); ++l2){
-        k2 = k2+1;
-        // std::cout << "fac = " << fac << std::endl;
-        // std::cout << "i2-1 = " << i2-1 << std::endl;
-        // std::cout << "l2-1 = " << l2-1 << std::endl;
-        // std::cout << "spy[i2-1])[l2-1]) = " << spy[i2-1])[l2-1]) << std::endl;
-        // std::cout << "k2-1 = " << k2-1 << std::endl;
-        // std::cout << "C[k2-1]) = " << C[k2-1]) << std::endl;
-        term = term + fac * spy[i2-1][l2-1] * C[k2-1];
-     }
-      k1 = k1+ny-(ky+1);
+  k = 0;
+  for(int j=1; j <= ny-(ky+1); ++j){
+    k += 1;
+    l = k;
+    for(int i=1; i <= nx-(kx+1); ++i){
+      right[i-1] = C[l-1];
+      l += ny-(ky+1);
     }
-    //  calculate the squared residual at the current grid point.
-    term = (z[iz-1]-term)*(z[iz-1]-term);
-    //  adjust the different parameters.
-    fp = fp+term;
-    fpx[numx1-1] = fpx[numx1-1]+term;
-    fpy[numy1-1] = fpy[numy1-1]+term;
-    double fac = term*0.5;
-    if(numy!=nroldy){
-      fpy[numy1-1] = fpy[numy1-1]-fac;
-      fpy[numy-1] = fpy[numy-1]+fac;
-    }
-    nroldy = numy;
-    if(numx!=nroldx){
-      fpx[numx1-1] = fpx[numx1-1]-fac;
-      fpx[numx-1] = fpx[numx-1]+fac;
+
+    fpback(ax,right,nx-(kx+1),ibandx,right,nx);
+
+    l = k;
+    for(int i = 1; i <= nx-(kx+1); ++i){
+      C[l-1] = right[i-1];
+      l += ny-(ky+1);
     }
   }
-  nroldx = numx;
-}
+  fp = 0.;
+  for(int i=1;i <= nx;++i){
+    fpx[i-1] = 0.;
+  }
+  for(int i=1;i <= ny;++i){
+    fpy[i-1] = 0.;
+  }
 
+  int iz = 0;
+  int nroldx = 0;
+  //  main loop for the different grid points.
+  for(int i1 = 1; i1 <= mx; ++i1){
+    int numx = nrx[i1-1];
+    int numx1 = numx+1;
+    int nroldy = 0;
+    for(int i2 = 1; i2 <= my; ++i2){
+      int numy = nry[i2-1];
+      int numy1 = numy+1;
+      iz = iz+1;
+      //  evaluate s(x,y) at the current grid point by making the sum of the
+      //  cross products of the non-zero b-splines at (x,y), multiplied with
+      //  the appropriate b-spline coefficients.
+      double term = 0.;
+      int k1 = numx * (ny-(ky+1))+numy;
+      for(int l1 = 1; l1 <= (kx+1); ++l1){
+        int k2 = k1;
+        double fac = spx[i1-1][l1-1];
+        for(int l2 = 1; l2 <= (ky+1); ++l2){
+          k2 = k2+1;
+          term = term + fac * spy[i2-1][l2-1] * C[k2-1];
+       }
+        k1 = k1+ny-(ky+1);
+      }
+      //  calculate the squared residual at the current grid point.
+      term = (z[iz-1]-term)*(z[iz-1]-term);
+      //  adjust the different parameters.
+      fp = fp+term;
+      fpx[numx1-1] = fpx[numx1-1]+term;
+      fpy[numy1-1] = fpy[numy1-1]+term;
+      double fac = term*0.5;
+      if(numy!=nroldy){
+        fpy[numy1-1] = fpy[numy1-1]-fac;
+        fpy[numy-1] = fpy[numy-1]+fac;
+      }
+      nroldy = numy;
+      if(numx!=nroldx){
+        fpx[numx1-1] = fpx[numx1-1]-fac;
+        fpx[numx-1] = fpx[numx-1]+fac;
+      }
+    }
+    nroldx = numx;
+  }
   //  if nx=mx+kx+1 and ny=my+ky+1, sinf(x,y) is an interpolating spline.
 
   regrid_return setup_spline;
