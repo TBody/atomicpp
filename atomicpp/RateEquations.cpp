@@ -97,15 +97,9 @@ DerivStruct RateEquations::computeDerivs(
 
 	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te);
 
-	// if (use_charge_exchange){
-	// 	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te, Ne);
-	// }
-
-	//Apply neumairSum corrections
-	// for(int k=0; k<=Z; ++k){
-		// dNzk[k] += dNzk_correction[k];
-		// F_zk[k] += F_zk_correction[k];
-	// }
+	if (use_charge_exchange){
+		calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te, Ne);
+	}
 
 	verifyNeumaierSummation(Te, Ne);
 
@@ -113,12 +107,16 @@ DerivStruct RateEquations::computeDerivs(
 	
 	calculateElectronImpactPowerEquation(Ne, Nzk, Te);
 	
-	// if (use_charge_exchange){
-	// 	calculateChargeExchangePowerEquation(Nn, Nzk, Te, Ne);
-	// }
+	if (use_charge_exchange){
+		calculateChargeExchangePowerEquation(Nn, Nzk, Te, Ne);
+	}
 
-	// auto derivative_tuple = makeDerivativeTuple();
-	// return derivative_tuple;
+	// Apply neumairSum corrections
+	for(int k=0; k<=Z; ++k){
+		dNzk[k] += dNzk_correction[k];
+		F_zk[k] += F_zk_correction[k];
+	}
+	
 	DerivStruct derivative_struct = makeDerivativeStruct();
 	return derivative_struct;
 };
@@ -207,27 +205,20 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 			//Rates 'to' a state are loss terms from that state. They are paired with Rates 'from'
 			//which are source terms for other states
-			iz_to_above[k]            = -ionisation_rate_factor * Nzk[k];
-			iz_from_below[k+1]        = +ionisation_rate_factor * Nzk[k];
-			rec_to_below[k_rec]       = -recombination_rate_factor * Nzk[k_rec];
-			rec_from_above[k_rec-1]   = +recombination_rate_factor * Nzk[k_rec];
+			iz_to_above.at(k)               = -ionisation_rate_factor * Nzk.at(k);
+			iz_from_below.at(k+1)        = +ionisation_rate_factor * Nzk.at(k);
+			rec_to_below.at(k_rec)       = -recombination_rate_factor * Nzk.at(k_rec);
+			rec_from_above.at(k_rec-1)   = +recombination_rate_factor * Nzk.at(k_rec);
 
-			iz_p_to_above[k]          = -ionisation_rate_factor * mz * Vzk[k];
-			iz_p_from_below[k+1]      = +ionisation_rate_factor * mz * Vzk[k];
-			rec_p_to_below[k_rec]     = -recombination_rate_factor * mz * Vzk[k_rec];
-			rec_p_from_above[k_rec-1] = +recombination_rate_factor * mz * Vzk[k_rec];
+			iz_p_to_above.at(k)          = -ionisation_rate_factor * mz * Vzk.at(k);
+			iz_p_from_below.at(k+1)      = +ionisation_rate_factor * mz * Vzk.at(k);
+			rec_p_to_below.at(k_rec)     = -recombination_rate_factor * mz * Vzk.at(k_rec);
+			rec_p_from_above.at(k_rec-1) = +recombination_rate_factor * mz * Vzk.at(k_rec);
 		}
 		// Otherwise, the rates stay as default = 0
 	}
 
-	//For Neumaier summation of the change in Ne from the different rates 
-	std::vector<double> dNe_from_stage(Z, 0.0);
-
-	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
-	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
-	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients["ionisation_potential"];
-
-	for(int k=0; k < Z; ++k){
+	for(int k=0; k <= Z; ++k){
 		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential -- treat it separately
 		// Rates will be zero for edge cases (from initialisation)
 		std::vector<double> rates_for_stage              = {iz_to_above[k],iz_from_below[k],rec_to_below[k],rec_from_above[k]};
@@ -239,77 +230,20 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
 		F_zk[k]                                          = neumaier_pair_momentum.first;
 		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Store compensation separately for later evaluation
+	}
 
+	//For Neumaier summation of the change in Ne from the different rates 
+	std::vector<double> dNe_from_stage(Z, 0.0);
+	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
+	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
+	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients["ionisation_potential"];
+	for(int k=0; k < Z; ++k){
+		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential
+		// Rates will be zero for edge cases (from initialisation)
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
-	// Bare nucleus case
-	std::vector<double> rates_for_bare_nucleus       = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
-	std::pair<double, double> neumaier_pair_dNzk     = neumaierSum(rates_for_bare_nucleus);
-	dNzk[Z]                                          = neumaier_pair_dNzk.first;
-	dNzk_correction[Z]                               = neumaier_pair_dNzk.second;
-
-	// std::printf("iz_to_above    = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",iz_to_above[0],   iz_to_above[1],   iz_to_above[2],   iz_to_above[3],   iz_to_above[4],   iz_to_above[5],   iz_to_above[6]);
-	// std::printf("iz_from_below  = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",iz_from_below[0], iz_from_below[1], iz_from_below[2], iz_from_below[3], iz_from_below[4], iz_from_below[5], iz_from_below[6]);
-	// std::printf("rec_to_below   = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",rec_to_below[0],  rec_to_below[1],  rec_to_below[2],  rec_to_below[3],  rec_to_below[4],  rec_to_below[5],  rec_to_below[6]);
-	// std::printf("rec_from_above = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",rec_from_above[0],rec_from_above[1],rec_from_above[2],rec_from_above[3],rec_from_above[4],rec_from_above[5],rec_from_above[6]);
-	
-	// int k = 5;
-
-	// std::printf("iz_to_above    = [%+25.2f];\n",iz_to_above[k]   );
-	// std::printf("iz_from_below  = [%+25.2f];\n",iz_from_below[k] );
-	// std::printf("rec_to_below   = [%+25.2f];\n",rec_to_below[k]  );
-	// std::printf("rec_from_above = [%+25.2f];\n",rec_from_above[k]);
-
-
-	std::vector<double> sum_of_rates;
-	for(int k=0; k<= Z; ++k){
-		sum_of_rates.push_back(iz_to_above[k]);
-		sum_of_rates.push_back(iz_from_below[k]);
-		sum_of_rates.push_back(rec_to_below[k]);
-		sum_of_rates.push_back(rec_from_above[k]);
-	}
-	std::pair<double, double> total_sum = neumaierSum(sum_of_rates);
-
-
-	std::vector<double> sum_of_sums;
-	//Apply neumairSum corrections
-	for(int k=0; k<=Z; ++k){
-		dNzk[k] += dNzk_correction[k];
-		F_zk[k] += F_zk_correction[k];
-		std::printf("%f\n", dNzk[k]);
-		sum_of_sums.push_back(dNzk[k]);
-	}
-	std::pair<double, double> total_of_sums = neumaierSum(sum_of_sums);
-
-
-	std::vector<double> extended;
-	for(int k=0; k<=Z; ++k){
-		// dNzk[k] += dNzk_correction[k];
-		std::printf("sum: %f\n", dNzk[k]);
-		std::printf("cor: %f\n", dNzk_correction[k]);
-
-		extended.push_back(dNzk[k]);
-		extended.push_back(dNzk_correction[k]);
-	}
-	std::pair<double, double> combined = neumaierSum(extended);
-
-
-	std::printf("total sum    (= %f) + correction (= %f) = %f\n",total_sum.first, total_sum.second, total_sum.first+total_sum.second);
-	std::printf("sum of sums  (= %f) + correction (= %f) = %f\n",total_of_sums.first, total_of_sums.second, total_of_sums.first+total_of_sums.second);
-	std::printf("combined sum (= %f) + correction (= %f) = %f\n",combined.first, combined.second, combined.first+combined.second);
-
-
-	std::printf("\n");
-	throw std::runtime_error("Stop");
-
-
-	std::vector<double> momentum_for_stage           = {iz_p_to_above[Z],iz_p_from_below[Z],rec_p_to_below[Z],rec_p_from_above[Z]};
-	std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
-	F_zk[Z]                                          = neumaier_pair_momentum.first;
-	F_zk_correction[Z]                               = neumaier_pair_momentum.second;
-
 	// Perturbation on electron density
 	std::pair<double, double> neumaier_pair_dNe      = neumaierSum(dNe_from_stage);
 	dNe                                              = neumaier_pair_dNe.first + neumaier_pair_dNe.second;
@@ -370,13 +304,22 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 void RateEquations::verifyNeumaierSummation(const double Te, const double Ne, const double NeumaierTolerance){
 	// Verify that the sum over all elements equals zero (or very close to) 
 	
-	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
+	std::vector<double> check_dNzk(2*(Z+1), 0.0);
+	std::vector<double> check_F_zk(2*(Z+1), 0.0);
+	for(int k=0; k<=Z; ++k){
+		check_dNzk[2*k] = dNzk[k];
+		check_dNzk[2*k+1] = dNzk_correction[k];
+		check_F_zk[2*k] = F_zk[k];
+		check_F_zk[2*k+1] = F_zk_correction[k];
+	}
+	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(check_dNzk);
+	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(check_F_zk); 
+
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second); 
 	if(std::fabs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > NeumaierTolerance){ 
 		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second, Te, Ne);
 	}
 
-	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second); 
 	if(std::fabs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > NeumaierTolerance){ 
 		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second, Te, Ne);
@@ -549,3 +492,14 @@ std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_
 
 	return neumaier_pair;
 };
+
+
+
+
+
+
+
+
+
+
+
