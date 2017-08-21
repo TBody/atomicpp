@@ -8,15 +8,19 @@ flags        = $(warn_flags) -std=c++11
 
 objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/BilinearSpline.o $(atomicpp)/BicubicSpline.o $(atomicpp)/BivariateBSpline.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 
 
-test_bicubic: test_bicubic.cpp atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
-	cd atomicpp; python setup_spline.py build_ext --inplace --verbose
-	g++ test_bicubic.cpp atomicpp/BivariateBSpline.cpp -g -O0 -Wall -fno-inline -std=c++11 -o test_bicubic
-	# ./test_bicubic
+# test_bicubic: test_bicubic.cpp atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
+# 	cd atomicpp; python setup_spline.py build_ext --inplace --verbose
+# 	g++ test_bicubic.cpp atomicpp/BivariateBSpline.cpp -g -O0 -Wall -fno-inline -std=c++11 -o test_bicubic
+# 	# ./test_bicubic
 
-run_bicubic: test_bicubic.cpp atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
+# run_bicubic: test_bicubic.cpp atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
+# 	cd atomicpp; python setup_spline.py build_ext --inplace --verbose
+# 	g++ test_bicubic.cpp atomicpp/BivariateBSpline.cpp -g -O0 -Wall -fno-inline -std=c++11 -o test_bicubic
+# 	./test_bicubic
+
+py_verify: Bicubic.py atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
 	cd atomicpp; python setup_spline.py build_ext --inplace --verbose
-	g++ test_bicubic.cpp atomicpp/BivariateBSpline.cpp -g -O0 -Wall -fno-inline -std=c++11 -o test_bicubic
-	./test_bicubic
+	python Bicubic.py
 
 cpp_run: $(objects)
 	$(compiler) $(flags) -o Prad $(objects)

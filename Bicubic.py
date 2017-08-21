@@ -306,37 +306,40 @@ def y_compare(hi_res, pyxspline, cppspline, x_const, trim_y):
 
 if __name__ == '__main__':
 
-	# data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
-	# x_values = data_dict['log_temperature']
-	# y_values = data_dict['log_density']
-	# x_min = min(x_values)
-	# x_max = max(x_values)
-	# y_min = min(y_values)
-	# y_max = max(y_values)
-	# z_values = data_dict['log_coeff']
+	data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
+	x_values = np.array(data_dict['log_temperature'])
+	y_values = np.array(data_dict['log_density'])
+	x_min = min(x_values)
+	x_max = max(x_values)
+	y_min = min(y_values)
+	y_max = max(y_values)
 
-	x_lowres = 10
-	y_lowres = 15
-	x_highres = 50
-	y_highres = 50
+	k = 0
 
-	x_min = -2
-	x_max = 3
-	y_min = -4
-	y_max = 3
+	z_values = np.array(data_dict['log_coeff'][0])
 
-	x_in_min = x_min + (x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
-	x_in_max = x_max - (x_max-x_min)/(x_lowres-1)
-	y_in_min = y_min + (y_max-y_min)/(y_lowres-1)
-	y_in_max = y_max - (y_max-y_min)/(y_lowres-1)
+	# x_lowres = 10
+	# y_lowres = 15
+	x_highres = 100
+	y_highres = 100
 
-	low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
-	# low_res = generate_from_func_vectors(gen_func, x_values, y_values)
-	hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
+	# x_min = -2
+	# x_max = 3
+	# y_min = -4
+	# y_max = 3
 
-	x_values = np.array(low_res['x'])
-	y_values = np.array(low_res['y'])
-	z_values = np.array(low_res['z'])
+	# x_in_min = x_min + (x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
+	# x_in_max = x_max - (x_max-x_min)/(x_lowres-1)
+	# y_in_min = y_min + (y_max-y_min)/(y_lowres-1)
+	# y_in_max = y_max - (y_max-y_min)/(y_lowres-1)
+
+	# low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
+	# # low_res = generate_from_func_vectors(gen_func, x_values, y_values)
+	# hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
+
+	# x_values = np.array(low_res['x'])
+	# y_values = np.array(low_res['y'])
+	# z_values = np.array(low_res['z'])
 
 	# plt.pcolor(x_values, y_values, z_values,cmap='RdBu',
 	# 	cmap='RdBu')
@@ -345,11 +348,11 @@ if __name__ == '__main__':
 	# plt.show()
 
 	if True:
-		cpp_interp = PyBivariateBSpline(x_values, y_values, z_values.transpose())
+		cpp_interp = PyBivariateBSpline(x_values, y_values, z_values, True, True)
+		pyx_interp = RectBivariateSpline(x_values, y_values, z_values,kx=3,ky=3)
+	elif False:
 		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
-	elif True:
 		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
-		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
 	else:
 		cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
 		pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
@@ -357,13 +360,13 @@ if __name__ == '__main__':
 	# inspect_grid_coeff(hi_res, cpp_interp)
 
 	# cpp_hi_res = generate_from_func(cpp_interp.call0D, x_highres, y_highres, x_min, x_max, y_min, y_max)
-	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, low_res['x'], low_res['y'])
+	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, x_values, y_values)
 	# pyx_hi_res = generate_from_func(pyx_interp, x_highres, y_highres, x_min, x_max, y_min, y_max)
-	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, low_res['x'], low_res['y'])
+	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, x_values, y_values)
 
 	# plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
 
-	# plot_difference(pyx_hi_res, cpp_hi_res)
+	plot_difference(pyx_hi_res, cpp_hi_res)
 
 	# plot_ratio(pyx_hi_res, cpp_hi_res)
 
@@ -371,13 +374,6 @@ if __name__ == '__main__':
 
 	# x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
 	# y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
-
-
-	# plt.pcolor(z_values[0] - cpp_hi_res['z'],cmap='RdBu',
-	# 	cmap = 'jet',
-	# 	extent=(y_values.min(), y_values.max(), x_values.min(), x_values.max())
-	# 	)
-	# plt.colorbar()
 
 	# plt.show()
 

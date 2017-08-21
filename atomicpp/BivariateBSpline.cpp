@@ -15,11 +15,11 @@ using namespace atomicpp;
 BivariateBSpline::BivariateBSpline(){//Default constructor
 };
 BivariateBSpline::BivariateBSpline(
-  std::vector<double>& _x_values,
-  std::vector<double>& _y_values,
-  std::vector< std::vector<double> > & _z_values,
-  bool auto_transpose /* = true */,
-  bool warn_transpose /* = true */
+  const std::vector<double>& _x_values,
+  const std::vector<double>& _y_values,
+  const std::vector< std::vector<double> > & _z_values,
+  const bool auto_transpose /* = true */,
+  const bool warn_transpose /* = true */
   ){
   x_values = _x_values;
   y_values = _y_values;
@@ -30,12 +30,6 @@ BivariateBSpline::BivariateBSpline(
 
   int zx_length = z_values.size();
   int zy_length = z_values[0].size();
-
-  // std::cout << mx << std::endl;
-  // std::cout << my << std::endl;  
-
-  // std::cout << zx_length << std::endl;
-  // std::cout << zy_length << std::endl;
 
   for(int i = 0; i < mx-1; ++i){
     if (x_values[i+1] <= x_values[i]){
@@ -74,11 +68,6 @@ BivariateBSpline::BivariateBSpline(
   } else{
     throw std::runtime_error("BivariateBSpline initialization error: unhandled exception");
   }
-
-  // std::cout << "x: " << x_values << std::endl;
-  // std::cout << "y: " << y_values << std::endl;
-  // std::cout << "z: " << z_values << std::endl;
-  // std::cout << "z_flattened: " << z_flattened << std::endl;
 
   // __INIT__ BBSpline
 
@@ -289,9 +278,7 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
   **/
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at.at(x)b,xe,yb,ye,kx,ky,s))
 regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
-  std::cout << "regrid_smth called" <<std::endl;
-
-  std::cout << z << std::endl;
+  // std::cout << "regrid_smth called" <<std::endl;
 
   int mx = x.size();
   int my = y.size();
@@ -327,21 +314,21 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int lwest = 4 + nxest * (my + 2 * (kx + 2) + 1) + nyest * (2 * (ky + 2) + 1) + mx * (kx + 1) +  my * (ky + 1)+std::max(nxest,my);
   int kwest = 3 + mx + my + nxest + nyest;
   //  before starting computations a data check is made. if the input data
-  if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 1");
-  if(ky <= 0 or ky > 5) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 2");
+  if(kx <= 0 or kx > 5) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 1");
+  if(ky <= 0 or ky > 5) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 2");
 
-  if(mx < (kx+1) or nxest < nminx) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 4");
-  if(my < (ky+1) or nyest < nminy) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 5");
-  if(lwrk < lwest or kwrk < kwest) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 6");
-  if(xb > x.at(1-1) or xe < x.at(mx-1)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 7");
+  if(mx < (kx+1) or nxest < nminx) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 4");
+  if(my < (ky+1) or nyest < nminy) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 5");
+  if(lwrk < lwest or kwrk < kwest) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 6");
+  if(xb > x.at(1-1) or xe < x.at(mx-1)) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 7");
   for(int i = 1; i< mx; ++i){
-    if(x.at(i-1) >= x.at(i)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 8");
+    if(x.at(i-1) >= x.at(i)) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 8");
   }
-  if(yb > y.at(1-1) or ye < y.at(my-1)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 9");
+  if(yb > y.at(1-1) or ye < y.at(my-1)) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 9");
   for(int j = 1; j < my; ++j){
-    if(y.at(j-1) >= y.at(j)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 10");
+    if(y.at(j-1) >= y.at(j)) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 10");
   }
-  if((nxest < (mx+(kx+1)) or nyest < (my+(ky+1))) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
+  if((nxest < (mx+(kx+1)) or nyest < (my+(ky+1))) ) throw std::runtime_error("Error in BivariateBSpline/regrid_smth (C++ translation) - see code 13");
 
   //  we partition the working space and determine the spline approximation;
 
@@ -357,7 +344,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int mm = std::max(nxest,my);
   int mynx = nxest*my;
 
-  std::cout << "fpregr called" <<std::endl;
+  // std::cout << "fpregr called" <<std::endl;
 
   //
   // part 1: determination of the number of knots and their position.
@@ -457,7 +444,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     //                matrices which contain the discontinuity jumps of the
     //                derivatives of the b-splines in the x- and y-direction.
 
-  std::cout << "fpgrre called" <<std::endl;
+  // std::cout << "fpgrre called" <<std::endl;
 
   std::vector<double> h(7, 0.0);
 
@@ -538,13 +525,6 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     // find the appropriate column of q.
     for(int j = 1; j <= my; ++j){
       l += 1;
-      // std::cout << "right.at(j-1)" << right.at(j-1) << std::endl;
-      // std::cout << "it: " << it << std::endl;
-      // std::cout << "j-1: " << j-1 << std::endl;
-      // std::cout << "my: " << my << std::endl;
-      // std::cout << "z.size(): " << z.size() << std::endl;
-      // std::cout << "l-1: " << l-1 << std::endl;
-      // std::cout << z.at(l-1) << std::endl;
       right.at(j-1) = z.at(l-1);
     }
 
@@ -717,12 +697,12 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
   regrid_return setup_spline;
 
-  std::cout << "nx: " << nx << std::endl;
-  std::cout << "ny: " << ny << std::endl;
-  std::cout << "tx: " << tx << std::endl;
-  std::cout << "ty: " << ty << std::endl;
-  std::cout << "C: " << C << std::endl;
-  std::cout << "fp: " << fp << std::endl;
+  // std::cout << "nx: " << nx << std::endl;
+  // std::cout << "ny: " << ny << std::endl;
+  // std::cout << "tx: " << tx << std::endl;
+  // std::cout << "ty: " << ty << std::endl;
+  // std::cout << "C: " << C << std::endl;
+  // std::cout << "fp: " << fp << std::endl;
 
   setup_spline.nx = nx;
   setup_spline.ny = ny;

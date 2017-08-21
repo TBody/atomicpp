@@ -20,11 +20,11 @@
 	public:
 		BivariateBSpline(); //Default constructor
 		BivariateBSpline(
-			std::vector<double>& _x_values,
-			std::vector<double>& _y_values,
-			std::vector< std::vector<double> >& _z_values,
-			bool auto_transpose  = true,
-			bool warn_transpose  = true
+			const std::vector<double>& _x_values,
+			const std::vector<double>& _y_values,
+			const std::vector< std::vector<double> >& _z_values,
+			const bool auto_transpose  = true,
+			const bool warn_transpose  = true
 			);
 		double call0D(const double eval_x, const double eval_y);
 		std::vector< std::vector<double> > get_z_values();

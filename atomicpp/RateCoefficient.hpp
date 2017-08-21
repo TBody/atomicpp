@@ -6,7 +6,7 @@
 	#include "json.hpp"
 	using json = nlohmann::json;
 
-	#include "BicubicSpline.hpp"
+	#include "BivariateBSpline.hpp"
 	
 	namespace atomicpp{
 
@@ -56,7 +56,7 @@
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
-			std::vector<BicubicSpline> get_interpolator();
+			std::vector<BivariateBSpline> get_interpolator();
 			// std::vector<std::vector< std::vector<double> > > get_log_rate();
 			std::vector<double> get_log_temp();
 			std::vector<double> get_log_dens();
@@ -65,7 +65,7 @@
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			std::vector<BicubicSpline> interpolator;
+			std::vector<BivariateBSpline> interpolator;
 		};
 	}
 #endif

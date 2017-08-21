@@ -8,7 +8,7 @@ using json = nlohmann::json;
 
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
-#include "BicubicSpline.hpp"
+#include "BivariateBSpline.hpp"
 
 using namespace atomicpp;
 
@@ -28,7 +28,7 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	// The second copies the value to the corresponding RateCoefficient attribute
 
 	for(int k=0; k<atomic_number; ++k){
-		interpolator.push_back(BicubicSpline(log_temp, log_dens, log_rate[k]));
+		interpolator.push_back(BivariateBSpline(log_temp, log_dens, log_rate[k]));
 	}
 
 };
@@ -65,7 +65,7 @@ std::string RateCoefficient::get_element(){
 std::string RateCoefficient::get_adf11_file(){
 	return adf11_file;
 };
-std::vector<BicubicSpline> RateCoefficient::get_interpolator(){
+std::vector<BivariateBSpline> RateCoefficient::get_interpolator(){
 	return interpolator;
 };
 std::vector<double> RateCoefficient::get_log_temp(){
