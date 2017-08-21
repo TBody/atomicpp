@@ -23,12 +23,63 @@ BivariateBSpline::BivariateBSpline(
   y_values = _y_values;
   z_values = _z_values;
 
-  // __INIT__ BBSpline
-  //Flatten z to a 1D vector - i.e. 'ravel'
-  std::vector<double> z_flattened(begin(z_values.at(0)), end(z_values.at(0)));
-  for(int i = 1; i < (int)(x_values.size()); ++i){
-    z_flattened.insert(end(z_flattened), begin(z_values.at(i)), end(z_values.at(i)));
+  int mx = x_values.size();
+  int my = y_values.size();
+
+  int zx_length = z_values.size();
+  int zy_length = z_values[0].size();
+
+  // std::cout << mx << std::endl;
+  // std::cout << my << std::endl;  
+
+  // std::cout << zx_length << std::endl;
+  // std::cout << zy_length << std::endl;
+
+  for(int i = 0; i < mx-1; ++i){
+    if (x_values[i+1] <= x_values[i]){
+      throw std::runtime_error("BivariateBSpline initialization error: x_values must be strictly increasing");
+    }
   }
+  for(int j = 0; j < my-1; ++j){
+    if (y_values[j+1] <= y_values[j]){
+      throw std::runtime_error("BivariateBSpline initialization error: y_values must be strictly increasing");
+    }
+  }
+
+  std::vector<double> z_flattened (mx * my, 0.0); //Allocate an empty 1D vector for a flattened (i.e. ravel) of z
+
+  if((mx == zx_length) and (my == zy_length)){
+    // Flatten z and allocate it to z_flattened
+    for(int i = 0; i < mx; ++i){
+      for(int j = 0; j < my; ++j){
+        std::printf("%d, %d => %f\n", i, j, z_values.at(i).at(j));
+        z_flattened.at(my*i + j) = z_values.at(i).at(j);
+      }
+    }
+  } else if((mx == zy_length) and (my == zx_length)) {
+    // Easy to supply the transpose of z_values, since row and column indices swap
+    std::cout << "BivariateBSpline initialization warning: z_values has been transposed to have the correct number of elements in x and y dimensions\n";
+    // Flatten the transpose of z and allocate it to z_flattened
+    for(int i = 0; i < mx; ++i){
+      for(int j = 0; j < my; ++j){
+        z_flattened.at(i + mx*j) = z_values.at(j).at(i);
+      }
+    }
+  // Transpose doesn't work - throw an error
+  } else if(not(mx == zx_length)){
+    throw std::runtime_error("BivariateBSpline initialization error: x dimension of z_values must have the same number of elements as x");
+  } else if(not(my == zy_length)){
+    throw std::runtime_error("BivariateBSpline initialization error: y dimension of z_values must have the same number of elements as y");
+  } else{
+    throw std::runtime_error("BivariateBSpline initialization error: unhandled exception");
+  }
+
+  // std::cout << "x: " << x_values << std::endl;
+  // std::cout << "y: " << y_values << std::endl;
+  // std::cout << "z: " << z_values << std::endl;
+  // std::cout << "z_flattened: " << z_flattened << std::endl;
+
+  // __INIT__ BBSpline
 
   regrid_return setup_spline = regrid_smth(x_values, y_values, z_flattened);
 
@@ -238,6 +289,8 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
 // nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at.at(x)b,xe,yb,ye,kx,ky,s))
 regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
   std::cout << "regrid_smth called" <<std::endl;
+
+  std::cout << z << std::endl;
 
   int mx = x.size();
   int my = y.size();
@@ -484,6 +537,13 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     // find the appropriate column of q.
     for(int j = 1; j <= my; ++j){
       l += 1;
+      // std::cout << "right.at(j-1)" << right.at(j-1) << std::endl;
+      // std::cout << "it: " << it << std::endl;
+      // std::cout << "j-1: " << j-1 << std::endl;
+      // std::cout << "my: " << my << std::endl;
+      // std::cout << "z.size(): " << z.size() << std::endl;
+      // std::cout << "l-1: " << l-1 << std::endl;
+      // std::cout << z.at(l-1) << std::endl;
       right.at(j-1) = z.at(l-1);
     }
 
@@ -655,6 +715,14 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   //  if nx=mx+kx+1 and ny=my+ky+1, sinf(x,y) is an interpolating spline.
 
   regrid_return setup_spline;
+
+  std::cout << "nx: " << nx << std::endl;
+  std::cout << "ny: " << ny << std::endl;
+  std::cout << "tx: " << tx << std::endl;
+  std::cout << "ty: " << ty << std::endl;
+  std::cout << "C: " << C << std::endl;
+  std::cout << "fp: " << fp << std::endl;
+
   setup_spline.nx = nx;
   setup_spline.ny = ny;
   setup_spline.tx = tx;
