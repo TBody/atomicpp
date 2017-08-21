@@ -24,7 +24,7 @@ Vn = 0; #m/s
 
 Z=impurity.get_atomic_number()
 
-print(Z)
+# print(Z)
 
 # From collisional radiative equilibrium, start values for the Carbon impurity densities
 Nzk_init = np.array([1.747803e-01, 1.366167e+05, 8.865589e+09, 6.294431e+13, 9.049412e+16, 9.440710e+15, 3.206463e+13])
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
 		for Te_index in range(len(Te_tests)):
 			Te = Te_tests[Te_index]
-			print("{:.2e}".format(Te))
+			# print("{:.2e}".format(Te))
 			eq = fsolve(evolve_density_TI,Nzk_init, args=(Te, Ne, Vi, Nn, Vn, Vzk))
 			Nz_results[Te_index,:] = eq/sum(eq)
 

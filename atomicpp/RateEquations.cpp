@@ -40,7 +40,6 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	use_charge_exchange      = impurity.get_has_charge_exchange();
 	Z                        = impurity.get_atomic_number();
 	mz                       = impurity.get_mass();
-	// std::printf("%e\n", mz);
 
 	Nthres                   = density_threshold;
 	mi                       = mi_in_amu;
@@ -106,7 +105,7 @@ DerivStruct RateEquations::computeDerivs(
 		F_zk[k] += F_zk_correction[k];
 	}
 
-	verifyNeumaierSummation();
+	verifyNeumaierSummation(Te, Ne);
 
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
 	
@@ -137,7 +136,7 @@ DerivStruct RateEquations::computeDerivsHydrogen(
 		F_zk[k] += F_zk_correction[k]; //
 	}
 
-	verifyNeumaierSummation();
+	verifyNeumaierSummation(Te, Ne);
 	
 	calculateElectronImpactPowerEquation(Ne, Nhk, Te);
 
@@ -335,19 +334,19 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 	dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 };
-void RateEquations::verifyNeumaierSummation(){
+void RateEquations::verifyNeumaierSummation(const double Te, const double Ne){
 	// Verify that the sum over all elements equals zero (or very close to) 
 	
 	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second); 
 	if(std::fabs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 10){ 
-		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second);
+		// std::printf("Warning: total sum of dNzk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second, Te, Ne);
 	}
 
 	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second); 
 	if(std::fabs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 10){ 
-		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) - may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second);
+		// std::printf("Warning: total sum of F_zk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second, Te, Ne);
 	}
 };
 void RateEquations::calculateIonIonDrag(

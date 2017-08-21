@@ -165,7 +165,7 @@
 	/**
 	 * @brief Checks that the Neumaier sum for dNzk and F_zk is close to zero (no net particle source or force from transfer equations)
 	 */
-	void verifyNeumaierSummation();
+	void verifyNeumaierSummation(const double Te, const double Ne);
 
 	void calculateIonIonDrag(
 		const double Ne,
