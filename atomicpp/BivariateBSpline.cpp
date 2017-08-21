@@ -25,9 +25,9 @@ BivariateBSpline::BivariateBSpline(
 
   // __INIT__ BBSpline
   //Flatten z to a 1D vector - i.e. 'ravel'
-  std::vector<double> z_flattened(begin(z_values[0]), end(z_values[0]));
+  std::vector<double> z_flattened(begin(z_values.at(0)), end(z_values.at(0)));
   for(int i = 1; i < (int)(x_values.size()); ++i){
-    z_flattened.insert(end(z_flattened), begin(z_values[i]), end(z_values[i]));
+    z_flattened.insert(end(z_flattened), begin(z_values.at(i)), end(z_values.at(i)));
   }
 
   regrid_return setup_spline = regrid_smth(x_values, y_values, z_flattened);
@@ -39,16 +39,16 @@ BivariateBSpline::BivariateBSpline(
 double BivariateBSpline::call0D(const double eval_x, const double eval_y){
   
   // Bounds checking -- make sure you haven't dropped off the end of the array
-  if ((eval_x <= x_values[0]) or (eval_x >= x_values[x_values.size()-1])){
+  if ((eval_x <= x_values.at(0)) or (eval_x >= x_values.at(x_values.size()-1))){
     // An easy error to make is supplying the function arguments already having taken the log10
     std::stringstream errMsg;
-    errMsg << "X value off grid - require (" << x_values[0] << " < " << eval_x << " < " << x_values[x_values.size()-1] << ")";
+    errMsg << "X value off grid - require (" << x_values.at(0) << " < " << eval_x << " < " << x_values.at(x_values.size()-1) << ")";
     throw std::runtime_error(errMsg.str());
   };
-  if ((eval_y <= y_values[0]) or (eval_y >= y_values[y_values.size()-1])){
+  if ((eval_y <= y_values.at(0)) or (eval_y >= y_values.at(y_values.size()-1))){
     // An easy error to make is supplying the function arguments already having taken the log10
     std::stringstream errMsg;
-    errMsg << "Y value off grid - require (" << y_values[0] << " < " << eval_y << " < " << y_values[y_values.size()-1] << ")";
+    errMsg << "Y value off grid - require (" << y_values.at(0) << " < " << eval_y << " < " << y_values.at(y_values.size()-1) << ")";
     throw std::runtime_error(errMsg.str());
   };
 
@@ -74,8 +74,8 @@ void BivariateBSpline::set_y_values(std::vector<double>& _y_values){
 };
 void BivariateBSpline::zero_z_values(){
   for(int i = 0; i<(int)(z_values.size()); ++i){
-    for(int j = 0; j<(int)(z_values[0].size()); ++j){
-      z_values[i][j] = 0.0;
+    for(int j = 0; j<(int)(z_values.at(0).size()); ++j){
+      z_values.at(i).at(j) = 0.0;
     }
   }
 };
@@ -110,14 +110,14 @@ void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const s
   int z_shifted = z_start - 1;
   int c_shifted = c_start - 1;
 
-  C[c_shifted + n-1] = z[z_shifted + n-1]/a[n-1][0];
+  C.at(c_shifted + n-1) = z.at(z_shifted + n-1)/a.at(n-1).at(0);
   
   int i = n-1;
   double store;
 
   if(i!=0){
     for(int j=2; j <= n; ++j){
-      store = z[z_shifted + i-1];
+      store = z.at(z_shifted + i-1);
       int i1 = k-1;
 
       if(j <= k-1){
@@ -126,9 +126,9 @@ void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const s
       int m = i;
       for(int l=1; l <= i1; ++l){
         m = m+1;
-        store = store - C[c_shifted + m-1]*a[i-1][l];
+        store = store - C.at(c_shifted + m-1)*a.at(i-1).at(l);
       }
-      C[c_shifted + i-1] = store/a[i-1][0];
+      C.at(c_shifted + i-1) = store/a.at(i-1).at(0);
       i -= 1;
     }
   }
@@ -139,14 +139,14 @@ void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const s
 
   // std::cout << "fpback called" << std::endl;
 
-  C[n-1] = z[n-1]/a[n-1][0];
+  C.at(n-1) = z.at(n-1)/a.at(n-1).at(0);
   
   int i = n-1;
   double store;
 
   if(i!=0){
     for(int j=2; j <= n; ++j){
-      store = z[i-1];
+      store = z.at(i-1);
       int i1 = k-1;
 
       if(j <= k-1){
@@ -155,9 +155,9 @@ void BivariateBSpline::fpback(const std::vector<std::vector<double>>& a, const s
       int m = i;
       for(int l=1; l <= i1; ++l){
         m = m+1;
-        store = store - C[m-1]*a[i-1][l];
+        store = store - C.at(m-1)*a.at(i-1).at(l);
       }
-      C[i-1] = store/a[i-1][0];
+      C.at(i-1) = store/a.at(i-1).at(0);
       i -= 1;
     }
   }
@@ -177,23 +177,23 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
   //      Thus it is imperative that that k <= l <= n-k but this
   //      is not checked.
 
-  h[1-1] = 1;
+  h.at(1-1) = 1;
 
   for(int j = 1; j <= k; ++j){
     for(int i = 1; i <= j; ++i){
-      hh[i-1] = h[i-1];
+      hh.at(i-1) = h.at(i-1);
     }
-    h[1-1] = 0;
+    h.at(1-1) = 0;
     for(int i = 1; i <= j; ++i){
       int li = l+i;
       int lj = li-j;
 
-      if(t[li-1] != t[lj-1]){
-        double f = hh[i-1] / (t[li-1]-t[lj-1]);
-        h[i-1] = h[i-1]+f*(t[li-1]-x);
-        h[i] = f*(x-t[lj-1]);
+      if(t.at(li-1) != t.at(lj-1)){
+        double f = hh.at(i-1) / (t.at(li-1)-t.at(lj-1));
+        h.at(i-1) = h.at(i-1)+f*(t.at(li-1)-x);
+        h.at(i) = f*(x-t.at(lj-1));
       } else {
-        h[i] = 0;
+        h.at(i) = 0;
       }
     }
   }
@@ -235,7 +235,7 @@ void BivariateBSpline::fpbspl(const std::vector<double>& t,const int n, const in
   creation date : may 1979
   latest update : march 1989
   **/
-// nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at[xb,xe,yb,ye,kx,ky,s]))
+// nx,tx,ny,ty,C,fp,ier = regrid_smth(x,y,z,.at.at(x)b,xe,yb,ye,kx,ky,s))
 regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z){
   std::cout << "regrid_smth called" <<std::endl;
 
@@ -249,10 +249,10 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   throw std::runtime_error("Grid too small for bicubic interpolation");
   };
 
-  const double xb = x[0];
-  const double xe = x[mx-1];
-  const double yb = y[0];
-  const double ye = y[my-1];
+  const double xb = x.at(0);
+  const double xe = x.at(mx-1);
+  const double yb = y.at(0);
+  const double ye = y.at(my-1);
 
   const int nxest = mx+kx+1;
   const int nyest = my+ky+1;
@@ -279,13 +279,13 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   if(mx < (kx+1) or nxest < nminx) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 4");
   if(my < (ky+1) or nyest < nminy) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 5");
   if(lwrk < lwest or kwrk < kwest) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 6");
-  if(xb > x[1-1] or xe < x[mx-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 7");
+  if(xb > x.at(1-1) or xe < x.at(mx-1)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 7");
   for(int i = 1; i< mx; ++i){
-    if(x[i-1] >= x[i]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 8");
+    if(x.at(i-1) >= x.at(i)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 8");
   }
-  if(yb > y[1-1] or ye < y[my-1]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 9");
+  if(yb > y.at(1-1) or ye < y.at(my-1)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 9");
   for(int j = 1; j < my; ++j){
-    if(y[j-1] >= y[j]) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 10");
+    if(y.at(j-1) >= y.at(j)) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 10");
   }
   if((nxest < (mx+(kx+1)) or nyest < (my+(ky+1))) ) throw std::runtime_error("Error in BicubicSpline/regrid_smth (C++ translation) - see code 13");
 
@@ -326,7 +326,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int i = (kx+1)+1;
   int j = kx/2+2;
   for(int l = 1; l <= (mx-kx-1); ++l){
-    tx[i-1] = x[j-1];
+    tx.at(i-1) = x.at(j-1);
     i = i+1;
     j = j+1;
   }
@@ -335,7 +335,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   j = ky/2+2;
 
   for(int l = 1; l <= (my-ky-1); ++l){
-    ty[i-1] = y[j-1];
+    ty.at(i-1) = y.at(j-1);
     i = i+1;
     j = j+1;
   }
@@ -347,15 +347,15 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   //  b-spline representation of s(x,y).
   i = nx;
   for(int j=1; j <= (kx+1); ++j){
-    tx[j-1] = xb;
-    tx[i-1] = xe;
+    tx.at(j-1) = xb;
+    tx.at(i-1) = xe;
     i = i-1;
   }
 
   i = ny;
   for(int j=1; j <= (ky+1); ++j){
-    ty[j-1] = yb;
-    ty[i-1] = ye;
+    ty.at(j-1) = yb;
+    ty.at(i-1) = ye;
     i = i-1;
   }
   
@@ -416,9 +416,9 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
 
   for(int it = 1; it <= mx; ++it){
-    double arg = x[it-1];
+    double arg = x.at(it-1);
 
-    while(not(arg<tx[l1-1] or l==nx-(kx+1))){
+    while(not(arg<tx.at(l1-1) or l==nx-(kx+1))){
       l = l1;
       l1 = l+1;
       number = number+1;
@@ -426,9 +426,9 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
     fpbspl(tx,nx,kx,arg,l,h);
     for(int i=1; i <= (kx+1); ++i){
-      spx[it-1][i-1] = h[i-1];
+      spx.at(it-1).at(i-1) = h.at(i-1);
     }
-    nrx[it-1] = number;
+    nrx.at(it-1) = number;
   }
 
   //  calculate the non-zero elements of the matrix (spy) which is the
@@ -439,9 +439,9 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   number = 0;
 
   for(int it = 1; it <= my; ++it){
-    double arg = y[it-1];
+    double arg = y.at(it-1);
 
-    while(not(arg<ty[l1-1] or l==ny-(ky+1))){
+    while(not(arg<ty.at(l1-1) or l==ny-(ky+1))){
       l = l1;
       l1 = l+1;
       number +=1;
@@ -449,9 +449,9 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
     fpbspl(ty,ny,ky,arg,l,h);
     for(int i=1; i <= (ky+1); ++i){
-      spy[it-1][i-1] = h[i-1];
+      spy.at(it-1).at(i-1) = h.at(i-1);
     }
-    nry[it-1] = number;
+    nry.at(it-1) = number;
   }
 
   //  reduce the matrix (ax) to upper triangular form (rx) using givens
@@ -461,11 +461,11 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   l = my * (nx-(kx+1));
   //  initialization.
   for(int i = 1; i <= l; ++i){
-    q[i-1] = 0;
+    q.at(i-1) = 0;
   }
   for(int i = 1; i <= nx-(kx+1); ++i){
     for(int j = 1; i <= (kx+2); ++i){
-      ax[i-1][j-1] = 0;
+      ax.at(i-1).at(j-1) = 0;
     }
   }
 
@@ -474,17 +474,17 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   int ibandx = (kx+1);
   //  ibandx denotes the bandwidth of the matrices (ax) and (rx).
   for(int it = 1; it <= mx; ++it){
-    number = nrx[it-1];
+    number = nrx.at(it-1);
     // fetch a new row of matrix (spx).
-    h[ibandx-1] = 0.;
+    h.at(ibandx-1) = 0.;
     for(int j = 1; j <= (kx+1); ++j){
-      h[j-1] = spx[it-1][j-1];
+      h.at(j-1) = spx.at(it-1).at(j-1);
     }
 
     // find the appropriate column of q.
     for(int j = 1; j <= my; ++j){
       l += 1;
-      right[j-1] = z[l-1];
+      right.at(j-1) = z.at(l-1);
     }
 
     int irot = number;
@@ -493,16 +493,16 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     double cos = 0.0;
     for(int i = 1; i <= ibandx; ++i){
       irot += 1;
-      double piv = h[i-1];
+      double piv = h.at(i-1);
 
       if(piv == 0){continue;}
       //calculate the parameters of the given transformation.
-      fpgivs(piv, ax[irot-1][1-1], cos, sin);
+      fpgivs(piv, ax.at(irot-1).at(1-1), cos, sin);
       //apply that transformation to the rows of matrix q.
       int iq = (irot - 1) * my;
       for(int j = 1; j <= my; ++j){
         iq += 1;
-        fprota(cos, sin, right[j-1], q[iq-1]);
+        fprota(cos, sin, right.at(j-1), q.at(iq-1));
       }
       //apply that transformation to the columns of (ax).
       if(i == ibandx){break;} //Break out of inner loop, continue on outer loop
@@ -510,7 +510,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
       int i3 = i+1;
       for(int j = i3; j <= ibandx; ++j){
         i2 += 1;
-        fprota(cos, sin, h[j-1], ax[irot-1][i2-1]);
+        fprota(cos, sin, h.at(j-1), ax.at(irot-1).at(i2-1));
       }
     }
   }
@@ -523,30 +523,30 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
   // !  initialization.
 
   // for(int i = 1; i<= ncof; ++i){
-  //   C[i-1] = 0;
+  //   C.at(i)-1] = 0;
   // }
 
   // for(int i=1; i <= ny-(ky+1); ++i){
   //   for(int j=1; j <= nx-(kx+1); ++j){
-  //     ay[i-1][j-1] = 0;
+  //     ay.at(i)-1].at(j)-1] = 0;
   //   }
   // }
 
   int ibandy = (ky+1);
 
   for(int it = 1; it <= my; ++it){
-    number = nry[it-1];
+    number = nry.at(it-1);
     // fetch a new row of matrix (spx).
-    h[ibandy-1] = 0.;
+    h.at(ibandy-1) = 0.;
 
     for(int j = 1; j <= (ky+1); ++j){
-      h[j-1] = spy[it-1][j-1];
+      h.at(j-1) = spy.at(it-1).at(j-1);
     }
 
     l = it;
     // find the appropriate column of q.
     for(int j = 1; j <= nx-(kx+1); ++j){
-      right[j-1] = q[l-1];
+      right.at(j-1) = q.at(l-1);
       l += my;
     }
 
@@ -556,15 +556,15 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     double cos = 0.0;
     for(int i = 1; i <= ibandy; ++i){
       irot += 1;
-      double piv = h[i-1];
+      double piv = h.at(i-1);
 
       if(piv == 0){continue;}
       //calculate the parameters of the given transformation.
-      fpgivs(piv, ay[irot-1][1-1], cos, sin);
+      fpgivs(piv, ay.at(irot-1).at(1-1), cos, sin);
       //apply that transformation to the rows of matrix q.
       int ic = irot;
       for(int j = 1; j <= nx-(kx+1); ++j){
-        fprota(cos, sin, right[j-1], C[ic-1]);
+        fprota(cos, sin, right.at(j-1), C.at(ic-1));
         ic += ny-(ky+1);
       }
       //apply that transformation to the columns of (ay).
@@ -573,7 +573,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
       int i3 = i+1;
       for(int j = i3; j <= ibandy; ++j){
         i2 += 1;
-        fprota(cos, sin, h[j-1], ay[irot-1][i2-1]);
+        fprota(cos, sin, h.at(j-1), ay.at(irot-1).at(i2-1));
       }
     }
   }
@@ -588,7 +588,7 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
     k += 1;
     l = k;
     for(int i=1; i <= nx-(kx+1); ++i){
-      right[i-1] = C[l-1];
+      right.at(i-1) = C.at(l-1);
       l += ny-(ky+1);
     }
 
@@ -596,27 +596,27 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
 
     l = k;
     for(int i = 1; i <= nx-(kx+1); ++i){
-      C[l-1] = right[i-1];
+      C.at(l-1) = right.at(i-1);
       l += ny-(ky+1);
     }
   }
   fp = 0.;
   for(int i=1;i <= nx;++i){
-    fpx[i-1] = 0.;
+    fpx.at(i-1) = 0.;
   }
   for(int i=1;i <= ny;++i){
-    fpy[i-1] = 0.;
+    fpy.at(i-1) = 0.;
   }
 
   int iz = 0;
   int nroldx = 0;
   //  main loop for the different grid points.
   for(int i1 = 1; i1 <= mx; ++i1){
-    int numx = nrx[i1-1];
+    int numx = nrx.at(i1-1);
     int numx1 = numx+1;
     int nroldy = 0;
     for(int i2 = 1; i2 <= my; ++i2){
-      int numy = nry[i2-1];
+      int numy = nry.at(i2-1);
       int numy1 = numy+1;
       iz = iz+1;
       //  evaluate s(x,y) at the current grid point by making the sum of the
@@ -626,28 +626,28 @@ regrid_return BivariateBSpline::regrid_smth(const std::vector<double>& x, const 
       int k1 = numx * (ny-(ky+1))+numy;
       for(int l1 = 1; l1 <= (kx+1); ++l1){
         int k2 = k1;
-        double fac = spx[i1-1][l1-1];
+        double fac = spx.at(i1-1).at(l1-1);
         for(int l2 = 1; l2 <= (ky+1); ++l2){
           k2 = k2+1;
-          term = term + fac * spy[i2-1][l2-1] * C[k2-1];
+          term = term + fac * spy.at(i2-1).at(l2-1) * C.at(k2-1);
        }
         k1 = k1+ny-(ky+1);
       }
       //  calculate the squared residual at the current grid point.
-      term = (z[iz-1]-term)*(z[iz-1]-term);
+      term = (z.at(iz-1)-term)*(z.at(iz-1)-term);
       //  adjust the different parameters.
       fp = fp+term;
-      fpx[numx1-1] = fpx[numx1-1]+term;
-      fpy[numy1-1] = fpy[numy1-1]+term;
+      fpx.at(numx1-1) = fpx.at(numx1-1)+term;
+      fpy.at(numy1-1) = fpy.at(numy1-1)+term;
       double fac = term*0.5;
       if(numy!=nroldy){
-        fpy[numy1-1] = fpy[numy1-1]-fac;
-        fpy[numy-1] = fpy[numy-1]+fac;
+        fpy.at(numy1-1) = fpy.at(numy1-1)-fac;
+        fpy.at(numy-1) = fpy.at(numy-1)+fac;
       }
       nroldy = numy;
       if(numx!=nroldx){
-        fpx[numx1-1] = fpx[numx1-1]-fac;
-        fpx[numx-1] = fpx[numx-1]+fac;
+        fpx.at(numx1-1) = fpx.at(numx1-1)-fac;
+        fpx.at(numx-1) = fpx.at(numx-1)+fac;
       }
     }
     nroldx = numx;
@@ -677,8 +677,8 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
 
   // int (kx+1) = kx+1;
   int nkx1 = nx-(kx+1);
-  double tb = tx[kx];
-  double te = tx[nkx1];
+  double tb = tx.at(kx);
+  double te = tx.at(nkx1);
   int l = (kx+1);
   int l1 = l+1;
 
@@ -690,7 +690,7 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
     arg = te;
   }
 
-  while(not(arg < tx[l1-1] or l==nkx1)){
+  while(not(arg < tx.at(l1-1) or l==nkx1)){
     l = l1;
     l1 = l+1;
   }
@@ -698,11 +698,11 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
   lx = l-(kx+1);
 
   for(int j=1; j <= (kx+1); ++j){
-    wx[j-1] = h[j-1];
+    wx.at(j-1) = h.at(j-1);
   }
 
-  tb = ty[ky];
-  te = ty[(ny-(ky+1))];
+  tb = ty.at(ky);
+  te = ty.at((ny-(ky+1)));
   l = (ky+1);
   l1 = l+1;
 
@@ -713,7 +713,7 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
   if(arg > te){
     arg = te;
   }
-  while(not(arg<ty[l1-1] or l==(ny-(ky+1)))){
+  while(not(arg<ty.at(l1-1) or l==(ny-(ky+1)))){
     l = l1;
     l1 = l+1;
   }
@@ -721,14 +721,14 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
   ly = l-(ky+1);
 
   for(int j=1; j<=(ky+1); ++j){
-    wy[j-1] = h[j-1];
+    wy.at(j-1) = h.at(j-1);
   }
 
   int m = 0;
 
   l = lx*(ny-(ky+1));
   for(int i1=1; i1<= (kx+1); ++i1){
-    h[i1-1] = wx[i1-1];
+    h.at(i1-1) = wx.at(i1-1);
   }
   l1 = l+ly;
   double sp = 0.;
@@ -736,7 +736,7 @@ double BivariateBSpline::fpbisp(const std::vector<double>& tx, const int& nx, co
     int l2 = l1;
     for(int j1=1; j1<= (ky+1); ++j1){
       l2 = l2+1;
-      sp = sp+c[l2-1]*h[i1-1]*wy[j1-1];
+      sp = sp+c.at(l2-1)*h.at(i1-1)*wy.at(j1-1);
     }
     l1 = l1+(ny-(ky+1));
   }
