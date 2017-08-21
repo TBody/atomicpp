@@ -154,3 +154,5 @@ Prad
 atomicpp/atomicpy\.cpp
 
 bicubic_spline\.dSYM/*
+
+testNeumaier\.cpp

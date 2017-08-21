@@ -133,10 +133,10 @@ int main(){
 	// Time dependant solver code
 	
 	atomicpp::RateEquations impurity_derivatives(impurity); //Organised as a atomicpp::RateEquations object for cleanliness
-	impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+	impurity_derivatives.setThresholdDensity(0); //Density threshold - ignore ionisation stages which don't have at least this density
 	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(6000, 1e19, Vi, Nn, Vn, Nzk, Vzk);
 	// double Pcool             = derivative_struct.Pcool;
 	// double Prad              = derivative_struct.Prad;
 	// std::vector<double> dNzk = derivative_struct.dNzk;
@@ -151,13 +151,13 @@ int main(){
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
-	hydrogen_derivatives.setThresholdDensity(0.0); //Density threshold - ignore ionisation stages which don't have at least this density
+	// atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
+	// hydrogen_derivatives.setThresholdDensity(0.0); //Density threshold - ignore ionisation stages which don't have at least this density
 
-	atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(Te, Ne, Nhk, Vhk);
+	// atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(6309.573445, 1e19, Nhk, Vhk);
 	
-	std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
-	hydrogen_derivatives.printDerivativeStruct(derivative_struct_H);
+	// std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
+	// hydrogen_derivatives.printDerivativeStruct(derivative_struct_H);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

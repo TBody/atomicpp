@@ -11,6 +11,8 @@
 #include "RateCoefficient.hpp"
 #include "RateEquations.hpp"
 
+#include "ExternalModules/prettyprint.hpp"
+
 using namespace atomicpp;
 
 //Load global variables from ImpuritySpecies.hpp
@@ -95,15 +97,15 @@ DerivStruct RateEquations::computeDerivs(
 
 	calculateElectronImpactPopulationEquation(Ne, Nzk, Vzk, Te);
 
-	if (use_charge_exchange){
-		calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te, Ne);
-	}
+	// if (use_charge_exchange){
+	// 	calculateChargeExchangePopulationEquation(Nn, Nzk, Vzk, Te, Ne);
+	// }
 
 	//Apply neumairSum corrections
-	for(int k=0; k<=Z; ++k){
-		dNzk[k] += dNzk_correction[k];
-		F_zk[k] += F_zk_correction[k];
-	}
+	// for(int k=0; k<=Z; ++k){
+		// dNzk[k] += dNzk_correction[k];
+		// F_zk[k] += F_zk_correction[k];
+	// }
 
 	verifyNeumaierSummation(Te, Ne);
 
@@ -111,9 +113,9 @@ DerivStruct RateEquations::computeDerivs(
 	
 	calculateElectronImpactPowerEquation(Ne, Nzk, Te);
 	
-	if (use_charge_exchange){
-		calculateChargeExchangePowerEquation(Nn, Nzk, Te, Ne);
-	}
+	// if (use_charge_exchange){
+	// 	calculateChargeExchangePowerEquation(Nn, Nzk, Te, Ne);
+	// }
 
 	// auto derivative_tuple = makeDerivativeTuple();
 	// return derivative_tuple;
@@ -160,29 +162,6 @@ void RateEquations::resetDerivatives(){
 		F_zk_correction[k] = 0.0;
 	};
 };
-std::pair<int, double> RateEquations::findSharedInterpolation(const std::vector<double>& log_grid, const double eval){
-	// Perform a basic interpolation based on linear distance
-	// values to search for
-	double eval_log10 = log10(eval);
-	// Look through the grid to find nearest (strictly lower)
-	// Subtract 1 from answer to account for indexing from 0
-	int interp_gridpoint = lower_bound(log_grid.begin(), log_grid.end(), eval_log10) - log_grid.begin() - 1;
-
-	// Bounds checking -- make sure you haven't dropped off the end of the array
-	if ((interp_gridpoint == (int)(log_grid.size()-1)) or (interp_gridpoint == -1)){
-		// An easy error to make is supplying the function arguments already having taken the log10
-		throw std::runtime_error("Interpolation on Te called to point off the grid for which it was defined (will give seg fault)");
-	};
-
-	int next_gridpoint = interp_gridpoint + 1;
-
-	double grid_norm = 1/(log_grid[next_gridpoint] - log_grid[interp_gridpoint]); //Spacing between grid points
-
-	double interp_fraction = (eval_log10 - log_grid[interp_gridpoint])*grid_norm;
-
-	std::pair<int, double> interp_pair(interp_gridpoint, interp_fraction);
-	return interp_pair;
-};
 void RateEquations::calculateElectronImpactPopulationEquation(
 	const double Ne,
 	const std::vector<double>& Nzk,
@@ -207,7 +186,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 	std::shared_ptr<RateCoefficient> ionisation_coefficient    = rate_coefficients["ionisation"];
 	std::shared_ptr<RateCoefficient> recombination_coefficient = rate_coefficients["recombination"];
 	
-	//N.b. iterating over all data indices of the rate coefficient, hence the <
+	//N.b. iterating over all data indices of the rate coefficient, hence the < since these are 0,...,Z-1  or 1,...,Z indexed
 	for(int k=0; k < Z; ++k){
 		double ionisation_coefficient_evaluated = ionisation_coefficient->call0D(k, Te, Ne);
 		double recombination_coefficient_evaluated = recombination_coefficient->call0D(k, Te, Ne);
@@ -243,7 +222,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 
 	//For Neumaier summation of the change in Ne from the different rates 
 	std::vector<double> dNe_from_stage(Z, 0.0);
-	
+
 	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
 	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
 	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients["ionisation_potential"];
@@ -265,21 +244,75 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
-
-	// Perturbation on electron density
-	std::pair<double, double> neumaier_pair_dNe      = neumaierSum(dNe_from_stage);
-	dNe                                              = neumaier_pair_dNe.first + neumaier_pair_dNe.second;
-
 	// Bare nucleus case
 	std::vector<double> rates_for_bare_nucleus       = {iz_to_above[Z],iz_from_below[Z],rec_to_below[Z],rec_from_above[Z]};
 	std::pair<double, double> neumaier_pair_dNzk     = neumaierSum(rates_for_bare_nucleus);
 	dNzk[Z]                                          = neumaier_pair_dNzk.first;
 	dNzk_correction[Z]                               = neumaier_pair_dNzk.second;
 
+	// std::printf("iz_to_above    = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",iz_to_above[0],   iz_to_above[1],   iz_to_above[2],   iz_to_above[3],   iz_to_above[4],   iz_to_above[5],   iz_to_above[6]);
+	// std::printf("iz_from_below  = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",iz_from_below[0], iz_from_below[1], iz_from_below[2], iz_from_below[3], iz_from_below[4], iz_from_below[5], iz_from_below[6]);
+	// std::printf("rec_to_below   = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",rec_to_below[0],  rec_to_below[1],  rec_to_below[2],  rec_to_below[3],  rec_to_below[4],  rec_to_below[5],  rec_to_below[6]);
+	// std::printf("rec_from_above = [%0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f, %0+25.2f];\n",rec_from_above[0],rec_from_above[1],rec_from_above[2],rec_from_above[3],rec_from_above[4],rec_from_above[5],rec_from_above[6]);
+	
+	// int k = 5;
+
+	// std::printf("iz_to_above    = [%+25.2f];\n",iz_to_above[k]   );
+	// std::printf("iz_from_below  = [%+25.2f];\n",iz_from_below[k] );
+	// std::printf("rec_to_below   = [%+25.2f];\n",rec_to_below[k]  );
+	// std::printf("rec_from_above = [%+25.2f];\n",rec_from_above[k]);
+
+
+	std::vector<double> sum_of_rates;
+	for(int k=0; k<= Z; ++k){
+		sum_of_rates.push_back(iz_to_above[k]);
+		sum_of_rates.push_back(iz_from_below[k]);
+		sum_of_rates.push_back(rec_to_below[k]);
+		sum_of_rates.push_back(rec_from_above[k]);
+	}
+	std::pair<double, double> total_sum = neumaierSum(sum_of_rates);
+
+
+	std::vector<double> sum_of_sums;
+	//Apply neumairSum corrections
+	for(int k=0; k<=Z; ++k){
+		dNzk[k] += dNzk_correction[k];
+		F_zk[k] += F_zk_correction[k];
+		std::printf("%f\n", dNzk[k]);
+		sum_of_sums.push_back(dNzk[k]);
+	}
+	std::pair<double, double> total_of_sums = neumaierSum(sum_of_sums);
+
+
+	std::vector<double> extended;
+	for(int k=0; k<=Z; ++k){
+		// dNzk[k] += dNzk_correction[k];
+		std::printf("sum: %f\n", dNzk[k]);
+		std::printf("cor: %f\n", dNzk_correction[k]);
+
+		extended.push_back(dNzk[k]);
+		extended.push_back(dNzk_correction[k]);
+	}
+	std::pair<double, double> combined = neumaierSum(extended);
+
+
+	std::printf("total sum    (= %f) + correction (= %f) = %f\n",total_sum.first, total_sum.second, total_sum.first+total_sum.second);
+	std::printf("sum of sums  (= %f) + correction (= %f) = %f\n",total_of_sums.first, total_of_sums.second, total_of_sums.first+total_of_sums.second);
+	std::printf("combined sum (= %f) + correction (= %f) = %f\n",combined.first, combined.second, combined.first+combined.second);
+
+
+	std::printf("\n");
+	throw std::runtime_error("Stop");
+
+
 	std::vector<double> momentum_for_stage           = {iz_p_to_above[Z],iz_p_from_below[Z],rec_p_to_below[Z],rec_p_from_above[Z]};
 	std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage);
 	F_zk[Z]                                          = neumaier_pair_momentum.first;
 	F_zk_correction[Z]                               = neumaier_pair_momentum.second;
+
+	// Perturbation on electron density
+	std::pair<double, double> neumaier_pair_dNe      = neumaierSum(dNe_from_stage);
+	dNe                                              = neumaier_pair_dNe.first + neumaier_pair_dNe.second;
 };
 void RateEquations::calculateChargeExchangePopulationEquation(
 	const double Nn,
@@ -334,19 +367,19 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	std::pair<double, double> neumaier_pair_dNn = neumaierSum(dNn_from_stage);
 	dNn = neumaier_pair_dNn.first + neumaier_pair_dNn.second;
 };
-void RateEquations::verifyNeumaierSummation(const double Te, const double Ne){
+void RateEquations::verifyNeumaierSummation(const double Te, const double Ne, const double NeumaierTolerance){
 	// Verify that the sum over all elements equals zero (or very close to) 
 	
 	std::pair<double, double> neumaier_pair_total_dNzk = neumaierSum(dNzk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second); 
-	if(std::fabs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > 10){ 
-		// std::printf("Warning: total sum of dNzk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second, Te, Ne);
+	if(std::fabs(neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second) > NeumaierTolerance){ 
+		std::printf("Warning: total sum of dNzk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_dNzk.first + neumaier_pair_total_dNzk.second, Te, Ne);
 	}
 
 	std::pair<double, double> neumaier_pair_total_F_zk = neumaierSum(F_zk); 
 	// std::printf("Total sum: %e\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second); 
-	if(std::fabs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > 10){ 
-		// std::printf("Warning: total sum of F_zk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second, Te, Ne);
+	if(std::fabs(neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second) > NeumaierTolerance){ 
+		std::printf("Warning: total sum of F_zk elements is non-zero (=%e) for Te = %f, Ne = %e- may result in error\n>>>in Prad.cpp/computeDerivs (May be an error with Kahan-Neumaier summation)\n", neumaier_pair_total_F_zk.first + neumaier_pair_total_F_zk.second, Te, Ne);
 	}
 };
 void RateEquations::calculateIonIonDrag(
