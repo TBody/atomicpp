@@ -6,7 +6,7 @@ flags        = $(warn_flags) -std=c++11
 # flags        = -std=c++11 -O2
 # flags        = -Og -std=c++11
 
-objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/BilinearSpline.o $(atomicpp)/BicubicSpline.o $(atomicpp)/BivariateBSpline.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 
+objects      = Prad.o $(atomicpp)/sharedFunctions.o $(atomicpp)/ImpuritySpecies.o $(atomicpp)/RateCoefficient.o $(atomicpp)/Splines/BilinearSpline.o $(atomicpp)/Splines/BicubicSpline.o $(atomicpp)/Splines/BivariateBSpline.o $(atomicpp)/SD1DData.o $(atomicpp)/RateEquations.o 
 
 # test_bicubic: test_bicubic.cpp atomicpp/BivariateBSpline.cpp atomicpp/BivariateBSpline.hpp atomicpp/setup_spline.py
 # 	cd atomicpp; python setup_spline.py build_ext --inplace --verbose
@@ -54,9 +54,9 @@ Prad.o: Prad.cpp $(atomicpp)/sharedFunctions.hpp $(atomicpp)/ImpuritySpecies.hpp
 $(atomicpp)sharedFunctions.o: $(atomicpp)/sharedFunctions.cpp $(atomicpp)/sharedFunctions.hpp
 $(atomicpp)ImpuritySpecies.o: $(atomicpp)/ImpuritySpecies.cpp $(atomicpp)/ImpuritySpecies.hpp
 $(atomicpp)/RateCoefficient.o: $(atomicpp)/RateCoefficient.cpp $(atomicpp)/RateCoefficient.hpp
-$(atomicpp)/BilinearSpline.o: $(atomicpp)/BilinearSpline.cpp $(atomicpp)/BilinearSpline.hpp
-$(atomicpp)/BicubicSpline.o: $(atomicpp)/BicubicSpline.cpp $(atomicpp)/BicubicSpline.hpp
-$(atomicpp)/BivariateBSpline.o: $(atomicpp)/BivariateBSpline.cpp $(atomicpp)/BivariateBSpline.hpp
+$(atomicpp)/Splines/BilinearSpline.o: $(atomicpp)/Splines/BilinearSpline.cpp $(atomicpp)/Splines/BilinearSpline.hpp
+$(atomicpp)/Splines/BicubicSpline.o: $(atomicpp)/Splines/BicubicSpline.cpp $(atomicpp)/Splines/BicubicSpline.hpp
+$(atomicpp)/Splines/BivariateBSpline.o: $(atomicpp)/Splines/BivariateBSpline.cpp $(atomicpp)/Splines/BivariateBSpline.hpp
 $(atomicpp)/SD1DData.o: $(atomicpp)/SD1DData.cpp $(atomicpp)/SD1DData.hpp
 $(atomicpp)/RateEquations.o: $(atomicpp)/RateEquations.cpp $(atomicpp)/RateEquations.hpp
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-#include "prettyprint.hpp"
+// #include "prettyprint.hpp"
 
 using namespace atomicpp;
 BivariateBSpline::BivariateBSpline(){//Default constructor
@@ -83,13 +83,13 @@ double BivariateBSpline::call0D(const double eval_x, const double eval_y){
   if ((eval_x <= x_values.at(0)) or (eval_x >= x_values.at(x_values.size()-1))){
     // An easy error to make is supplying the function arguments already having taken the log10
     std::stringstream errMsg;
-    errMsg << "X value off grid - require (" << x_values.at(0) << " < " << eval_x << " < " << x_values.at(x_values.size()-1) << ")";
+    errMsg << "BivariateBSpline call0D error: X value off grid - require (" << x_values.at(0) << " < " << eval_x << " < " << x_values.at(x_values.size()-1) << ")";
     throw std::runtime_error(errMsg.str());
   };
   if ((eval_y <= y_values.at(0)) or (eval_y >= y_values.at(y_values.size()-1))){
     // An easy error to make is supplying the function arguments already having taken the log10
     std::stringstream errMsg;
-    errMsg << "Y value off grid - require (" << y_values.at(0) << " < " << eval_y << " < " << y_values.at(y_values.size()-1) << ")";
+    errMsg << "BivariateBSpline call0D error: Y value off grid - require (" << y_values.at(0) << " < " << eval_y << " < " << y_values.at(y_values.size()-1) << ")";
     throw std::runtime_error(errMsg.str());
   };
 

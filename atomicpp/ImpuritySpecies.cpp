@@ -43,6 +43,7 @@ ImpuritySpecies::ImpuritySpecies(std::string& impurity_symbol_supplied){
 	// Save from impurity_symbol_supplied and the hard-coded data within user_file
 	symbol              = impurity_symbol_supplied;
 	// retrieve from JSON and std::set attributes
+	std::cout << "File: " << user_file << std::endl;
 	json j_object = retrieveFromJSON(user_file);
 	auto check_symbol_in_file = j_object.find(impurity_symbol_supplied);
 	if ((check_symbol_in_file != j_object.end())){
