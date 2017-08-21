@@ -5,7 +5,7 @@
 
 #include "sharedFunctions.hpp"
 
-#include "json.hpp"
+#include "ExternalModules/json.hpp"
 using json = nlohmann::json;
 
 using namespace atomicpp;

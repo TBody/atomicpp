@@ -3,10 +3,10 @@
 	#include <string>
 	#include <vector>
 	#include <array>
-	#include "json.hpp"
+	#include "ExternalModules/json.hpp"
 	using json = nlohmann::json;
 
-	#include "BivariateBSpline.hpp"
+	#include "Spline/BivariateBSpline.hpp"
 	
 	namespace atomicpp{
 

@@ -18,7 +18,7 @@
 #include "atomicpp/SD1DData.hpp"
 #include "atomicpp/RateEquations.hpp"
 
-#include "atomicpp/json.hpp"
+#include "atomicpp/ExternalModules/json.hpp"
 using json = nlohmann::json;
 
 // extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
@@ -95,7 +95,7 @@ int main(){
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
 	//This is all not required for SD1D -- it's just to train the code with reasonable numbers
-		const double mz = impurity.get_mass(); //amu
+		// const double mz = impurity.get_mass(); //amu
 
 		int constant_position_index = 0;
 		double Te = experiment.get_temperature()[constant_position_index];

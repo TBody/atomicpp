@@ -2,13 +2,13 @@
 #include <vector>
 #include <array>
 #include <fstream>
-#include "json.hpp"
+#include "ExternalModules/json.hpp"
 using json = nlohmann::json;
 #include <stdexcept> //For error-throwing
 
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
-#include "BivariateBSpline.hpp"
+#include "Spline/BivariateBSpline.hpp"
 
 using namespace atomicpp;
 
