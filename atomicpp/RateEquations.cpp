@@ -383,7 +383,6 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
 	}
-	
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
 	DerivStruct derivative_struct;

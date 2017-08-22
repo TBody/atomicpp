@@ -1,13 +1,17 @@
 import numpy as np
-from atomicpp.Splines.interpolate import PyBicubicSpline
-from atomicpp.Splines.interpolate import PyBilinearSpline
-from atomicpp.Splines.interpolate import PyBivariateBSpline
+from atomicpp.Spline.interpolate import PyBicubicSpline
+from atomicpp.Spline.interpolate import PyBilinearSpline
+from atomicpp.Spline.interpolate import PyBivariateBSpline
 from scipy.interpolate import RectBivariateSpline
 from scipy.interpolate import RegularGridInterpolator
 
 import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource, Normalize
+from matplotlib.colors import LogNorm
+
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
 
 def retrieveFromJSON(file_name):
 	# Inputs - a JSON file corresponding to an OpenADAS .dat file or SD1D output file
@@ -46,9 +50,9 @@ class wrapRGI():
 		return self.interpolator.__call__((x,y))
 
 def gen_func(x, y):
-	# z = np.cos(x**2 + y**2) #Wave ripple pattern
+	z = np.cos((x-1)**2 + y**2) #Wave ripple pattern
 	# z = x**2 + (y-1)**2
-	z = x**2 + (y-1)**2 + x*y
+	# z = x**2 + (y-1)**2 + x*y
 	# z = x
 	# z = y
 	# z = x+y
@@ -206,9 +210,12 @@ def plot_ratio(source, candidate):
 
 	plt.show()
 
-def inspect_grid_coeff(source, candidate):
+def inspect_grid_coeff(source, candidate, show_key):
 
 	plt.pcolor(source['x'], source['y'], source['z'],cmap='RdBu')
+	plt.xlabel("x values")
+	plt.ylabel("x values")
+	plt.colorbar(label='z values')
 
 	x_values = np.array(candidate.get_x_values())
 	y_values = np.array(candidate.get_y_values())
@@ -217,7 +224,7 @@ def inspect_grid_coeff(source, candidate):
 	grid_coeff = grid_coeff.transpose()
 	data_shape = grid_coeff.shape
 
-	print("Data shape is {} by {}".format(data_shape[0], data_shape[1]))
+	# print("Data shape is {} by {}".format(data_shape[0], data_shape[1]))
 	
 	f_grid     = np.zeros_like(grid_coeff)
 	fdx_grid   = np.zeros_like(grid_coeff)
@@ -233,32 +240,36 @@ def inspect_grid_coeff(source, candidate):
 			fdx_grid[i][j]   = grid_coeff[i][j]['fdx']
 			fdy_grid[i][j]   = grid_coeff[i][j]['fdy']
 			fdxdy_grid[i][j] = grid_coeff[i][j]['fdxdy']
-			print("({:<+5.2f}, {:<+5.2f}) = ({:<+5.2f}, {:<+5.2f}) -> ({:<+5.2f}, {:<+5.2f}, {:<+5.2f}, {:<+5.2f})".format(x_values[j], y_values[i], datapoint[0], datapoint[1], f_grid[i][j],fdx_grid[i][j], fdy_grid[i][j], fdxdy_grid[i][j]))
+			# print("({:<+5.2f}, {:<+5.2f}) = ({:<+5.2f}, {:<+5.2f}) -> ({:<+5.2f}, {:<+5.2f}, {:<+5.2f}, {:<+5.2f})".format(x_values[j], y_values[i], datapoint[0], datapoint[1], f_grid[i][j],fdx_grid[i][j], fdy_grid[i][j], fdxdy_grid[i][j]))
 
 	X, Y = np.meshgrid(x_values, y_values)
 
-	if False:
+	if show_key == "values":
 		# Plot the function values
 		# If the same colourmap is used between pcolor and scatter (which is default,cmap='RdBu')
 		#   you shouldn't be able to see the points at all
-		plt.scatter(X, Y, c=f_grid, marker = '.')
+		plt.scatter(X, Y, c=f_grid, marker = '.', cmap='RdBu')
 		plt.scatter(1, 1, c='r', marker='x')
+		plt.title("Matching colourmaps - shouldn't see data points")
 
-	elif True:
+	elif show_key == "derivs":
 		# Plot dx and dy as a quiver grid -- should look like a 'grad function'
 		U = fdx_grid
 		V = fdy_grid
 
 		Q = plt.quiver(X.tolist(), Y.tolist(), U.tolist(), V.tolist(), pivot='mid',angles='xy')
-		# plt.streamplot(X, Y, U, V)
-	else:
+		plt.title("Quiver - should look like grad")
+
+	elif show_key == "crossderivs":
 		# What should this look like? http://www.math.harvard.edu/archive/21a_fall_08/exhibits/fxy/
 		U = fdx_grid
 		V = fdy_grid
 		W = fdxdy_grid
 
-		Q1 = plt.quiver(X, Y, U, 0, pivot='tail')
-		# Q2 = plt.quiver(X, Y, 0, W, pivot='tail')
+		Q1 = plt.quiver(X.tolist(), Y.tolist(), W.tolist(), W.tolist(), pivot='tail')
+		
+	else:
+		raise NotImplementedError("Option {} not recognised in inspect_grid_coeff".format(show_key))
 
 
 
@@ -272,15 +283,15 @@ def x_compare(hi_res, pyxspline, cppspline, y_const, trim_x):
 	pyx = pyxspline['z'][y_const_index][:]
 	cpp = cppspline['z'][y_const_index][:]
 
-	# plt.plot(hi_res['x'], actual,'g')
-	# plt.plot(hi_res['x'], pyx,'b')
-	# plt.plot(hi_res['x'], cpp,'r')
-
 	start_in = np.searchsorted(hi_res['x'], trim_x[0])
 	end_in = np.searchsorted(hi_res['x'], trim_x[1])
 
 	plt.plot(hi_res['x'][start_in:end_in], (pyx - actual)[start_in:end_in],'b')
 	plt.plot(hi_res['x'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
+
+	plt.xlabel("x values")
+	plt.ylabel("z values")
+	plt.title("x slice for y = {}".format(y_const))
 
 	plt.show()
 
@@ -292,91 +303,143 @@ def y_compare(hi_res, pyxspline, cppspline, x_const, trim_y):
 	pyx = pyxspline['z'][:][x_const_index]
 	cpp = cppspline['z'][:][x_const_index]
 
-	# plt.plot(hi_res['y'], actual,'g')
-	# plt.plot(hi_res['y'], pyx,'b')
-	# plt.plot(hi_res['y'], cpp,'r')
-
 	start_in = np.searchsorted(hi_res['y'], trim_y[0])
 	end_in = np.searchsorted(hi_res['y'], trim_y[1])
 
 	plt.plot(hi_res['y'][start_in:end_in], (pyx - actual)[start_in:end_in],'b')
 	plt.plot(hi_res['y'][start_in:end_in], (cpp - actual)[start_in:end_in],'r')
 
+	plt.xlabel("y values")
+	plt.ylabel("z values")
+	plt.title("y slice for x = {}".format(x_const))
+
 	plt.show()
 
 if __name__ == '__main__':
 
-	data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
-	x_values = np.array(data_dict['log_temperature'])
-	y_values = np.array(data_dict['log_density'])
-	x_min = min(x_values)
-	x_max = max(x_values)
-	y_min = min(y_values)
-	y_max = max(y_values)
+	use_JSON = False
+	show_data = False
+	crop_edge_values = True #Edge values have a lower-accuracy derivative estimate and error handling to keep on grid
+							 #Neglect for ease-of-comparison, although make sure to check before end
+	method = "<method not set>" #Leave this here - catch if you forget to select which method you want
+	# method = "Bilinear" #Choose from Bilinear, Bicubic, BSpline - comment out the ones you don't want
+	method = "Bicubic"
+	# method = "BSpline"
+	show_inspect_grid_coeff = False #Only for Bicubic
+	inspect_grid_coeff_key = "derivs" #Choose from "values", "derivs", "crossderiv"
+	show_compare = True #won't work for use_JSON = True
+	show_difference = True
+	show_ratio = True
+	show_axial_diff = True
+	
+	if use_JSON:
+		
+		k = 5 #Charge state to inspect
 
-	k = 0
+		data_dict = retrieveFromJSON('json_database/json_data/scd96_c.json')
+		x_values = np.array(data_dict['log_temperature'])
+		y_values = np.array(data_dict['log_density'])
+		x_min = min(x_values)
+		x_max = max(x_values)
+		y_min = min(y_values)
+		y_max = max(y_values)
 
-	z_values = np.array(data_dict['log_coeff'][0])
+		if crop_edge_values:
+			x_in_min = x_values[1] #Edge-of-grid internal values
+			x_in_max = x_values[-2]
+			y_in_min = y_values[1]
+			y_in_max = y_values[-2]
 
-	# x_lowres = 10
-	# y_lowres = 15
-	x_highres = 100
-	y_highres = 100
+		z_values = np.array(data_dict['log_coeff'][0])
+		
+		x_highres = 100
+		y_highres = 100
+		transpose_z = False
+		log_data = True #Mark axis as log10 rather than linear, for plotting
+	else:
+		#generate data from gen_func
+		x_lowres = 10 #Good to make these different numbers - helps to catch transpose errors
+		y_lowres = 15
+		x_highres = 100
+		y_highres = 100
 
-	# x_min = -2
-	# x_max = 3
-	# y_min = -4
-	# y_max = 3
+		x_min = -2 #Edges of the grid
+		x_max = 3
+		y_min = -4
+		y_max = 3
 
-	# x_in_min = x_min + (x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
-	# x_in_max = x_max - (x_max-x_min)/(x_lowres-1)
-	# y_in_min = y_min + (y_max-y_min)/(y_lowres-1)
-	# y_in_max = y_max - (y_max-y_min)/(y_lowres-1)
+		if crop_edge_values:
+			x_in_min = x_min + 2*(x_max-x_min)/(x_lowres-1) #Edge-of-grid internal values
+			x_in_max = x_max - 2*(x_max-x_min)/(x_lowres-1) #(don't use very edge since this has a lower-accuracy derivative estimation)
+			y_in_min = y_min + 2*(y_max-y_min)/(y_lowres-1)
+			y_in_max = y_max - 2*(y_max-y_min)/(y_lowres-1)
 
-	# low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
-	# # low_res = generate_from_func_vectors(gen_func, x_values, y_values)
-	# hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
+		low_res = generate_from_func_uniform(gen_func, x_lowres, y_lowres, x_min, x_max, y_min, y_max)
+		# low_res = generate_from_func_vectors(gen_func, x_values, y_values)
+		hi_res = generate_from_func_uniform(gen_func, x_highres, y_highres, x_min, x_max, y_min, y_max)
 
-	# x_values = np.array(low_res['x'])
-	# y_values = np.array(low_res['y'])
-	# z_values = np.array(low_res['z'])
+		x_values = np.array(low_res['x'])
+		y_values = np.array(low_res['y'])
+		z_values = np.array(low_res['z'])
+		transpose_z = True #Might need to transpose z to get dimensions to match
+		log_data = False
+	if transpose_z:
+		z_values = z_values.transpose()
+	if log_data:
+		true_x = np.power(10, x_values) #For plotting, get the actual values of x, y, z
+		true_y = np.power(10, y_values)
+		true_z = np.power(10, z_values)
+	if show_data:
 
-	# plt.pcolor(x_values, y_values, z_values,cmap='RdBu',
-	# 	cmap='RdBu')
-	# plt.colorbar()
+		if not(log_data):
+			plt.pcolor(x_values, y_values, z_values.transpose(),cmap='RdBu')
+			plt.xlabel(r'x value')
+			plt.ylabel(r'y value')
+			plt.colorbar(label=r'z value')
+		else:
+			plt.pcolor(true_x, true_y, true_z.transpose(), norm=LogNorm(vmin=true_z.min(), vmax=true_z.max()),cmap='RdBu')
+			plt.xscale("log", nonposx='clip')
+			plt.yscale("log", nonposy='clip')
+			if True:
+				plt.xlabel(r'Plasma temperature (eV)')
+				plt.ylabel(r'Plasma density ($m^{-3}$)')
+				plt.colorbar(label=r'Rate coefficient ($m^3 s^{-1}$)]')
+			else:
+				plt.xlabel(r'x value')
+				plt.ylabel(r'y value')
+				plt.colorbar(label=r'z value')
 
-	# plt.show()
+		print("Plotted data - check python window")
+		plt.show()
 
-	if True:
+	if method == "Bilinear":
+		cpp_interp = PyBilinearSpline(x_values, y_values, z_values)
+		pyx_interp = wrapRGI(x_values, y_values, z_values)
+	elif method == "Bicubic":
+		cpp_interp = PyBicubicSpline(x_values, y_values, z_values)
+		pyx_interp = RectBivariateSpline(x_values, y_values, z_values,kx=3,ky=3)
+	elif method == "BSpline":
 		cpp_interp = PyBivariateBSpline(x_values, y_values, z_values, True, True)
 		pyx_interp = RectBivariateSpline(x_values, y_values, z_values,kx=3,ky=3)
-	elif False:
-		pyx_interp = RectBivariateSpline(x_values, y_values, z_values.transpose(),kx=3,ky=3)
-		cpp_interp = PyBicubicSpline(x_values, y_values, z_values.transpose())
 	else:
-		cpp_interp = PyBilinearSpline(x_values, y_values, z_values.transpose())
-		pyx_interp = wrapRGI(x_values, y_values, z_values.transpose())
+		raise NotImplementedError("Method {} not recognised".format(method))
 
-	# inspect_grid_coeff(hi_res, cpp_interp)
+	if (method == "Bicubic" and show_inspect_grid_coeff): 
+		inspect_grid_coeff(hi_res, cpp_interp, inspect_grid_coeff_key)
 
-	# cpp_hi_res = generate_from_func(cpp_interp.call0D, x_highres, y_highres, x_min, x_max, y_min, y_max)
 	cpp_hi_res = upscale(cpp_interp.call0D, x_highres, y_highres, x_values, y_values)
-	# pyx_hi_res = generate_from_func(pyx_interp, x_highres, y_highres, x_min, x_max, y_min, y_max)
 	pyx_hi_res = upscale(pyx_interp, x_highres, y_highres, x_values, y_values)
 
-	# plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
+	if (not(use_JSON) and show_compare):
+		plot_compare(low_res, hi_res, cpp_hi_res, pyx_hi_res)
+	if show_difference:
+		plot_difference(pyx_hi_res, cpp_hi_res)
+	if show_ratio:
+		plot_ratio(pyx_hi_res, cpp_hi_res)
 
-	plot_difference(pyx_hi_res, cpp_hi_res)
-
-	# plot_ratio(pyx_hi_res, cpp_hi_res)
-
-	# cpp_hi_res = generate_from_func(cpp_interp.call0D, len(x_values), len(y_values), x_values.min(), x_values.max(), y_values.min(), y_values.max())
-
-	# x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
-	# y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
-
-	# plt.show()
-
+	if (not(use_JSON) and show_axial_diff):
+		x_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (x_in_min, x_in_max))
+		y_compare(hi_res, pyx_hi_res, cpp_hi_res, 0, (y_in_min, y_in_max))
 
 
 
