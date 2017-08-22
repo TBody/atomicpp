@@ -109,21 +109,6 @@
 	void resetDerivatives();
 
 	/**
-	 * @brief find the lower-bound gridpoint and fraction within the grid for the given point at which to interpolate
-	 * @details Using bilinear interpolation, the scaling factors for interpolating the rate coefficients are the same
-	 * regardless of which process is called (since the underlying log_temp and log_dens grids are the same).
-	 * Therefore, the grid-point and fraction pair may be shared by any rate-coefficient. Have overloaded call0D such that,
-	 * if a <int, double> pair is supplied as an argument then the shared interpolation method will be called
-	 *
-	 * @param log_grid grid-points for which data is given
-	 * @param eval point at which the interpolation should be performed
-	 *
-	 * @return <int, double> pair where int is the lower-bound grid-point and fraction is the scaling factor (fractional distance
-	 * between the lower and upper-bound gridpoints)
-	 */
-	std::pair<int, double> findSharedInterpolation(const std::vector<double>& log_grid, const double eval);
-
-	/**
 	 * @brief calculates the effects of electron-impact collisions on the impurity-species populations
 	 * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
 	 * values with significantly varied magnitudes. See computeDerivs for description of parameters.
@@ -139,8 +124,7 @@
 		const double Ne,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te
 		);
 
 	/**
@@ -159,14 +143,14 @@
 		const double Nn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te,
+		const double Ne
 		);
 
 	/**
 	 * @brief Checks that the Neumaier sum for dNzk and F_zk is close to zero (no net particle source or force from transfer equations)
 	 */
-	void verifyNeumaierSummation();
+	void verifyNeumaierSummation(const double Te, const double Ne, const double NeumaierTolerance = 1);
 
 	void calculateIonIonDrag(
 		const double Ne,
@@ -182,8 +166,7 @@
 	void calculateElectronImpactPowerEquation(
 		const double Ne,
 		const std::vector<double>& Nzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te
 	);
 
 	/**
@@ -192,8 +175,8 @@
 	void calculateChargeExchangePowerEquation(
 		const double Nn,
 		const std::vector<double>& Nzk,
-		const std::pair<int, double>& Te_interp,
-		const std::pair<int, double>& Ne_interp
+		const double Te,
+		const double Ne
 	);
 
 	DerivStruct makeDerivativeStruct();
@@ -215,9 +198,6 @@
 	private:
 	//Map of RateCoefficient objects, copied from an ImpuritySpecies object
 	std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
-	//If all the rate coefficients have the same log_temp and log_dens then can use the same scaling...
-	//...values from a single bilinear interpolation, to save shared computation. Copied from an ImpuritySpecies object.
-	bool use_shared_interpolation;
 	//Whether charge exchange should be considered
 	bool use_charge_exchange;
 	//Nuclear charge of the impurity, in elementary charge units

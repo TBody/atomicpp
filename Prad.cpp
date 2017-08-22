@@ -18,7 +18,7 @@
 #include "atomicpp/SD1DData.hpp"
 #include "atomicpp/RateEquations.hpp"
 
-#include "atomicpp/json.hpp"
+#include "atomicpp/ExternalModules/json.hpp"
 using json = nlohmann::json;
 
 // extern const double eV_to_J; //Conversion factor between electron-volts and joules (effective units J/eV)
@@ -95,7 +95,7 @@ int main(){
 
 	//Cast the SD1D data into a form which is like how the function will be called by SD1D
 	//This is all not required for SD1D -- it's just to train the code with reasonable numbers
-		const double mz = impurity.get_mass(); //amu
+		// const double mz = impurity.get_mass(); //amu
 
 		int constant_position_index = 0;
 		double Te = experiment.get_temperature()[constant_position_index];
@@ -133,10 +133,10 @@ int main(){
 	// Time dependant solver code
 	
 	atomicpp::RateEquations impurity_derivatives(impurity); //Organised as a atomicpp::RateEquations object for cleanliness
-	impurity_derivatives.setThresholdDensity(1e9); //Density threshold - ignore ionisation stages which don't have at least this density
+	impurity_derivatives.setThresholdDensity(0); //Density threshold - ignore ionisation stages which don't have at least this density
 	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
+	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(6000, 1e19, Vi, Nn, Vn, Nzk, Vzk);
 	// double Pcool             = derivative_struct.Pcool;
 	// double Prad              = derivative_struct.Prad;
 	// std::vector<double> dNzk = derivative_struct.dNzk;
@@ -151,13 +151,13 @@ int main(){
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
-	hydrogen_derivatives.setThresholdDensity(0.0); //Density threshold - ignore ionisation stages which don't have at least this density
+	// atomicpp::RateEquations hydrogen_derivatives(hydrogen); //Organised as a atomicpp::RateEquations object for cleanliness
+	// hydrogen_derivatives.setThresholdDensity(0.0); //Density threshold - ignore ionisation stages which don't have at least this density
 
-	atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(Te, Ne, Nhk, Vhk);
+	// atomicpp::DerivStruct derivative_struct_H = hydrogen_derivatives.computeDerivsHydrogen(6309.573445, 1e19, Nhk, Vhk);
 	
-	std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
-	hydrogen_derivatives.printDerivativeStruct(derivative_struct_H);
+	// std::printf("\nDerivatives for %s\n",hydrogen.get_name().c_str());
+	// hydrogen_derivatives.printDerivativeStruct(derivative_struct_H);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

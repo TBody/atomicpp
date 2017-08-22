@@ -7,16 +7,16 @@ from Cython.Build import cythonize
 # to compile
 
 ext_module = Extension(
-    "atomicpy",
-    ["atomicpy.pyx"],
+    "interpolate",
+    ["interpolate.pyx"],
     language="c++",
-    extra_compile_args=['-std=c++11','-O0'],
-	extra_link_args=['-std=c++11','-O0']
+    extra_compile_args=['-std=c++11'],
+	extra_link_args=['-std=c++11']
     # extra_compile_args=['-std=c++11', '-fno-inline', '-g', '-Wall', '-O0'],
     # extra_link_args=['-std=c++11', '-fno-inline', '-g', '-Wall', '-O0']
 )
 
 setup(
-  name = "atomicpy",
+  name = "interpolate",
   ext_modules = cythonize(ext_module),
 )

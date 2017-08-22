@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = [ImpuritySpecies.cpp, RateCoefficient.cpp, sharedFunctions.cpp, RateEquations.cpp, BilinearSpline.cpp, BicubicSpline.cpp]
+# distutils: sources = [ImpuritySpecies.cpp, RateCoefficient.cpp, sharedFunctions.cpp, RateEquations.cpp, Spline/BilinearSpline.cpp, Spline/BicubicSpline.cpp, Spline/BivariateBSpline.cpp]
 
 # Cython interface file for wrapping the object
 #
