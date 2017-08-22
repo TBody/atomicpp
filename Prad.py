@@ -33,9 +33,9 @@ class AtomicSolver(object):
 		self.additional_out = {'Prad':[], 'Pcool':[], 'dNzk':[], 'F_zk':[], 'dNe':[], 'F_i':[], 'dNn':[], 'F_n':[]}
 	
 	@staticmethod
-	def evolveDensity(Nzk, t, self):
-		Te  = self.Te
-		Ne  = self.Ne
+	def evolveDensity(Nzk, t, self, Te, Ne, additional_out_keys = []):
+		# Te  = self.Te
+		# Ne  = self.Ne
 		Vi  = self.Vi
 		Nn  = self.Nn
 		Vn  = self.Vn
@@ -51,13 +51,17 @@ class AtomicSolver(object):
 		derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 
 		dNzk = derivative_struct["dNzk"]
-
-		self.additional_out['Prad'].append(derivative_struct['Prad'])
-		self.additional_out['dNzk'].append(derivative_struct['dNzk'])
+		for key in additional_out_keys:
+			self.additional_out[key].append(derivative_struct[key])
+		# self.additional_out['Prad'].append(derivative_struct['Prad'])
+		# self.additional_out['dNzk'].append(derivative_struct['dNzk'])
 
 		return dNzk
 
-	def solveCollisionalRadiativeEquilibrium(self, Te, Ne, t_values = np.logspace(-6, 2, 200)):
+	def reset_additional_out(self):
+		self.additional_out = {'Prad':[], 'Pcool':[], 'dNzk':[], 'F_zk':[], 'dNe':[], 'F_i':[], 'dNn':[], 'F_n':[]}
+
+	def solveCollisionalRadiativeEquilibrium(self, Te, Ne, t_values = np.logspace(-6, 2, 200), additional_out_keys = []):
 		Vi  = self.Vi
 		Nn  = self.Nn
 		Vn  = self.Vn
@@ -65,7 +69,7 @@ class AtomicSolver(object):
 
 		print("Te = {}eV, Ne = {}/m3".format(Te, Ne))
 		
-		(result, output_dictionary) = odeint(self.evolveDensity, self.Nzk, t_values, args=(self,), printmessg=False, full_output=True)
+		(result, output_dictionary) = odeint(self.evolveDensity, self.Nzk, t_values, args=(self,Te, Ne, additional_out_keys), printmessg=False, full_output=True)
 
 		feval_at_step = output_dictionary['nfe'] #function evaluations at the time-step
 		time_at_step = output_dictionary['tcur'] #time at the time-step
@@ -103,37 +107,75 @@ class AtomicSolver(object):
 
 					self.additional_out[key] = output_values #copy the adjusted array back onto the additional_out attribute
 			
-				plt.semilogx(t_values, output_values)
-				plt.show()
-							
-
+				# plt.semilogx(t_values, output_values)
+				# plt.show()
 
 
 		# for k in range(self.Z+1):
 		# 	print("{:20} Nz^{} = {}".format("Equilibrium found for",k,result[-1,k]))
 
+		solver.Nzk = result[-1,:]
+
 		return result
 
-	def scanCollisionalRadiativeEquilibrium(self, Te_values, Ne_values, t_values = np.logspace(-6, 2, 200)):
+	def scanTempCREquilibrium(self, Te_values, Ne_const, t_values = np.logspace(-6, 2, 200)):
+		self.reset_additional_out()
 
-		result_grid = np.zeros((self.Z+1, len(Te_values), len(Ne_values)))
+		results = np.zeros((self.Z+1, len(Te_values)))
 
 		for Te_iterator in range(len(Te_values)):
 			Te = Te_values[Te_iterator]
-			for Ne_iterator in range(len(Ne_values)):
-				Ne = Ne_values[Ne_iterator]
 
-				print("Evaluating test {} of {}".format(Te_iterator*len(Te_values)+Ne_iterator, len(Te_values)*len(Ne_values)))
+			print("Evaluating test {} of {}".format(Te_iterator, len(Te_values)))
 
-				result = self.solveCollisionalRadiativeEquilibrium(Te, Ne, t_values)
+			result = self.solveCollisionalRadiativeEquilibrium(Te, Ne_const, t_values)
 
-				result_grid[:,Te_iterator,Ne_iterator] = result[-1,:]
+			results[:,Te_iterator] = result[-1,:]
 
-		return result_grid
+			self.Nzk = result[-1,:]
 
-				
+		return results
 
+	def scanDensityCREquilibrium(self, Ne_values, Te_const, t_values = np.logspace(-6, 2, 200)):
+		self.reset_additional_out()
 
+		results = np.zeros((self.Z+1, len(Ne_values)))
+
+		for Ne_iterator in range(len(Ne_values)):
+			Ne = Ne_values[Ne_iterator]
+
+			print("Evaluating test {} of {}".format(Ne_iterator, len(Ne_values)))
+
+			result = self.solveCollisionalRadiativeEquilibrium(Te_const, Ne, t_values)
+
+			results[:,Ne_iterator] = result[-1,:]
+
+			self.Nzk = result[-1,:]
+
+		return results
+
+	def plotResultFromDensityEvolution(self, result, t_values, plot_power = False):
+		fig, ax1 = plt.subplots()
+		for k in range(solver.Z+1):
+			ax1.semilogx(t_values, result[:,k], label="{}".format(k))
+
+		ax1.semilogx(t_values, np.sum(result[:,:],1), label="Total")
+
+		ax1.set_xlabel(r'Time (s)')
+		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
+		plt.title('Time evolution of ionisation stages')
+		ax1.tick_params('y', colors = 'b')
+		ax1.legend()
+
+		if plot_power:
+			ax2 = ax1.twinx()
+			scaled_power = np.array(self.additional_out['Prad'])*1e-3
+			ax2.semilogx(t_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
+			ax2.tick_params('y', colors='k')
+			ax2.legend(loc=0)
+
+		plt.show()
 
 if __name__ == "__main__":
 
@@ -147,54 +189,25 @@ if __name__ == "__main__":
 	# solver.Nzk = np.array([1e17, 0, 0, 0, 0, 0, 0])
 
 	t = np.logspace(-6, 2, 200)
-	result = solver.solveCollisionalRadiativeEquilibrium(50, 1e19, t)
+
+	# result = solver.solveCollisionalRadiativeEquilibrium(1, 1e19, t, ['Prad'])
+	# solver.plotResultFromDensityEvolution(result, t)
+
+	Te_values = np.logspace(-0.69, 3.99, 100) #Span the entire array for which there is ADAS data
+	Ne_values = np.logspace(13.7, 21.3, 100)
+	results = solver.scanTempCREquilibrium(Te_values, 1e19, t)
 
 	for k in range(solver.Z+1):
-		plt.semilogx(t, result[:,k], label="{}".format(k))
+		plt.loglog(Te_values, results[k,:], label="{}".format(k))
 
-	plt.semilogx(t, np.sum(result[:,:],1), label="Total")
-	plt.xlabel(r'Time (s)')
+	plt.loglog(Te_values, np.sum(results[:,:],0), label="Total")
+	total_density = np.sum(results[:,-1],0)
+	plt.ylim([1e-3*total_density, total_density])
+	plt.xlabel(r'Plasma temperature (eV)')
 	plt.ylabel(r'Density of stage ($m^{-3}$)')
-	plt.title('Time evolution of ionisation stages')
+	plt.title(r'Ionisation stage at C.R. as $f(T_e)$')
 	plt.legend()
-	# plt.show()
-
-
-
-
-	# Te_values = np.logspace(-0.69, 3.99, 100) #Span the entire array for which there is ADAS data
-	# Ne_values = np.logspace(13.7, 21.3, 100)
-
-	# t = np.logspace(-6, 2, 2000)
-
-	# Ne = 1e19; #m^-3
-
-	# Nzk_init = np.ones((Z+1,)) * 1e17/Z
-	# # Nzk_init[0] = 1e17
-
-	# Ionisation_stage_distibution = np.zeros((Z+1,len(Te_values)))
-
-	# for Te_iterator in range(len(Te_values)):
-	# 	Te = Te_values[Te_iterator]
-
-	# 	result = odeint(evolve_density_TD, Nzk_init, t, args=(Te, Ne, Vi, Nn, Vn, Vzk))
-
-	# 	# for k in range(Z+1):
-	# 		# print("Nz^{} = {}".format(k,result[-1,k]))
-
-	# 	Ionisation_stage_distibution[:,Te_iterator] = result[-1,:]
-	# 	# Nzk_init = result[-1,:]
-
-	# for k in range(Z+1):
-	# 	plt.loglog(Te_values, Ionisation_stage_distibution[k,:], label="{}".format(k))
-
-	# plt.loglog(Te_values, np.sum(Ionisation_stage_distibution[:,:],0), label="Total")
-	# plt.ylim([1e-3*np.sum(Ionisation_stage_distibution[:,-1],0), 1*np.sum(Ionisation_stage_distibution[:,-1],0)])
-	# plt.xlabel(r'Plasma temperature (eV)')
-	# plt.ylabel(r'Density of stage ($m^{-3}$)')
-	# plt.title(r'Ionisation stage at C.R. as $f(T_e)$')
-	# plt.legend()
-	# plt.show()
+	plt.show()
 
 
 
