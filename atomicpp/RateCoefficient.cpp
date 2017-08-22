@@ -2,13 +2,13 @@
 #include <vector>
 #include <array>
 #include <fstream>
-#include "json.hpp"
+#include "ExternalModules/json.hpp"
 using json = nlohmann::json;
 #include <stdexcept> //For error-throwing
 
 #include "RateCoefficient.hpp"
 #include "sharedFunctions.hpp"
-#include "BicubicSpline.hpp"
+#include "Spline/BivariateBSpline.hpp"
 
 using namespace atomicpp;
 
@@ -28,7 +28,7 @@ RateCoefficient::RateCoefficient(const std::string& filename){
 	// The second copies the value to the corresponding RateCoefficient attribute
 
 	for(int k=0; k<atomic_number; ++k){
-		interpolator.push_back(BicubicSpline(log_temp, log_dens, log_rate[k]));
+		interpolator.push_back(BivariateBSpline(log_temp, log_dens, log_rate[k]));
 	}
 
 };
@@ -50,12 +50,6 @@ double RateCoefficient::call0D(const int k, const double eval_Te, const double e
 
 	return pow(10, eval_log_rate);
 };
-//Overloaded onto call0D - if the input is an int and two <int, double> pairs then use the SharedInterpolation method (i.e. assume that Te_interp and Ne_interp
-//contain which point for which to return the coefficient - saves reevaluating)
-double RateCoefficient::call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp){
-	double eval_log_rate = interpolator[k].call0D_shared(Te_interp, Ne_interp);
-	return pow(10, eval_log_rate);
-};
 int RateCoefficient::get_atomic_number(){
 	return atomic_number;
 };
@@ -65,7 +59,7 @@ std::string RateCoefficient::get_element(){
 std::string RateCoefficient::get_adf11_file(){
 	return adf11_file;
 };
-std::vector<BicubicSpline> RateCoefficient::get_interpolator(){
+std::vector<BivariateBSpline> RateCoefficient::get_interpolator(){
 	return interpolator;
 };
 std::vector<double> RateCoefficient::get_log_temp(){

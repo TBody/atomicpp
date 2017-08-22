@@ -4,7 +4,7 @@
 	#include <string>
 	#include <fstream>
 
-	#include "json.hpp"
+	#include "ExternalModules/json.hpp"
 	using json = nlohmann::json;
 
 	namespace atomicpp{

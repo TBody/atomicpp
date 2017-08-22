@@ -3,10 +3,10 @@
 	#include <string>
 	#include <vector>
 	#include <array>
-	#include "json.hpp"
+	#include "ExternalModules/json.hpp"
 	using json = nlohmann::json;
 
-	#include "BicubicSpline.hpp"
+	#include "Spline/BivariateBSpline.hpp"
 	
 	namespace atomicpp{
 
@@ -50,13 +50,10 @@
 			 * @return eval_coeff evaluated rate coefficient in m^3/s
 			 */
 			double call0D(const int k, const double eval_Te, const double eval_Ne);
-			//Overloaded onto call0D - if the input is an int and two <int, double> pairs then use the SharedInterpolation method
-			//(i.e. assume that Te_interp and Ne_interp contain which point for which to return the coefficient - saves reevaluating)
-			double call0D(const int k, const std::pair<int, double> Te_interp, const std::pair<int, double> Ne_interp);
 			int get_atomic_number();
 			std::string get_element();
 			std::string get_adf11_file();
-			std::vector<BicubicSpline> get_interpolator();
+			std::vector<BivariateBSpline> get_interpolator();
 			// std::vector<std::vector< std::vector<double> > > get_log_rate();
 			std::vector<double> get_log_temp();
 			std::vector<double> get_log_dens();
@@ -65,7 +62,7 @@
 			int atomic_number;
 			std::string element;
 			std::string adf11_file;
-			std::vector<BicubicSpline> interpolator;
+			std::vector<BivariateBSpline> interpolator;
 		};
 	}
 #endif
