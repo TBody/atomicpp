@@ -9,43 +9,6 @@ import numpy as np
 from atomicpp import atomicpy
 from scipy.integrate import odeint
 
-import os
-import sys
-import contextlib
-
-def fileno(file_or_fd):
-    fd = getattr(file_or_fd, 'fileno', lambda: file_or_fd)()
-    if not isinstance(fd, int):
-        raise ValueError("Expected a file (`.fileno()`) or a file descriptor")
-    return fd
-
-@contextlib.contextmanager
-def stdout_redirected(to=os.devnull, stdout=None):
-    """
-    https://stackoverflow.com/a/22434262/190597 (J.F. Sebastian)
-    """
-    if stdout is None:
-       stdout = sys.stdout
-
-    stdout_fd = fileno(stdout)
-    # copy stdout_fd before it is overwritten
-    #NOTE: `copied` is inheritable on Windows when duplicating a standard stream
-    with os.fdopen(os.dup(stdout_fd), 'wb') as copied: 
-        stdout.flush()  # flush library buffers that dup2 knows nothing about
-        try:
-            os.dup2(fileno(to), stdout_fd)  # $ exec >&to
-        except ValueError:  # filename
-            with open(to, 'wb') as to_file:
-                os.dup2(to_file.fileno(), stdout_fd)  # $ exec > to
-        try:
-            yield stdout # allow code to be run with the redirected stdout
-        finally:
-            # restore stdout to its previous value
-            #NOTE: dup2 makes stdout_fd inheritable unconditionally
-            stdout.flush()
-            os.dup2(copied.fileno(), stdout_fd)  # $ exec >&copied
-
-
 
 class AtomicSolver(object):
 
@@ -90,6 +53,7 @@ class AtomicSolver(object):
 		dNzk = derivative_struct["dNzk"]
 
 		self.additional_out['Prad'].append(derivative_struct['Prad'])
+		self.additional_out['dNzk'].append(derivative_struct['dNzk'])
 
 		return dNzk
 
@@ -103,32 +67,47 @@ class AtomicSolver(object):
 		
 		(result, output_dictionary) = odeint(self.evolveDensity, self.Nzk, t_values, args=(self,), printmessg=False, full_output=True)
 
-		feval_at_step = output_dictionary['nfe']
-		time_at_step = output_dictionary['tcur']
+		feval_at_step = output_dictionary['nfe'] #function evaluations at the time-step
+		time_at_step = output_dictionary['tcur'] #time at the time-step
 
-		Prad_feval = self.additional_out['Prad']
+		time_indices = np.searchsorted(t_values, time_at_step, side='left') #find how the time-steps are distributed. Usually close but not 1 to 1 with t_values
 
-		time_indices = np.searchsorted(t_values, time_at_step, side='left')
+		for key, value in self.additional_out.items():
+			if value: #if list isn't empty - i.e. additional output has been recorded for this key
+				output_feval = value #copy the output evaluated at each time-step
 
-		Prad = np.zeros_like(t_values)
+				try:
+					# If the additional_out has a length (i.e. is an array)
+					output_values = np.zeros((len(t_values), len(output_feval[0]))) #Output values corresponding to the t_values
 
-		for step in range(len(feval_at_step-1)):
+					# Fill the first few values from the first function evaluation (corresponding to __init__)
+					output_values[0:time_indices[0]] = output_feval[0]
 
-			print(time_indices[step])
-			print(t_values[time_indices[step]-1])
+					# Fill the rest of the values by matching the time of the time=step to a t_values time
+					for step in range(len(feval_at_step)-1):
+						# Might need one feval to span multiple t_values
+						output_values[time_indices[step]:time_indices[step+1]] = output_feval[feval_at_step[step]-1]
 
-			if t_values[time_indices[step]-1] < t_values[-1]:
-				print('<')
-				Prad[time_indices[step]:time_indices[step+1]] = Prad_feval[feval_at_step[step]-1]
-			elif t_values[time_indices[step]-1] == t_values[-1]:
-				print('=')
-				Prad[-1] = Prad_feval[feval_at_step[step]-1]
+					self.additional_out[key] = output_values #copy the adjusted array back onto the additional_out attribute
+
+				except TypeError:
+					output_values = np.zeros(len(t_values)) #Output values corresponding to the t_values
+
+					# Fill the first few values from the first function evaluation (corresponding to __init__)
+					output_values[0:time_indices[0]] = output_feval[0]
+
+					# Fill the rest of the values by matching the time of the time=step to a t_values time
+					for step in range(len(feval_at_step)-1):
+						# Might need one feval to span multiple t_values
+						output_values[time_indices[step]:time_indices[step+1]] = output_feval[feval_at_step[step]-1]
+
+					self.additional_out[key] = output_values #copy the adjusted array back onto the additional_out attribute
+			
+				plt.semilogx(t_values, output_values)
+				plt.show()
+							
 
 
-		# plt.loglog(t_values, np.append(t_values[0],time_at_step))
-		plt.loglog(t_values, Prad/max(Prad))
-
-		plt.show()
 
 		# for k in range(self.Z+1):
 		# 	print("{:20} Nz^{} = {}".format("Equilibrium found for",k,result[-1,k]))
