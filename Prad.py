@@ -9,6 +9,44 @@ import numpy as np
 from atomicpp import atomicpy
 from scipy.integrate import odeint
 
+import os
+import sys
+import contextlib
+
+def fileno(file_or_fd):
+    fd = getattr(file_or_fd, 'fileno', lambda: file_or_fd)()
+    if not isinstance(fd, int):
+        raise ValueError("Expected a file (`.fileno()`) or a file descriptor")
+    return fd
+
+@contextlib.contextmanager
+def stdout_redirected(to=os.devnull, stdout=None):
+    """
+    https://stackoverflow.com/a/22434262/190597 (J.F. Sebastian)
+    """
+    if stdout is None:
+       stdout = sys.stdout
+
+    stdout_fd = fileno(stdout)
+    # copy stdout_fd before it is overwritten
+    #NOTE: `copied` is inheritable on Windows when duplicating a standard stream
+    with os.fdopen(os.dup(stdout_fd), 'wb') as copied: 
+        stdout.flush()  # flush library buffers that dup2 knows nothing about
+        try:
+            os.dup2(fileno(to), stdout_fd)  # $ exec >&to
+        except ValueError:  # filename
+            with open(to, 'wb') as to_file:
+                os.dup2(to_file.fileno(), stdout_fd)  # $ exec > to
+        try:
+            yield stdout # allow code to be run with the redirected stdout
+        finally:
+            # restore stdout to its previous value
+            #NOTE: dup2 makes stdout_fd inheritable unconditionally
+            stdout.flush()
+            os.dup2(copied.fileno(), stdout_fd)  # $ exec >&copied
+
+
+
 class AtomicSolver(object):
 
 	def __init__(self, impurity_symbol):
@@ -29,6 +67,8 @@ class AtomicSolver(object):
 		self.Nzk = np.array([1e17, 0, 0, 0, 0, 0, 0]) #m^-3
 		self.Vzk = np.zeros((self.Z+1,)) #m/s
 
+		self.additional_out = {'Prad':[], 'Pcool':[], 'dNzk':[], 'F_zk':[], 'dNe':[], 'F_i':[], 'dNn':[], 'F_n':[]}
+	
 	@staticmethod
 	def evolveDensity(Nzk, t, self):
 		Te  = self.Te
@@ -40,14 +80,16 @@ class AtomicSolver(object):
 		Vzk = self.Vzk
 
 		# Prevent negative densities
-		# (these are possible if the time-step is reasonably large)
-		# for k in range(len(Nzk)):
-		# 	if(Nzk[k] < 0):
-		# 		Nzk[k] = 0
+		# (these are possible if the time-step is large)
+		for k in range(len(Nzk)):
+			if(Nzk[k] < 0):
+				Nzk[k] = 0
 
 		derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 
 		dNzk = derivative_struct["dNzk"]
+
+		self.additional_out['Prad'].append(derivative_struct['Prad'])
 
 		return dNzk
 
@@ -59,7 +101,34 @@ class AtomicSolver(object):
 
 		print("Te = {}eV, Ne = {}/m3".format(Te, Ne))
 		
-		result = odeint(self.evolveDensity, self.Nzk, t_values, args=(self,), printmessg=False)
+		(result, output_dictionary) = odeint(self.evolveDensity, self.Nzk, t_values, args=(self,), printmessg=False, full_output=True)
+
+		feval_at_step = output_dictionary['nfe']
+		time_at_step = output_dictionary['tcur']
+
+		Prad_feval = self.additional_out['Prad']
+
+		time_indices = np.searchsorted(t_values, time_at_step, side='left')
+
+		Prad = np.zeros_like(t_values)
+
+		for step in range(len(feval_at_step-1)):
+
+			print(time_indices[step])
+			print(t_values[time_indices[step]-1])
+
+			if t_values[time_indices[step]-1] < t_values[-1]:
+				print('<')
+				Prad[time_indices[step]:time_indices[step+1]] = Prad_feval[feval_at_step[step]-1]
+			elif t_values[time_indices[step]-1] == t_values[-1]:
+				print('=')
+				Prad[-1] = Prad_feval[feval_at_step[step]-1]
+
+
+		# plt.loglog(t_values, np.append(t_values[0],time_at_step))
+		plt.loglog(t_values, Prad/max(Prad))
+
+		plt.show()
 
 		# for k in range(self.Z+1):
 		# 	print("{:20} Nz^{} = {}".format("Equilibrium found for",k,result[-1,k]))
@@ -103,13 +172,13 @@ if __name__ == "__main__":
 
 	for k in range(solver.Z+1):
 		plt.semilogx(t, result[:,k], label="{}".format(k))
-		
+
 	plt.semilogx(t, np.sum(result[:,:],1), label="Total")
 	plt.xlabel(r'Time (s)')
 	plt.ylabel(r'Density of stage ($m^{-3}$)')
 	plt.title('Time evolution of ionisation stages')
 	plt.legend()
-	plt.show()
+	# plt.show()
 
 
 
