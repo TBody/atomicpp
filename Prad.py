@@ -8,6 +8,7 @@
 import numpy as np
 from atomicpp import atomicpy
 from scipy.integrate import odeint
+import pickle
 
 
 class AtomicSolver(object):
@@ -53,8 +54,9 @@ class AtomicSolver(object):
 		dNzk = derivative_struct["dNzk"]
 		for key in additional_out_keys:
 			self.additional_out[key].append(derivative_struct[key])
-		# self.additional_out['Prad'].append(derivative_struct['Prad'])
-		# self.additional_out['dNzk'].append(derivative_struct['dNzk'])
+
+		self.additional_out['Prad'].append(derivative_struct['Prad'])
+		self.additional_out['dNzk'].append(derivative_struct['dNzk'])
 
 		return dNzk
 
@@ -118,23 +120,145 @@ class AtomicSolver(object):
 
 		return result
 
-	def scanTempCREquilibrium(self, Te_values, Ne_const, t_values = np.logspace(-6, 2, 200)):
-		self.reset_additional_out()
+	def plotResultFromDensityEvolution(self, result, t_values, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none"):
+		fig, ax1 = plt.subplots()
+		for k in range(solver.Z+1):
+			if k == 0:
+				ax1.semilogx(t_values, result[:,k], label="{}".format("g.s."))
+			else:
+				ax1.semilogx(t_values, result[:,k], label="{}+".format(k))
 
-		results = np.zeros((self.Z+1, len(Te_values)))
+		ax1.semilogx(t_values, np.sum(result[:,:],1), label="Total")
+
+		ax1.set_xlabel(r'Time (s)')
+		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
+		# plt.title('Time evolution of ionisation stages')
+		ax1.tick_params('y', colors = 'b')
+		ax1.legend()
+
+		ax1.set_xlim(min(t_values), max(t_values))
+
+		ax1.grid(which=grid, axis='both')
+
+		if plot_power:
+			ax2 = ax1.twinx()
+			scaled_power = np.array(self.additional_out['Prad'])*1e-3
+			ax2.semilogx(t_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
+			ax2.tick_params('y', colors='k')
+			ax2.legend(loc=0)
+		
+		ax1.set_xscale(x_axis_scale)
+		ax1.set_yscale(y_axis_scale)
+		if plot_power:
+			ax2.set_yscale(y_axis_scale)
+
+		plt.show()
+
+	def scanTempCREquilibrium(self, Te_values, Ne_const, t_values = np.logspace(-6, 2, 200)):
+
+		additional_out = {}
+		for key in self.additional_out.keys():
+			additional_out[key] = []
+
+		results = np.zeros((len(Te_values),self.Z+1))
 
 		for Te_iterator in range(len(Te_values)):
+			self.reset_additional_out()
 			Te = Te_values[Te_iterator]
 
 			print("Evaluating test {} of {}".format(Te_iterator, len(Te_values)))
 
 			result = self.solveCollisionalRadiativeEquilibrium(Te, Ne_const, t_values)
 
-			results[:,Te_iterator] = result[-1,:]
+			results[Te_iterator,:] = result[-1,:]
+
+			for key, value in self.additional_out.items():
+
+				if len(value) > 0:
+					additional_out[key].append(value[-1]) #Take the last time slice
 
 			self.Nzk = result[-1,:]
 
+
+		self.additional_out = additional_out
+			
+
 		return results
+
+	def plotScanTempCR(self, results, Te_values, Ne_const, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none"):
+		
+		fig, ax1 = plt.subplots()
+
+		for k in range(self.Z+1):
+			if k == 0:
+				ax1.semilogx(Te_values, results[:,k], label="{}".format("g.s."))
+			else:
+				ax1.semilogx(Te_values, results[:,k], label="{}+".format(k))
+
+		plt.semilogx(Te_values, np.sum(results[:,:],1), label="Total")
+
+		total_density = np.sum(results[-1,:],0)
+		ax1.set_ylim([1e-3*total_density, total_density])
+		ax1.set_xlabel(r'Plasma temperature (eV)')
+		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
+		# plt.title(r'Ionisation stage at C.R. as $f(T_e)$')
+		ax1.tick_params('y', colors = 'b')
+		plt.legend()
+
+		ax1.set_xlim(min(Te_values), max(Te_values))
+
+		ax1.grid(which=grid, axis='both')
+
+		if plot_power:
+			ax2 = ax1.twinx()
+			scaled_power = np.array(self.additional_out['Prad'])*1e-3
+			ax2.semilogx(Te_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
+			ax2.tick_params('y', colors='k')
+			ax2.legend(loc=0)
+		
+		ax1.set_xscale(x_axis_scale)
+		ax1.set_yscale(y_axis_scale)
+		if plot_power:
+			ax2.set_yscale(y_axis_scale)
+
+		plt.show()
+
+	def plotScanTempCRPower(self, results, Te_values, Ne_const, x_axis_scale = "log", y_axis_scale = "log", grid = "none"):
+		
+		fig, ax1 = plt.subplots()
+
+		total_density = np.sum(results[-1,:],0)
+		scaled_power = np.array(self.additional_out['Prad'])
+
+		compare_to_Post_PSI = True
+		if compare_to_Post_PSI:
+			convertCM = 1e-6 #convert from cm^3 to m^3
+
+			ax1.semilogx(Te_values, scaled_power/(total_density*Ne_const*convertCM),'k--',label=r'$L$')
+			
+			ax1.set_ylabel(r'$L$ (W $cm^3$)')
+
+			ax1.set_xlim(1, 1e3)
+			ax1.set_ylim(1e-29, 1e-24)
+
+		else:
+			ax1.semilogx(Te_values, scaled_power/(total_density*Ne_const),'k--',label=r'$L$')
+
+			ax1.set_ylabel(r'$L$ (W $m^3$)')
+			
+			ax1.set_xlim(min(Te_values), max(Te_values))
+
+		ax1.set_xlabel(r'Plasma temperature (eV)')
+		# plt.legend()
+
+		ax1.grid(which=grid, axis='both')
+		
+		ax1.set_xscale(x_axis_scale)
+		ax1.set_yscale(y_axis_scale)
+
+		plt.show()
 
 	def scanDensityCREquilibrium(self, Ne_values, Te_const, t_values = np.logspace(-6, 2, 200)):
 		self.reset_additional_out()
@@ -154,29 +278,6 @@ class AtomicSolver(object):
 
 		return results
 
-	def plotResultFromDensityEvolution(self, result, t_values, plot_power = False):
-		fig, ax1 = plt.subplots()
-		for k in range(solver.Z+1):
-			ax1.semilogx(t_values, result[:,k], label="{}".format(k))
-
-		ax1.semilogx(t_values, np.sum(result[:,:],1), label="Total")
-
-		ax1.set_xlabel(r'Time (s)')
-		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
-		plt.title('Time evolution of ionisation stages')
-		ax1.tick_params('y', colors = 'b')
-		ax1.legend()
-
-		if plot_power:
-			ax2 = ax1.twinx()
-			scaled_power = np.array(self.additional_out['Prad'])*1e-3
-			ax2.semilogx(t_values, scaled_power,'k--',label=r'$P_{rad}$')
-			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
-			ax2.tick_params('y', colors='k')
-			ax2.legend(loc=0)
-
-		plt.show()
-
 if __name__ == "__main__":
 
 	import matplotlib.pyplot as plt
@@ -185,29 +286,37 @@ if __name__ == "__main__":
 
 	solver = AtomicSolver(impurity_symbol)
 
-	# solver.Te = 50
-	# solver.Nzk = np.array([1e17, 0, 0, 0, 0, 0, 0])
+	solver.Te = 50
+	solver.Nzk = np.array([1e17, 0, 0, 0, 0, 0, 0])
 
-	t = np.logspace(-6, 2, 200)
-
-	# result = solver.solveCollisionalRadiativeEquilibrium(1, 1e19, t, ['Prad'])
-	# solver.plotResultFromDensityEvolution(result, t)
-
+	t_values = np.logspace(-6, 2, 200)
 	Te_values = np.logspace(-0.69, 3.99, 100) #Span the entire array for which there is ADAS data
+	Te_const = 50
 	Ne_values = np.logspace(13.7, 21.3, 100)
-	results = solver.scanTempCREquilibrium(Te_values, 1e19, t)
+	Ne_const = 1e19
 
-	for k in range(solver.Z+1):
-		plt.loglog(Te_values, results[k,:], label="{}".format(k))
+	Evaluate = False
+		
+	if Evaluate:
+		# result = solver.solveCollisionalRadiativeEquilibrium(Te_const, Ne_const, t_values, ['Prad'])
+		# solver.plotResultFromDensityEvolution(result, t_values, plot_power = False, grid="major")
 
-	plt.loglog(Te_values, np.sum(results[:,:],0), label="Total")
-	total_density = np.sum(results[:,-1],0)
-	plt.ylim([1e-3*total_density, total_density])
-	plt.xlabel(r'Plasma temperature (eV)')
-	plt.ylabel(r'Density of stage ($m^{-3}$)')
-	plt.title(r'Ionisation stage at C.R. as $f(T_e)$')
-	plt.legend()
-	plt.show()
+		results = solver.scanTempCREquilibrium(Te_values, Ne_const, t_values)
+
+		with open('python_results/results_Te(scan{})_Ne({})_res({}).pickle'.format(len(Te_values),Ne_const,len(t_values)), 'wb') as handle:
+			pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		with open('python_results/additional_out_Te(scan{})_Ne({})_res({}).pickle'.format(len(Te_values),Ne_const,len(t_values)), 'wb') as handle:
+			pickle.dump(solver.additional_out, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	else:
+		with open('python_results/results_Te(scan{})_Ne({})_res({}).pickle'.format(len(Te_values),Ne_const,len(t_values)), 'rb') as handle:
+			results = pickle.load(handle)
+		with open('python_results/additional_out_Te(scan{})_Ne({})_res({}).pickle'.format(len(Te_values),Ne_const,len(t_values)), 'rb') as handle:
+			solver.additional_out = pickle.load(handle)
+
+	# solver.plotScanTempCR(results, Te_values, Ne_const, grid="major")
+	solver.plotScanTempCRPower(results, Te_values, Ne_const, grid="major")
+
+	
 
 
 
