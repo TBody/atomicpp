@@ -98,13 +98,14 @@ class AtomicSolver(object):
 		derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 		dNzk = derivative_struct["dNzk"]
 
+		# print("Refuel: ", sum(Nzk)*refuelling_rate)
 		# print("No refuelling", dNzk)
 		# dNzk_store = dNzk
 		fraction_in_stage = Nzk/sum(Nzk)
 		# Add neutrals at a rate of tau^-1
-		dNzk[0] += refuelling_rate
+		dNzk[0] += sum(Nzk)*refuelling_rate
 		# Remove other stages based on their density
-		dNzk -= refuelling_rate*fraction_in_stage
+		dNzk -= sum(Nzk)*refuelling_rate*fraction_in_stage
 		# print("Refuelling", dNzk)
 		# print("Ratio", dNzk/dNzk_store)
 
@@ -438,19 +439,21 @@ if __name__ == "__main__":
 	solver = AtomicSolver(impurity_symbol)
 
 	solver.plot_solver_evolution   = False
-	solver.reevaluate_scan_temp    = False
+	solver.reevaluate_scan_temp    = True
 	solver.plot_scan_temp_dens     = False
 	solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
-	solver.Ne_tau_values = [1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	# solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	solver.Ne_tau_values = np.logspace(12, 20, 7) #m^-3 s, values to return Prad(tau) for
+	solver.Ne_tau_values = np.append(solver.Ne_tau_values, 1e30)
 
-	solver.Te_values = np.logspace(0, 2, 10) #eV
+	solver.Te_values = np.logspace(0, 3, 20) #eV
 
 	if solver.plot_solver_evolution:
-		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const)
-		solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major")
-		# print(solver.additional_out['Prad'][-1])
+		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 1e14)
+		# solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major")
+		print(solver.additional_out['Prad'][-1])
 	
 	if solver.plot_scan_temp_dens or solver.plot_scan_temp_prad:
 		if solver.reevaluate_scan_temp:
