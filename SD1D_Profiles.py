@@ -112,8 +112,8 @@ if __name__ == '__main__':
 
 	test_data = SD1DData(input_file)
 
-	# position = -(test_data.position - max(test_data.position))
-	position = test_data.position
+	position = -(test_data.position - max(test_data.position))
+	# position = test_data.position
 
 	impurity_symbol = b'c'
 	impurity = atomicpy.PyImpuritySpecies(impurity_symbol)
@@ -135,6 +135,9 @@ if __name__ == '__main__':
 	plot_Nzk 	 = []
 	plot_dNzk 	 = []
 	# plot_dPe 	 = []
+	calc_NVzk 	 = []
+
+	time_step = 1e-12
 
 	for index in range(len(position)):
 		Te = test_data.temperature[index]
@@ -171,7 +174,44 @@ if __name__ == '__main__':
 
 		derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
 
-		
+		Pcool = np.array(derivative_struct["Pcool"])
+		Prad = np.array(derivative_struct["Prad"])
+		dNzk = np.array(derivative_struct["dNzk"])
+		F_zk = np.array(derivative_struct["F_zk"])
+		dNe = np.array(derivative_struct["dNe"])
+		F_i = np.array(derivative_struct["F_i"])
+		dNn = np.array(derivative_struct["dNn"])
+		F_n = np.array(derivative_struct["F_n"])
+		P_stage = np.array(derivative_struct["P_stage"])
+		P_line = np.array(derivative_struct["P_line"])
+		P_cont = np.array(derivative_struct["P_cont"])
+		P_cx = np.array(derivative_struct["P_cx"])
+
+		plot_Prad.append(Prad)
+		plot_P_stage.append(P_stage)
+		plot_P_line.append(	P_line )
+		plot_P_cont.append(	P_cont )
+		plot_P_cx.append(	P_cx   )
+		# plot_Nzk.append(	Nzk 	)
+		plot_dNzk.append(	dNzk 	)
+
+		# calc_NVzk.append(Nzk*F_zk/(mz*amu)*time_step)
+
+
+	# for index in range(len(position)):
+
+	# 	if not(index == 0 or index == len(position)-1):
+	# 		# Central difference
+	# 		dNVzk = (calc_NVzk[index+1]-calc_NVzk[index-1])/(test_data.position[index+1]-test_data.position[index-1])
+	# 	elif (index == 0):
+	# 		# Forward difference
+	# 		dNVzk = (calc_NVzk[index+1]-calc_NVzk[index])/(test_data.position[index+1]-test_data.position[index])
+	# 	elif (index == len(position)-1):
+	# 		# Backward difference
+	# 		dNVzk = (calc_NVzk[index]-calc_NVzk[index-1])/(test_data.position[index]-test_data.position[index-1])
+
+	# 	# plot_dNzk[index] -= dNVzk
+
 
 	plot_Prad    = np.array(plot_Prad)
 	plot_P_stage = np.array(plot_P_stage)
@@ -184,13 +224,13 @@ if __name__ == '__main__':
 
 	f, (ax1, ax2) = plt.subplots(2, sharex = True)
 
-	# ax1.plot(position, test_data.pressure)
-	# ax2.plot(position, plot_dPe)
-	# plt.show()
+	ax1.plot(position, plot_dNzk)
+	# ax2.plot(position, calc_NVzk)
+	plt.show()
 
 
 	if False:
-		f, (ax1, ax2, ax3) = plt.subplots(3, sharex=True, sharey=False)
+		f, (ax1, ax2, ax3, ax4) = plt.subplots(4, sharex=True, sharey=False)
 
 		# Top plot - density and temperature
 
@@ -214,19 +254,24 @@ if __name__ == '__main__':
 
 		ax2.semilogy(position, test_data.p_rad_hydrogen, label=r'H')
 		ax2.semilogy(position, test_data.p_rad_carbon, label=r'C')
+		ax2.semilogy(position, plot_P_line, label=r'Line')
+		ax2.semilogy(position, plot_P_cont, label=r'Cont.')
+		ax2.semilogy(position, plot_P_cx, label=r'C.X.')
 		ax2.grid()
 		ax2.legend()
 		ax2.set_ylabel(r"P$_{rad}$ [$W/m^{3}$]")
+		# ax3.set_ylim(1e6, 1e21)
 
 		# Bottom plot - instantaneous change
 
 		for k in range(Z+1):
-			print(plot_Nzk[:,k].shape)
-			ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
+			if k == 0:
+				ax3.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
+			else:
+				ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
 
 		ax3.legend()
 		ax3.set_ylim(1e6, 1e21)
-
 
 		ax3.set_xlabel("Position [$m$]")
 
