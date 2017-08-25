@@ -376,6 +376,13 @@ void RateEquations::calculateElectronImpactPowerEquation(
 		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
 		Prad  += line_power_rate + continuum_power_rate;
+		
+		P_stage[k] += line_power_rate;
+		P_line += line_power_rate;
+		
+		P_stage[k+1] += continuum_power_rate;
+		P_cont += continuum_power_rate;
+
 		Pcool += line_power_rate + continuum_power_rate;
 	}
 };
@@ -392,6 +399,8 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
+		P_cx += cx_power_rate;
+		P_stage[k+1] += cx_power_rate;
 	}
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
