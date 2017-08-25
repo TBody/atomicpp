@@ -164,21 +164,14 @@ if __name__ == '__main__':
 			dPe = (test_data.pressure[index]-test_data.pressure[index-1])/(test_data.position[index]-test_data.position[index-1])
 			dTe = (test_data.temperature[index]-test_data.temperature[index-1])/(test_data.position[index]-test_data.position[index-1])
 
-		# plot_dPe.append(dPe)
-
-		print(Vi)
-		print(dPe)
-		print(collision_frequency_ii_PF)
-		print(1/collision_frequency_ii_PF)
+		# print(Vi)
 		for k in range(1,Z+1):
 			Vzk[k] = Vi + (1/(mz*collision_frequency_ii_PF*k*k)) * ((1+k)*(-1/Ne)*dPe + (alpha_e(k)+beta_i(k, mu))*dTe)
-			print(Vzk[k])
+			# print(Vzk[k])
 
+		derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
 
-		quit()
-		# derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
-
-		# derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
+		
 
 	plot_Prad    = np.array(plot_Prad)
 	plot_P_stage = np.array(plot_P_stage)

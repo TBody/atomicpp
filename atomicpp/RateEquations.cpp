@@ -83,7 +83,7 @@ void RateEquations::calculateStoppingTimeConstantFactor(const double coulomb_log
 };
 double RateEquations::calculateIonIonDragFactor(const double Ti, const double Ni){
 	//Stangeby "The Plasma Boundary of Magnetic Fusion Devices" (2000), eqn 6.35
-	double collision_frequency_ii_PF = collision_frequency_s_ii_CF * Ni/sqrt(Ti);
+	double collision_frequency_ii_PF = collision_frequency_s_ii_CF * Ni/(Ti*sqrt(Ti));
 	//ii is 'ion ion'
 	//PF stands for 'Point Factor' -- i.e. this factor is constant for a single location point at a single time
 	return collision_frequency_ii_PF;
