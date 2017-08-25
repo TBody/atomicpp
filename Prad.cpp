@@ -136,7 +136,7 @@ int main(){
 	impurity_derivatives.setThresholdDensity(0); //Density threshold - ignore ionisation stages which don't have at least this density
 	impurity_derivatives.setDominantIonMass(1.0); //Dominant ion mass in amu, for the stopping time calculation
 
-	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(6000, 1e19, Vi, Nn, Vn, Nzk, Vzk);
+	atomicpp::DerivStruct derivative_struct = impurity_derivatives.computeDerivs(50, 1e19, Vi, Nn, Vn, Nzk, Vzk);
 	// double Pcool             = derivative_struct.Pcool;
 	// double Prad              = derivative_struct.Prad;
 	// std::vector<double> dNzk = derivative_struct.dNzk;
