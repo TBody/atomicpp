@@ -19,46 +19,41 @@ filename = 'ADAS/0.2'
 from boutdata.collect import collect
 import numpy as np
 
-data_dict = {}
+t = collect("t_array", path=path)
+tind = len(t)-1 # Get the last time point
 
-dy = collect("dy", path=filename, yguards=True)[-1,1:-1]
+var_list = ["Ne", "P",       # Plasma profiles
+            # "Srec", "Siz",   # Particle sources / sinks
+            # "Frec", "Fiz", "Fcx", "Fel",   # Momentum source / sinks to neutrals
+            "Rrec", "Riz", "Rzrad", "Rex", # Radiation, energy loss from system
+            # "Erec", "Eiz", "Ecx", "Eel",   # Energy transfer between neutrals and plasma
+            "Nnorm", "Tnorm", "Omega_ci", "rho_s0", "Cs0"]  # Normalisations
+
+########################################################
+# Position
+dy = collect("dy", path=path)[0,:]
 n = len(dy)
-pos = np.zeros(n)
+pos = zeros(n)
+
 # position at the centre of the grid cell
-pos[0] = -0.5*dy[1]
-pos[1] = 0.5*dy[1]
-for i in range(2,n):
-	pos[i] = pos[i-1] + 0.5*dy[i-1] + 0.5*dy[i]
-replace_guards(pos)
+pos[0] = 0.5*dy[0]
+for i in range(1,n):
+    pos[i] = pos[i-1] + 0.5*dy[i-1] + 0.5*dy[i]
+    
+########################################################
+# Read the data into a dictionary
 
-data_dict["pos"] = pos
-
-# Normalisation factor for temperature - T * Tnorm returns in eV
-data_dict["Tnorm"] = collect("Tnorm", path=filename, tind=-1)
-# Normalisation factor for density - N * Nnorm returns in m^-3
-data_dict["Nnorm"] = collect("Nnorm", path=filename, tind=-1)
-# Plasma pressure (normalised). Pe = 2 Ne Te => P/Ne = Te (and assume Ti=Te)
-data_dict["P"] = collect("P", path=filename, tind=-1)
-# Electron density (normalised)
-data_dict["Ne"] = collect("Ne", path=filename, tind=-1)
-print("len(data_dict[Ne])")
-print(len(data_dict["Ne"]))
-# Neutral density (normalised)
-data_dict["Nn"] = collect("Nn", path=filename, tind=-1)
-
-data_dict["nnorm"] = collect("Nnorm", path=filename)  # m^-3
-data_dict["tnorm"] = collect("Tnorm", path=filename)  # eV
-data_dict["pnorm"] = data_dict["nnorm"]*1.602e-19*data_dict["tnorm"] # Pressure normalisation [Pa]
-data_dict["cs0"] = collect("Cs0", path=filename) # m/s
-data_dict["timenorm"] = collect("Omega_ci", path=filename)
-
-data_dict["Enorm"] = 1.602e-19*data_dict["tnorm"]*data_dict["nnorm"]*data_dict["timenorm"]
-
-data_dict["Rzrad"] = collect("Rzrad", path=filename, tind=-1) #Impurity radiation
-data_dict["Rex"] = collect("Rex",   path=filename, tind=-1) #Hydrogen-excitation radiation
-
-# Help for user
-data_dict["help"] = "Contains outputs from Boutprojects/SD1D/MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5/0.2. Created with data_dict_export.py - stored in Github.com/TBody/atomic1D/reference"
+data = {}
+for var in var_list:
+    try:
+        data[var] = collect(var, tind=tind, path=path)
+        
+        if len(data[var].shape) == 4:
+            # 4D variable
+            data[var] = data[var][0,0,:,0] # Make 1D [y]
+    except:
+        print("Variable '%s' not found" % (var,))
+        data[var] = None
 
 from copy import deepcopy
 import numpy as np

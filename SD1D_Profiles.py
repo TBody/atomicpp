@@ -57,15 +57,20 @@ class SD1DData(object):
 		# P = 2*Ne*Te => Te = P/(2*Ne)
 		# N.b. division between two numpy ndarrays is piecewise
 		T  = data_dict['P']/(2*data_dict['Ne'])
-		
+		p = data_dict['P']
+		pnorm = data_dict['pnorm']
 		# Neutral fraction affects charge exchange
-		neutral_fraction = Nn/Ne
+		neutral_density = Nn
 		
 		# Retrieve normalisation factors
 		Nnorm = data_dict['Nnorm']
 		Tnorm = data_dict['Tnorm']
 		# Converts N into m^-3, T into eV 
 		
+		Enorm = data_dict["Enorm"]
+		Rzrad = data_dict["Rzrad"]
+		Rex = data_dict["Rex"]
+
 		# Dimensions are [t, x, y, z]
 		#                [0, 1, 2, 3]
 		#
@@ -73,15 +78,19 @@ class SD1DData(object):
 		# 
 		# Apply normalisations, and then use np.squeeze to remove single-dimensional entries
 		# Should return a 2D numpy array with no length-1 dimensions
+		self.position		  = np.squeeze(np.array(data_dict["pos"]))
 		self.temperature      = np.squeeze(np.array(T*Tnorm))
 		self.density          = np.squeeze(np.array(Ne*Nnorm))
-		self.neutral_fraction = np.squeeze(np.array(neutral_fraction))
+		self.pressure 		  = np.squeeze(np.array(p*pnorm))
+		self.neutral_density  = np.squeeze(np.array(neutral_density))
+		self.p_rad_hydrogen   = np.squeeze(np.array(Rex*Enorm))
+		self.p_rad_carbon     = np.squeeze(np.array(Rzrad*Enorm))
 
-		data_shape = self.temperature.shape
-		assert data_shape == self.density.shape
-		assert data_shape == self.neutral_fraction.shape
+		# data_shape = self.temperature.shape
+		# assert data_shape == self.density.shape
+		# assert data_shape == self.neutral_fraction.shape
 		
-		self.data_shape = data_shape
+		# self.data_shape = data_shape
 
 	# def setImpurityFraction(self,impurity_fraction):
 	# 	# Set the impurity density (will be scalar multiplication if fixed fraction,
@@ -126,11 +135,14 @@ if __name__ == '__main__':
 	impurity_symbol = b'c'
 	impurity = atomicpy.PyImpuritySpecies(impurity_symbol)
 	
-	impurity_derivatives = atomicpy.PyRateEquations(self.impurity)
+	impurity_derivatives = atomicpy.PyRateEquations(impurity)
 	impurity_derivatives.setThresholdDensity(-1.0) #Don't use a threshold density at first
 	impurity_derivatives.setDominantIonMass(1.0)
 	
-	
+	for index in range(len(test_data.position)):
+		print(index)
+		# Te = test_data.temperature[index]
+		
 
 
 
