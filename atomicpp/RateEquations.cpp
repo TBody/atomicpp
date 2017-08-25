@@ -378,6 +378,7 @@ void RateEquations::calculateElectronImpactPowerEquation(
 		Pstage[k] += line_power_rate + continuum_power_rate;
 		Pline += line_power_rate;
 		Pcont += continuum_power_rate;
+		
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
 	}
