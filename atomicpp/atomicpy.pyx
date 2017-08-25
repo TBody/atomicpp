@@ -30,6 +30,10 @@ cdef extern from "RateEquations.hpp" namespace "atomicpp":
 		double F_i
 		double dNn
 		double F_n
+		vector[double] P_stage
+		double P_line
+		double P_cont
+		double P_cx
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef cppclass RateEquations:
