@@ -222,15 +222,15 @@ if __name__ == '__main__':
 	plot_dNzk 	 = np.array(plot_dNzk)
 
 
-	f, (ax1, ax2) = plt.subplots(2, sharex = True)
+	# f, (ax1, ax2) = plt.subplots(2, sharex = True)
 
-	ax1.plot(position, plot_dNzk)
-	# ax2.plot(position, calc_NVzk)
-	plt.show()
+	# ax1.plot(position, plot_dNzk)
+	# # ax2.plot(position, calc_NVzk)
+	# plt.show()
 
 
-	if False:
-		f, (ax1, ax2, ax3, ax4) = plt.subplots(4, sharex=True, sharey=False)
+	if True:
+		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
 
 		# Top plot - density and temperature
 
@@ -244,6 +244,7 @@ if __name__ == '__main__':
 		ax1_twin = ax1.twinx()
 		ax1_twin.plot(position, test_data.temperature, 'r--', label=r'T_e')
 		ax1_twin.set_ylabel(r"Temperature [$eV$]", color='r')
+		# ax1_twin.set_ylim(0, 100)
 		ax1_twin.tick_params('y', colors='r')
 		h1, l1 = ax1.get_legend_handles_labels()
 		h2, l2 = ax1_twin.get_legend_handles_labels()
@@ -260,20 +261,21 @@ if __name__ == '__main__':
 		ax2.grid()
 		ax2.legend()
 		ax2.set_ylabel(r"P$_{rad}$ [$W/m^{3}$]")
+		ax2.set_ylim(1, )
 		# ax3.set_ylim(1e6, 1e21)
 
-		# Bottom plot - instantaneous change
+		# # Bottom plot - instantaneous change
 
-		for k in range(Z+1):
-			if k == 0:
-				ax3.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
-			else:
-				ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
+		# for k in range(Z+1):
+		# 	if k == 0:
+		# 		ax3.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
+		# 	else:
+		# 		ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
 
-		ax3.legend()
-		ax3.set_ylim(1e6, 1e21)
+		# ax3.legend()
+		# ax3.set_ylim(1e6, 1e21)
 
-		ax3.set_xlabel("Position [$m$]")
+		# ax3.set_xlabel("Position [$m$]")
 
 		# ax1.set_xbound(lower = min(position), upper = max(position))
 		ax1.set_xbound(lower = 0, upper = 5)

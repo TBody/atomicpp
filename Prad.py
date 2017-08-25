@@ -444,11 +444,11 @@ if __name__ == "__main__":
 	solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
-	# solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
-	solver.Ne_tau_values = np.logspace(12, 20, 7) #m^-3 s, values to return Prad(tau) for
+	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	# solver.Ne_tau_values = np.logspace(12, 20, 7) #m^-3 s, values to return Prad(tau) for
 	solver.Ne_tau_values = np.append(solver.Ne_tau_values, 1e30)
 
-	solver.Te_values = np.logspace(0, 3, 20) #eV
+	# solver.Te_values = np.logspace(0, 3, 20) #eV
 
 	if solver.plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 1e14)
