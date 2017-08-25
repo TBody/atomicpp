@@ -20,10 +20,6 @@
 		double F_i;
 		double dNn;
 		double F_n;
-		std::vector<double> P_stage;
-		double P_line;
-		double P_cont;
-		double P_cx;
 	};
 
 	class RateEquations{
@@ -244,10 +240,6 @@
 	double dNn; 												// = std::get<6>(derivative_tuple);
 	// ... and perturbation force (in N) on the neutral population due to atomic processes
 	double F_n; 												// = std::get<7>(derivative_tuple);
-	std::vector<double> P_stage;
-	double P_line;
-	double P_cont;
-	double P_cx;
 	};
 
 	//Public functions
