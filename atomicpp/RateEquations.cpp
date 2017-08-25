@@ -34,7 +34,8 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	dNzk(impurity.get_atomic_number()+1, 0.0),
 	F_zk(impurity.get_atomic_number()+1, 0.0),
 	dNzk_correction(impurity.get_atomic_number()+1, 0.0),
-	F_zk_correction(impurity.get_atomic_number()+1, 0.0)
+	F_zk_correction(impurity.get_atomic_number()+1, 0.0),
+	Pstage(impurity.get_atomic_number()+1, 0.0)
 	{
 
 	// Set parameters that are useful for multiple functions
@@ -53,6 +54,10 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
+
+	Pline = 0.0;
+	Pcont = 0.0;
+	Pcx = 0.0;
 
 	//Calculate the factor that doesn't change throughout evaluation
 	calculateStoppingTimeConstantFactor();
@@ -152,12 +157,17 @@ void RateEquations::resetDerivatives(){
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
+
+	Pline = 0.0;
+	Pcont = 0.0;
+	Pcx = 0.0;
 	
 	for(int k = 0; k<= Z; ++k){
 		dNzk[k] = 0.0;
 		F_zk[k] = 0.0;
 		dNzk_correction[k] = 0.0;
 		F_zk_correction[k] = 0.0;
+		Pstage[k] = 0.0;
 	};
 };
 void RateEquations::calculateElectronImpactPopulationEquation(
@@ -365,6 +375,9 @@ void RateEquations::calculateElectronImpactPowerEquation(
 		double line_power_rate = line_power_coefficient_evaluated * Ne * Nzk[k];
 		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
+		Pstage[k] += line_power_rate + continuum_power_rate;
+		Pline += line_power_rate;
+		Pcont += continuum_power_rate;
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
 	}
@@ -382,6 +395,8 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
+		Pstage[k] += cx_power_rate;
+		Pcx += cx_power_rate;
 	}
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
@@ -395,6 +410,11 @@ DerivStruct RateEquations::makeDerivativeStruct(){
 	derivative_struct.F_i   = F_i;
 	derivative_struct.dNn   = dNn;
 	derivative_struct.F_n   = F_n;
+
+	derivative_struct.Pstage = Pstage;
+	derivative_struct.Pline = Pline;
+	derivative_struct.Pcont = Pcont;
+	derivative_struct.Pcx = Pcx;
 
 	return derivative_struct;
 };
