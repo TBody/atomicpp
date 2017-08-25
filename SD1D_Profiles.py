@@ -3,7 +3,7 @@ from atomicpp import atomicpy
 from scipy.integrate import odeint #ODEPACK, for numerical integration
 # from scipy.integrate import simps #Simpson's rule, for definite integrals
 import pickle
-
+from atomicpp import atomicpy
 
 def retrieveFromJSON(file_name):
 	# Inputs - a JSON file corresponding to an OpenADAS .dat file or SD1D output file
@@ -123,9 +123,14 @@ if __name__ == '__main__':
 
 	test_data = SD1DData(input_file)
 
+	impurity_symbol = b'c'
+	impurity = atomicpy.PyImpuritySpecies(impurity_symbol)
+	
+	impurity_derivatives = atomicpy.PyRateEquations(self.impurity)
+	impurity_derivatives.setThresholdDensity(-1.0) #Don't use a threshold density at first
+	impurity_derivatives.setDominantIonMass(1.0)
 	
 	
-
 
 
 
