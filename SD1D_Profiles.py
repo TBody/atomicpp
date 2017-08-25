@@ -49,7 +49,7 @@ class SD1DData(object):
 
 		# input_file can be either relative or absolute path to JSON file
 
-		data_dict = aretrieveFromJSON(input_file)
+		data_dict = retrieveFromJSON(input_file)
 
 		# Retrieve (normalised values)
 		Ne = data_dict['Ne']
@@ -118,6 +118,12 @@ class SD1DData(object):
 
 
 if __name__ == '__main__':
+
+	input_file = "sd1d-MAST-U-nups_0.2.json"
+
+	test_data = SD1DData(input_file)
+
+	
 	
 
 
