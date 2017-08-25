@@ -215,7 +215,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		if((Nzk[k+1] > Nthres) and (Nzk[k] > Nthres)){
 			//Rates 'to' a state are loss terms from that state. They are paired with Rates 'from'
 			//which are source terms for other states
-			iz_to_above.at(k)               = -ionisation_rate_factor * Nzk.at(k);
+			iz_to_above.at(k)            = -ionisation_rate_factor * Nzk.at(k);
 			iz_from_below.at(k+1)        = +ionisation_rate_factor * Nzk.at(k);
 			rec_to_below.at(k_rec)       = -recombination_rate_factor * Nzk.at(k_rec);
 			rec_from_above.at(k_rec-1)   = +recombination_rate_factor * Nzk.at(k_rec);
@@ -375,7 +375,8 @@ void RateEquations::calculateElectronImpactPowerEquation(
 		double line_power_rate = line_power_coefficient_evaluated * Ne * Nzk[k];
 		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
-		Pstage[k] += line_power_rate + continuum_power_rate;
+		Pstage[k] += line_power_rate;
+		Pstage[k+1] += continuum_power_rate;
 		Pline += line_power_rate;
 		Pcont += continuum_power_rate;
 		
@@ -395,8 +396,9 @@ void RateEquations::calculateChargeExchangePowerEquation(
 	for(int k=0; k < Z; ++k){
 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
+		
 		Prad  += cx_power_rate;
-		Pstage[k] += cx_power_rate;
+		Pstage[k+1] += cx_power_rate;
 		Pcx += cx_power_rate;
 	}
 };
