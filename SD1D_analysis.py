@@ -16,15 +16,16 @@ def replace_guards(var):
 	var[-1] = 0.5*(var[-1] + var[-2])
 
 def extract_data(directory):
+
 	fullpaths = glob(directory+"/*/")
 
 	scan_data = {}
 
-	n_target = []
+	# n_target = []
 	max_density_pos = []
 	max_z_rad_pos = []
 	max_h_rad_pos = []
-	# n_upstream = []
+	n_upstream = []
 	# p_target = []
 	# p_upstream = []
 	# te_target = []
@@ -39,7 +40,7 @@ def extract_data(directory):
 			# Changed slice from [0,1:-1] to [-1,1:-1] - doubt that position grid changes with time, but just in case
 			dy = collect("dy", path=path, yguards=True)[-1,1:-1]
 			n = len(dy)
-			pos = zeros(n)
+			pos = np.zeros(n)
 			# position at the centre of the grid cell
 			pos[0] = -0.5*dy[1]
 			pos[1] = 0.5*dy[1]
@@ -126,17 +127,42 @@ def sort_by_upstream(scan_data):
 	max_z_rad_pos = scan_data['max_z_rad_pos']
 	max_h_rad_pos = scan_data['max_h_rad_pos']
 
-	processed_data = {}
+	n_upstream = np.array(n_upstream)
+	max_density_pos = np.array(max_density_pos)
+	max_z_rad_pos = np.array(max_z_rad_pos)
+	max_h_rad_pos = np.array(max_h_rad_pos)
 
-	for key, value in scan_data.items():
-		processed_data[key] = np.array(value)
-
-	# Sort by n_upstream
 	inds = np.argsort(n_upstream)
 
-	for key, value in scan_data.items():
-		processed_data[key] = value[inds]
-		# value = value[inds] #is this deep or shallow copy?
+	n_upstream = n_upstream[inds]
+	max_density_pos = max_density_pos[inds]
+	max_z_rad_pos = max_z_rad_pos[inds]
+	max_h_rad_pos = max_h_rad_pos[inds]
+	
+	processed_data = {}
+	processed_data['n_upstream'] = n_upstream
+	processed_data['max_density_pos'] = max_density_pos
+	processed_data['max_z_rad_pos'] = max_z_rad_pos
+	processed_data['max_h_rad_pos'] = max_h_rad_pos
+
+
+	# for key, value in scan_data.items():
+	# 	processed_data[key] = np.array(value)
+
+	# # Sort by n_upstream
+
+	# print(inds)
+
+	# n_upstream = n_upstream[inds]
+	# max_density_pos = max_density_pos[inds]
+	# max_z_rad_pos = max_z_rad_pos[inds]
+	# max_h_rad_pos = max_h_rad_pos[inds]
+
+	# # processed_data = {"n_upstream" : n_upstream,"max_density_pos" : max_density_pos,"max_z_rad_pos" : max_z_rad_pos,"max_h_rad_pos" : max_h_rad_pos}
+
+	# for key, value in scan_data.items():
+	# 	processed_data[key] = value[inds]
+	# 	# value = value[inds] #is this deep or shallow copy?
 
 	return processed_data
 
@@ -144,9 +170,9 @@ def plot_compare(plot_data):
 
 
 	# plot adas as solid lines
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_density_pos'], 'r-')
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_z_rad_pos'], 'g-')
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_h_rad_pos'], 'b-')
+	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_density_pos'], 'r-', label='Density')
+	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_z_rad_pos'], 'g-', label='Impurity rad.')
+	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_h_rad_pos'], 'b-', label='Hydrogen rad.')
 
 	# Plot hutchinson as dashed
 	plt.plot(plot_data['Hutchinson']['n_upstream'], plot_data['Hutchinson']['max_density_pos'], 'r--')
@@ -156,18 +182,18 @@ def plot_compare(plot_data):
 	plt.xlabel('Upstream density [m^-3]')
 	plt.ylabel('Distance to strike point [m]')
 
+	plt.legend()
+	
 	plt.show()
-
-
-
 
 if __name__ == '__main__':
 	
-	directories = {'ADAS': 'ex-C-1.0/area-2.0/nloss-0.0/tn-0.5', 'Hutchinson': 'ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5'}
+	# directories = {'ADAS': 'ex-C-1.0/area-2.0/nloss-0.0/tn-0.5', 'Hutchinson': 'ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5'}
+	directories = {'ADAS': 'ADAS', 'Hutchinson': 'Hutchinson'}
 
 	plot_data = {}
 
-	for key, directory in directories.items:
+	for key, directory in directories.items():
 
 		scan_data = extract_data(directory)
 
