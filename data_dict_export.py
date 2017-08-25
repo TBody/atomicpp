@@ -4,7 +4,7 @@
 # Date of creation: 14 July 2017
 # 
 # 
-# Makes data_dict and copies it into a .json file 'ADAS/0.2.json'
+# Makes data and copies it into a .json file 'ADAS/0.2.json'
 
 def replace_guards(var):
 	"""
@@ -14,7 +14,7 @@ def replace_guards(var):
 	var[0] = 0.5*(var[0] + var[1])
 	var[-1] = 0.5*(var[-1] + var[-2])
 
-filename = 'ADAS/0.2'
+path = 'ADAS/0.2'
 
 from boutdata.collect import collect
 import numpy as np
@@ -33,7 +33,7 @@ var_list = ["Ne", "P",       # Plasma profiles
 # Position
 dy = collect("dy", path=path)[0,:]
 n = len(dy)
-pos = zeros(n)
+pos = np.zeros(n)
 
 # position at the centre of the grid cell
 pos[0] = 0.5*dy[0]
@@ -60,22 +60,22 @@ import numpy as np
 import json
 
 # Need to 'jsonify' the numpy arrays (i.e. convert to nested lists) so that they can be stored in plain-text
-# Deep-copy data to a new dictionary and then edit that one (i.e. break the data pointer association - keep data_dict unchanged in case you want to run a copy-verify on it)
+# Deep-copy data to a new dictionary and then edit that one (i.e. break the data pointer association - keep data unchanged in case you want to run a copy-verify on it)
 
-data_dict_jsonified = deepcopy(data_dict)
+data_jsonified = deepcopy(data)
 
 numpy_ndarrays = [];
-for key, element in data_dict.items():
+for key, element in data.items():
     if type(element) == np.ndarray:
         # Store which keys correspond to numpy.ndarray, so that you can de-jsonify the arrays when reading
         numpy_ndarrays.append(key)
-        data_dict_jsonified[key] = data_dict_jsonified[key].tolist()
+        data_jsonified[key] = data_jsonified[key].tolist()
 
-data_dict_jsonified['numpy_ndarrays'] = numpy_ndarrays
+data_jsonified['numpy_ndarrays'] = numpy_ndarrays
 
 # Encode help
-# >> data_dict['help'] = 'help string'
+# >> data['help'] = 'help string'
 
 # <<Use original filename, except with .json instead of .dat extension>>
-with open('{}.json'.format(filename),'w') as fp:
-    json.dump(data_dict_jsonified, fp, sort_keys=True, indent=4)
+with open('{}.json'.format(path),'w') as fp:
+    json.dump(data_jsonified, fp, sort_keys=True, indent=4)
