@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from glob import glob
 import os
+from atomicpp import atomicpy
 
 def replace_guards(var):
 	"""

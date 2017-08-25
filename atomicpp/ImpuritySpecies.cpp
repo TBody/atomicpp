@@ -153,3 +153,57 @@ void ImpuritySpecies::makeRateCoefficients(){
 	std::shared_ptr<RateCoefficient> ImpuritySpecies::get_rate_coefficient(const std::string& key){
 		return rate_coefficients[key];
 	};
+
+	std::vector<double> ImpuritySpecies::calculateNzk(double Te, double Ne, double Nz, double Nn){
+		// Calculates the relative distribution across ionisation stages of the impurity by assuming collisional-radiative
+		// equilbrium. This is then used to calculate the density within each state, allowing the total power at a point
+		// to be evaluated
+		// std::cout << "Called for Te = " << Te << ", Ne = " << Ne << ", Nz = " << Nz << ", Nn = " << Nn << std::endl;
+
+		int Z = atomic_number;
+		std::vector<double> iz_stage_distribution(Z+1);
+
+		// std::set GS density equal to 1 (arbitrary)
+		iz_stage_distribution[0] = 1;
+		double sum_iz = 1;
+
+		// Loop over 0, 1, ..., Z-1
+		// Each charge state is std::set in terms of the density of the previous
+		for(int k=0; k<Z; ++k){
+			// Ionisation
+			// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+			std::shared_ptr<RateCoefficient> iz_rate_coefficient = rate_coefficients["ionisation"];
+			// Evaluate the RateCoefficient at the point
+			double k_iz_evaluated = iz_rate_coefficient->call0D(k, Te, Ne);
+
+			// Recombination
+			// Get the RateCoefficient from the rate_coefficient std::map (atrribute of impurity)
+			std::shared_ptr<RateCoefficient> rec_rate_coefficient = rate_coefficients["recombination"];
+			// Evaluate the RateCoefficient at the point
+			double k_rec_evaluated = rec_rate_coefficient->call0D(k, Te, Ne);
+
+			std::shared_ptr<RateCoefficient> cx_rate_coefficient = rate_coefficients["cx_rec"];
+			// Evaluate the RateCoefficient at the point
+			double k_cx_evaluated = cx_rate_coefficient->call0D(k, Te, Ne);
+
+			// The ratio of ionisation from the (k)th stage and recombination from the (k+1)th std::sets the equilibrium densities
+			// of the (k+1)th stage in terms of the (k)th (since R = Nz * Ne * rate_coefficient) N.b. Since there is no
+			// ionisation from the bare nucleus, and no recombination onto the neutral (ignoring anion formation) the 'k'
+			// value of ionisation coeffs is shifted down  by one relative to the recombination coeffs - therefore this
+			// evaluation actually gives the balance
+
+			iz_stage_distribution[k+1] = iz_stage_distribution[k] * (k_iz_evaluated*Ne/(k_rec_evaluated*Ne + k_cx_evaluated*Nn));
+			sum_iz += iz_stage_distribution[k+1];
+		}
+
+		// # Normalise such that the sum over all ionisation stages is '1' at all points
+		for(int k=0; k<=Z; ++k){
+			iz_stage_distribution[k] = iz_stage_distribution[k] / sum_iz;
+		}
+
+		std::vector<double> Nzk(Z+1);
+		for(int k=0; k<=Z; ++k){
+			Nzk[k] = iz_stage_distribution[k]*Nz;
+		}
+		return Nzk;
+	}

@@ -66,6 +66,7 @@
 		 * @return shared (smart) pointer to a RateCoefficient object
 		 */
 		std::shared_ptr<RateCoefficient> get_rate_coefficient(const std::string& key);
+		std::vector<double> calculateNzk(double Te, double Ne, double Nz, double Nn);
 	private:
 		// Data fields
 		std::string symbol;
