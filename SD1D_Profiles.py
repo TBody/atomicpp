@@ -5,6 +5,7 @@ from scipy.integrate import odeint #ODEPACK, for numerical integration
 import pickle
 from atomicpp import atomicpy
 import matplotlib.pyplot as plt
+from numpy import sqrt
 
 def retrieveFromJSON(file_name):
 	# Inputs - a JSON file corresponding to an OpenADAS .dat file or SD1D output file
@@ -72,6 +73,11 @@ class SD1DData(object):
 		Rzrad = data_dict["Rzrad"]
 		Rex = data_dict["Rex"]
 
+		Vi = data_dict["Vi"]
+		Vn = data_dict["Vn"]
+		sound_speed = data_dict["Cs0"]
+
+
 		# Dimensions are [t, x, y, z]
 		#                [0, 1, 2, 3]
 		#
@@ -86,46 +92,14 @@ class SD1DData(object):
 		self.neutral_density  = np.squeeze(np.array(Nn*nnorm))
 		self.p_rad_hydrogen   = np.squeeze(np.array(Rex*Enorm))
 		self.p_rad_carbon     = np.squeeze(np.array(Rzrad*Enorm))
+		self.ion_velocity 	  = np.squeeze(np.array(Vi*sound_speed))
+		self.neutral_velocity = np.squeeze(np.array(Vn*sound_speed))
 
-		# data_shape = self.temperature.shape
-		# assert data_shape == self.density.shape
-		# assert data_shape == self.neutral_fraction.shape
+def alpha_e(k):
+	return 0.71 * (k**2)
 
-		# self.data_shape = data_shape
-
-	# def setImpurityFraction(self,impurity_fraction):
-	# 	# Set the impurity density (will be scalar multiplication if fixed fraction,
-	# 	# and piecewise multiplication (i.e. Hadamard product) if impurity_fraction is
-	# 	# an array of shape equal to density, otherwise will result in error)
-
-	# 	self.impurity_fraction = impurity_fraction
-	# 	self.setImpurityDensity(self.impurity_fraction * self.density)
-
-	# def setImpurityDensity(self,impurity_density):
-	# 	# Set the impurity density, and check that it has the same shape as the other attributes
-	# 	self.impurity_density  = impurity_density
-
-	# 	if type(self.data_shape) == int:
-	# 		assert self.data_shape == len(self.impurity_density)
-	# 	elif type(self.data_shape) == np.ndarray:
-	# 		assert self.data_shape == self.impurity_density.shape
-	# 	else:
-	# 		raise NotImplementedError('Error checking data_shape match')
-
-	# def selectSingleTime(self,t):
-	# 	try:
-	# 		self.temperature      = self.temperature[t,:]
-	# 		self.density          = self.density[t,:]
-	# 		self.neutral_fraction = self.neutral_fraction[t,:]
-	# 	except IndexError:
-	# 		# If using the length of the time array, will get an out-of-bounds error (since python indexes from 0)
-	# 		t -= 1
-	# 		self.temperature      = self.temperature[t,:]
-	# 		self.density          = self.density[t,:]
-	# 		self.neutral_fraction = self.neutral_fraction[t,:]
-
-	# 	self.data_shape = self.data_shape[1]
-
+def beta_i(k, mu):
+	return 3*(mu + 5*sqrt(2)*(k**2) * (1.1 * (mu**(5/2)) - 0.34 * (mu*(3/2)) -1 ))/(2.6 - 2*mu * 5.4 * (mu**2))
 
 if __name__ == '__main__':
 
@@ -134,22 +108,92 @@ if __name__ == '__main__':
 	input_file = "0.5.json"
 
 	fixed_fraction = 1e-2
+	Z = 6
 
 	test_data = SD1DData(input_file)
 
-	position = -(test_data.position - max(test_data.position))
+	# position = -(test_data.position - max(test_data.position))
+	position = test_data.position
 
 	impurity_symbol = b'c'
 	impurity = atomicpy.PyImpuritySpecies(impurity_symbol)
+
+	mz = 12.0107 #amu, Carbon
+	mi = 1.00794 #amu, Hydrogen
+	mu = mz/(mz+mi)
+	amu = 1.6605e-27 #kg
 
 	impurity_derivatives = atomicpy.PyRateEquations(impurity)
 	impurity_derivatives.setThresholdDensity(-1.0) #Don't use a threshold density at first
 	impurity_derivatives.setDominantIonMass(1.0)
 
-	Prad = []
-	
+	plot_Prad    = []
+	plot_P_stage = []
+	plot_P_line  = []
+	plot_P_cont  = []
+	plot_P_cx    = []
+	plot_Nzk 	 = []
+	plot_dNzk 	 = []
+	# plot_dPe 	 = []
 
-	for index in range(position):
+	for index in range(len(position)):
+		Te = test_data.temperature[index]
+		Ne = test_data.density[index]
+		Nn = test_data.neutral_density[index]
+		Nz = Ne * fixed_fraction
+
+		Vi = test_data.ion_velocity[index]
+		Vn = test_data.neutral_velocity[index]
+
+		Nzk = impurity.calculateNzk(Te, Ne, Nz, Nn)
+		plot_Nzk.append(Nzk)
+		Vzk = np.zeros((Z+1,))
+
+		collision_frequency_ii_PF = impurity_derivatives.calculateIonIonDragFactor(50, 1e19)
+
+		if not(index == 0 or index == len(position)-1):
+			# Central difference
+			dPe = (test_data.pressure[index+1]-test_data.pressure[index-1])/(test_data.position[index+1]-test_data.position[index-1])
+			dTe = (test_data.temperature[index+1]-test_data.temperature[index-1])/(test_data.position[index+1]-test_data.position[index-1])
+		elif (index == 0):
+			# Forward difference
+			dPe = (test_data.pressure[index+1]-test_data.pressure[index])/(test_data.position[index+1]-test_data.position[index])
+			dTe = (test_data.temperature[index+1]-test_data.temperature[index])/(test_data.position[index+1]-test_data.position[index])
+		elif (index == len(position)-1):
+			# Backward difference
+			dPe = (test_data.pressure[index]-test_data.pressure[index-1])/(test_data.position[index]-test_data.position[index-1])
+			dTe = (test_data.temperature[index]-test_data.temperature[index-1])/(test_data.position[index]-test_data.position[index-1])
+
+		# plot_dPe.append(dPe)
+
+		print(Vi)
+		print(dPe)
+		print(collision_frequency_ii_PF)
+		print(1/collision_frequency_ii_PF)
+		for k in range(1,Z+1):
+			Vzk[k] = Vi + (1/(mz*collision_frequency_ii_PF*k*k)) * ((1+k)*(-1/Ne)*dPe + (alpha_e(k)+beta_i(k, mu))*dTe)
+			print(Vzk[k])
+
+
+		quit()
+		# derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
+
+		# derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
+
+	plot_Prad    = np.array(plot_Prad)
+	plot_P_stage = np.array(plot_P_stage)
+	plot_P_line  = np.array(plot_P_line)
+	plot_P_cont  = np.array(plot_P_cont)
+	plot_P_cx    = np.array(plot_P_cx)
+	plot_Nzk 	 = np.array(plot_Nzk)
+	plot_dNzk 	 = np.array(plot_dNzk)
+
+
+	f, (ax1, ax2) = plt.subplots(2, sharex = True)
+
+	# ax1.plot(position, test_data.pressure)
+	# ax2.plot(position, plot_dPe)
+	# plt.show()
 
 
 	if False:
@@ -182,6 +226,14 @@ if __name__ == '__main__':
 		ax2.set_ylabel(r"P$_{rad}$ [$W/m^{3}$]")
 
 		# Bottom plot - instantaneous change
+
+		for k in range(Z+1):
+			print(plot_Nzk[:,k].shape)
+			ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
+
+		ax3.legend()
+		ax3.set_ylim(1e6, 1e21)
+
 
 		ax3.set_xlabel("Position [$m$]")
 

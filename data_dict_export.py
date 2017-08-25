@@ -22,7 +22,7 @@ import numpy as np
 t = collect("t_array", path=path)
 tind = len(t)-1 # Get the last time point
 
-var_list = ["Ne", "P", "Nn",      # Plasma profiles
+var_list = ["Ne", "P", "Nn", "Vi", "Vn",     # Plasma profiles
             # "Srec", "Siz",   # Particle sources / sinks
             # "Frec", "Fiz", "Fcx", "Fel",   # Momentum source / sinks to neutrals
             "Rrec", "Riz", "Rzrad", "Rex", # Radiation, energy loss from system

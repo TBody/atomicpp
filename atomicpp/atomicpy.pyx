@@ -19,6 +19,7 @@ cdef extern from "ImpuritySpecies.hpp" namespace "atomicpp":
 		ImpuritySpecies(string& impurity_symbol_supplied) except +
 		string get_name()
 		int get_atomic_number()
+		vector[double] calculateNzk(double Te, double Ne, double Nz, double Nn)
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef struct DerivStruct:
@@ -52,6 +53,9 @@ cdef class PyImpuritySpecies:
 		return deref(self.ImpuritySpeciesPtr).get_name()
 	def get_atomic_number(self):
 		return deref(self.ImpuritySpeciesPtr).get_atomic_number()
+	def calculateNzk(self, double Te, double Ne, double Nz, double Nn):
+		return deref(self.ImpuritySpeciesPtr).calculateNzk(Te, Ne, Nz, Nn)
+
 
 cdef class PyRateEquations:
 	cdef unique_ptr[RateEquations] RateEquationsPtr
@@ -64,7 +68,7 @@ cdef class PyRateEquations:
 		deref(self.RateEquationsPtr).setDominantIonMass(mi_in_amu)
 	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):
 		return deref(self.RateEquationsPtr).computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
-	def calculateIonIonDragFactor(double Ti, double Ni)
+	def calculateIonIonDragFactor(self, double Ti, double Ni):
 		return deref(self.RateEquationsPtr).calculateIonIonDragFactor(Ti, Ni)
 
 

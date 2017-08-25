@@ -42,7 +42,7 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	rate_coefficients        = impurity.get_rate_coefficients();
 	use_charge_exchange      = impurity.get_has_charge_exchange();
 	Z                        = impurity.get_atomic_number();
-	mz                       = impurity.get_mass();
+	mz                       = impurity.get_mass(); //in amu
 
 	Nthres                   = density_threshold;
 	mi                       = mi_in_amu;
@@ -220,10 +220,10 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 			rec_to_below.at(k_rec)       = -recombination_rate_factor * Nzk.at(k_rec);
 			rec_from_above.at(k_rec-1)   = +recombination_rate_factor * Nzk.at(k_rec);
 
-			iz_p_to_above.at(k)          = -ionisation_rate_factor * mz * Vzk.at(k);
-			iz_p_from_below.at(k+1)      = +ionisation_rate_factor * mz * Vzk.at(k);
-			rec_p_to_below.at(k_rec)     = -recombination_rate_factor * mz * Vzk.at(k_rec);
-			rec_p_from_above.at(k_rec-1) = +recombination_rate_factor * mz * Vzk.at(k_rec);
+			iz_p_to_above.at(k)          = -ionisation_rate_factor * mz * amu_to_kg * Vzk.at(k);
+			iz_p_from_below.at(k+1)      = +ionisation_rate_factor * mz * amu_to_kg * Vzk.at(k);
+			rec_p_to_below.at(k_rec)     = -recombination_rate_factor * mz * amu_to_kg * Vzk.at(k_rec);
+			rec_p_from_above.at(k_rec-1) = +recombination_rate_factor * mz * amu_to_kg * Vzk.at(k_rec);
 		}
 		// Otherwise, the rates stay as default = 0
 	}
@@ -286,8 +286,8 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 			cx_rec_to_below[k_rec]     = -cx_recombination_rate_factor * Nzk[k_rec];
 			cx_rec_from_above[k_rec-1] = +cx_recombination_rate_factor * Nzk[k_rec];
 
-			cx_rec_p_to_below[k_rec]     = -cx_recombination_rate_factor * mz * Vzk[k_rec];
-			cx_rec_p_from_above[k_rec-1] = +cx_recombination_rate_factor * mz * Vzk[k_rec];
+			cx_rec_p_to_below[k_rec]     = -cx_recombination_rate_factor * mz * amu_to_kg * Vzk[k_rec];
+			cx_rec_p_from_above[k_rec-1] = +cx_recombination_rate_factor * mz * amu_to_kg * Vzk[k_rec];
 		}
 		// Otherwise, the rates stay as default = 0
 	}
@@ -351,7 +351,7 @@ void RateEquations::calculateIonIonDrag(
 	for(int k=1; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
 		if(Nzk[k] > Nthres){
 			double collision_frequency_s_ii = collision_frequency_ii_PF * k*k;
-			double IonIonDrag_FF = mz * (Vi - Vzk[k]) * collision_frequency_s_ii;
+			double IonIonDrag_FF = mz * amu_to_kg * (Vi - Vzk[k]) * collision_frequency_s_ii;
 			F_zk[k] += IonIonDrag_FF; //Calculate the force on the impurity ion due to ion-ion drag
 			F_i     -= IonIonDrag_FF; //Calculate the force on the dominant ion due to ion-ion drag
 		};
