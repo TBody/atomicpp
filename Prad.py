@@ -274,8 +274,8 @@ class AtomicSolver(object):
 			else:
 				ax1.semilogx(self.t_values, result[:,k], label="{}+".format(k))
 
-		ax1.semilogx(self.t_values, np.sum(result[:,:],1), label="Total")
-
+		# ax1.semilogx(self.t_values, np.sum(result[:,:],1), label="Total")
+		ax1.set_ylim(0, 1e17)
 		ax1.set_xlabel(r'Time (s)')
 		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
 		# plt.title('Time evolution of ionisation stages')
@@ -314,7 +314,7 @@ class AtomicSolver(object):
 			else:
 				ax1.semilogx(self.Te_values, results[:,k], label="{}+".format(k))
 
-		plt.semilogx(self.Te_values, np.sum(results[:,:],1), label="Total")
+		# plt.semilogx(self.Te_values, np.sum(results[:,:],1), label="Total")
 
 		total_density = np.sum(results[-1,:],0)
 		ax1.set_ylim([1e-3*total_density, total_density])
@@ -742,7 +742,7 @@ if __name__ == "__main__":
 
 	path_to_output = 'Figures/'
 
-	solver.plot_solver_evolution   = False
+	solver.plot_solver_evolution   = True
 	solver.reevaluate_scan         = False
 	solver.error_estimation        = False
 	solver.plot_scan_temp_dens     = False
@@ -777,7 +777,7 @@ if __name__ == "__main__":
 				solver.additional_out = pickle.load(handle)
 
 		if solver.plot_scan_temp_dens:
-			plot_scan_temp_dens = solver.plotScanTempCR_Dens(scan_temp, grid="major", show=False)
+			plot_scan_temp_dens = solver.plotScanTempCR_Dens(scan_temp, grid="major", plot_power=True, show=False)
 			plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf")
 		if solver.plot_scan_temp_prad:
 			plot_scan_temp_prad = solver.plotScanTempCR_Prad(scan_temp, grid="major", show=False)
