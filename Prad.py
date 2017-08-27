@@ -178,35 +178,6 @@ class AtomicSolver(object):
 
 		return result
 
-	# def calculateTimeIntegratedPower(self, Ne, integration_endpoints = []):
-		# # To be called after timeIntegrate (or another function which returns 'Prad' additional_out
-		# # corresponding to self.t_values)
-		# time_integrated_power = []
-
-		# for ne_tau in integration_endpoints:
-		# 	# Reset sliced arrays to original
-		# 	Prad = self.additional_out['Prad']
-		# 	Prad_times = self.t_values
-		# 	# Extract next value of tau
-		# 	tau = ne_tau/Ne
-		# 	# Find which index is closest to the tau value
-		# 	time_index = np.searchsorted(self.t_values, tau, side='left')
-		# 	time_left = self.t_values[time_index-1]
-		# 	time_right = self.t_values[time_index]
-		# 	time_diff = time_right - time_left
-		# 	# Linearly interpolate between two time values
-		# 	t_next_weighting = (tau - time_left)/(time_right - time_left)
-		# 	Prad_t_exact = Prad[time_index-1] * (1 - t_next_weighting) + Prad[time_index] * t_next_weighting
-		# 	# Slice the arrays, and then append the interpolated values
-		# 	Prad_times = Prad_times[:time_index-1]
-		# 	np.append(Prad_times, tau)
-		# 	Prad = Prad[:time_index-1]
-		# 	np.append(Prad, Prad_t_exact)
-		# 	#Calculate the definite integral via Simpson's rule
-		# 	time_integrated_power.append(simps(Prad, Prad_times))
-
-		# return time_integrated_power
-
 # Scan methods
 	def scanTempCREquilibrium(self):
 
@@ -293,7 +264,7 @@ class AtomicSolver(object):
 		return results
 
 # Plotting methods
-	def plotResultFromDensityEvolution(self, result, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none"):
+	def plotResultFromDensityEvolution(self, result, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", show=False):
 		fig, ax1 = plt.subplots()
 		for k in range(solver.Z+1):
 			if k == 0:
@@ -317,6 +288,7 @@ class AtomicSolver(object):
 			ax2 = ax1.twinx()
 			scaled_power = np.array(self.additional_out['Prad'])*1e-3
 			ax2.semilogx(self.t_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.set_ylim(min(scaled_power), max(scaled_power))
 			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
 			ax2.tick_params('y', colors='k')
 			ax2.legend(loc=0)
@@ -326,9 +298,11 @@ class AtomicSolver(object):
 		if plot_power:
 			ax2.set_yscale(y_axis_scale)
 
-		plt.show()
+		if show:
+			plt.show()
+		return fig
 
-	def plotScanTempCR_Dens(self, results, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none"):
+	def plotScanTempCR_Dens(self, results, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", show=False):
 		
 		fig, ax1 = plt.subplots()
 
@@ -365,9 +339,11 @@ class AtomicSolver(object):
 		if plot_power:
 			ax2.set_yscale(y_axis_scale)
 
-		plt.show()
+		if show:
+			plt.show()
+		return fig
 
-	def plotScanTempCR_Prad(self, results, x_axis_scale = "log", y_axis_scale = "log", grid = "none"):
+	def plotScanTempCR_Prad(self, results, x_axis_scale = "log", y_axis_scale = "log", grid = "none", show=False):
 		
 		fig, ax1 = plt.subplots()
 
@@ -400,9 +376,11 @@ class AtomicSolver(object):
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
 
-		plt.show()
+		if show:
+			plt.show()
+		return fig
 
-	def plotScanTempCR_Prad_tau(self, refuelling_results, x_axis_scale = "log", y_axis_scale = "log", grid = "none"):
+	def plotScanTempCR_Prad_tau(self, refuelling_results, x_axis_scale = "log", y_axis_scale = "log", grid = "none", show=False):
 		
 		fig, ax1 = plt.subplots()
 
@@ -428,7 +406,9 @@ class AtomicSolver(object):
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
 
-		plt.show()
+		if show:
+			plt.show()
+		return fig
 
 if __name__ == "__main__":
 
@@ -438,22 +418,22 @@ if __name__ == "__main__":
 
 	solver = AtomicSolver(impurity_symbol)
 
-	solver.plot_solver_evolution   = False
+	path_to_output = 'Figures/'
+
+	solver.plot_solver_evolution   = True
 	solver.reevaluate_scan_temp    = True
-	solver.plot_scan_temp_dens     = False
-	solver.plot_scan_temp_prad     = False
+	solver.plot_scan_temp_dens     = True
+	solver.plot_scan_temp_prad     = True
 	solver.plot_scan_temp_prad_tau = True
 
-	# solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
-	solver.Ne_tau_values = np.logspace(12, 20, 7) #m^-3 s, values to return Prad(tau) for
-	solver.Ne_tau_values = np.append(solver.Ne_tau_values, 1e30)
+	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
 
-	solver.Te_values = np.logspace(0, 3, 20) #eV
+	# solver.Te_values = np.logspace(0, 3, 20) #eV
 
 	if solver.plot_solver_evolution:
-		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 1e14)
-		# solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major")
-		print(solver.additional_out['Prad'][-1])
+		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 0)
+		plot_solver_evolution = solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major", show=False)
+		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf")
 	
 	if solver.plot_scan_temp_dens or solver.plot_scan_temp_prad:
 		if solver.reevaluate_scan_temp:
@@ -471,9 +451,11 @@ if __name__ == "__main__":
 				solver.additional_out = pickle.load(handle)
 
 		if solver.plot_scan_temp_dens:
-			solver.plotScanTempCR_Dens(scan_temp, grid="major")
+			plot_scan_temp_dens = solver.plotScanTempCR_Dens(scan_temp, grid="major", show=False)
+			plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf")
 		if solver.plot_scan_temp_prad:
-			solver.plotScanTempCR_Prad(scan_temp, grid="major")
+			plot_scan_temp_prad = solver.plotScanTempCR_Prad(scan_temp, grid="major", show=False)
+			plot_scan_temp_prad.savefig(path_to_output+"plot_scan_temp_prad.pdf")
 
 	if solver.plot_scan_temp_prad_tau:
 		if solver.reevaluate_scan_temp:
@@ -491,7 +473,8 @@ if __name__ == "__main__":
 				solver.additional_out = pickle.load(handle)
 
 		if solver.plot_scan_temp_prad_tau:
-			solver.plotScanTempCR_Prad_tau(scan_temp_refuelling, grid="major")
+			plot_scan_temp_prad_tau = solver.plotScanTempCR_Prad_tau(scan_temp_refuelling, grid="major", show=False)
+			plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf")
 
 
 

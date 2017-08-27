@@ -31,10 +31,6 @@ cdef extern from "RateEquations.hpp" namespace "atomicpp":
 		double F_i
 		double dNn
 		double F_n
-		vector[double] P_stage
-		double P_line
-		double P_cont
-		double P_cx
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef cppclass RateEquations:
@@ -42,7 +38,6 @@ cdef extern from "RateEquations.hpp" namespace "atomicpp":
 		void setThresholdDensity(double density_threshold)
 		void setDominantIonMass(double mi_in_amu)
 		DerivStruct computeDerivs(double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk)
-		double calculateIonIonDragFactor(double Ti, double Ni)
 
 cdef class PyImpuritySpecies:
 	cdef unique_ptr[ImpuritySpecies] ImpuritySpeciesPtr
@@ -68,8 +63,6 @@ cdef class PyRateEquations:
 		deref(self.RateEquationsPtr).setDominantIonMass(mi_in_amu)
 	def computeDerivs(self, double Te, double Ne, double Vi, double Nn, double Vn, vector[double]& Nzk, vector[double]& Vzk):
 		return deref(self.RateEquationsPtr).computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)
-	def calculateIonIonDragFactor(self, double Ti, double Ni):
-		return deref(self.RateEquationsPtr).calculateIonIonDragFactor(Ti, Ni)
 
 
 
