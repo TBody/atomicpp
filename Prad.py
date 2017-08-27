@@ -306,8 +306,8 @@ class AtomicSolver(object):
 		ax1.set_xlabel(r'Time (s)')
 		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
 		# plt.title('Time evolution of ionisation stages')
-		ax1.tick_params('y', colors = 'b')
-		ax1.legend()
+		# ax1.tick_params('y', colors = 'b')
+		# ax1.legend()
 
 		ax1.set_xlim(min(self.t_values), max(self.t_values))
 
@@ -319,13 +319,20 @@ class AtomicSolver(object):
 			ax2.semilogx(self.t_values, scaled_power,'k--',label=r'$P_{rad}$')
 			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
 			ax2.tick_params('y', colors='k')
-			ax2.legend(loc=0)
+			# ax2.legend(loc=0)
+			h1, l1 = ax1.get_legend_handles_labels()
+			h2, l2 = ax2.get_legend_handles_labels()
+			ax1.set_zorder(1)
+			ax1.legend(h1+h2, l1+l2)
+		else:
+			ax1.legend()
 		
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
 		if plot_power:
 			ax2.set_yscale(y_axis_scale)
 
+		plt.savefig('/Users/thomasbody/Dropbox/Thesis/Report/Figures/Equilibration_of_carbon_50eV.pdf')
 		plt.show()
 
 	def plotScanTempCR_Dens(self, results, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none"):
@@ -365,6 +372,7 @@ class AtomicSolver(object):
 		if plot_power:
 			ax2.set_yscale(y_axis_scale)
 
+		# plt.savefig('/Users/thomasbody/Dropbox/Thesis/Report/Figures/NAME.pdf')
 		plt.show()
 
 	def plotScanTempCR_Prad(self, results, x_axis_scale = "log", y_axis_scale = "log", grid = "none"):
@@ -400,6 +408,7 @@ class AtomicSolver(object):
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
 
+		# plt.savefig('/Users/thomasbody/Dropbox/Thesis/Report/Figures/NAME.pdf')
 		plt.show()
 
 	def plotScanTempCR_Prad_tau(self, refuelling_results, x_axis_scale = "log", y_axis_scale = "log", grid = "none"):
@@ -428,6 +437,7 @@ class AtomicSolver(object):
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
 
+		# plt.savefig('/Users/thomasbody/Dropbox/Thesis/Report/Figures/NAME.pdf')
 		plt.show()
 
 if __name__ == "__main__":
@@ -438,22 +448,21 @@ if __name__ == "__main__":
 
 	solver = AtomicSolver(impurity_symbol)
 
-	solver.plot_solver_evolution   = False
-	solver.reevaluate_scan_temp    = True
+	solver.plot_solver_evolution   = True
+	solver.reevaluate_scan_temp    = False
 	solver.plot_scan_temp_dens     = False
 	solver.plot_scan_temp_prad     = False
-	solver.plot_scan_temp_prad_tau = True
+	solver.plot_scan_temp_prad_tau = False
 
 	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
 	# solver.Ne_tau_values = np.logspace(12, 20, 7) #m^-3 s, values to return Prad(tau) for
-	solver.Ne_tau_values = np.append(solver.Ne_tau_values, 1e30)
+	# solver.Ne_tau_values = np.append(solver.Ne_tau_values, 1e30)
 
 	# solver.Te_values = np.logspace(0, 3, 20) #eV
 
 	if solver.plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 1e14)
-		# solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major")
-		print(solver.additional_out['Prad'][-1])
+		density_evolution_plot = solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major")
 	
 	if solver.plot_scan_temp_dens or solver.plot_scan_temp_prad:
 		if solver.reevaluate_scan_temp:
