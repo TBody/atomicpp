@@ -387,22 +387,22 @@ class AtomicSolver(object):
 		
 
 		# Extract the radiation curves from Post PSI paper. Plot the carbon result against these
-		x_eval_points = np.logspace(0.1,3,15)
-		x_eval_points_hires = np.logspace(0.1,3,100)
+		x_eval_points = np.logspace(0.1,3,20)
+		# x_eval_points_hires = np.logspace(0.1,3,100)
 		y_data_points = []
-		y_data_points_hires = []
+		# y_data_points_hires = []
 		for dataset in range(0,4):
 			Prad = np.loadtxt('python_results/Prad{}.csv'.format(dataset+1),delimiter=', ')
 			x = np.array(Prad[:,0])
 			y = np.array(Prad[:,1])/1e12
 			Prad_interp = interp1d(x,y,bounds_error=False)
-			Prad_interp_hires = interp1d(x,y,bounds_error=False)
+			# Prad_interp_hires = interp1d(x,y,bounds_error=False)
 			# plt.loglog(x,y,label=(dataset+1))
 			y_data_points.append(Prad_interp(x_eval_points))
-			y_data_points_hires.append(Prad_interp(x_eval_points_hires))
+			# y_data_points_hires.append(Prad_interp(x_eval_points_hires))
 		y_data_points = np.array(y_data_points)
 		y_mean = np.nanmean(y_data_points,0)
-		y_mean_hires = np.nanmean(y_data_points_hires,0)
+		# y_mean_hires = np.nanmean(y_data_points_hires,0)
 		y_std = np.nanstd(y_data_points,0)
 		ylower = np.maximum(1e-50, y_mean - y_std)
 		y_std_lower = y_mean - ylower
@@ -425,8 +425,9 @@ class AtomicSolver(object):
 		ax1.set_xlim(min(self.Te_values), max(self.Te_values))
 		ax1.set_ylim(1e-37, 1e-30)
 
-		ax1.semilogx(x_eval_points_hires, y_mean_hires, 'k--', label='CR expected')
-		ax1.errorbar(x_eval_points, y_mean, yerr=[y_std_lower, 2*y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3)
+		# ax1.semilogx(x_eval_points_hires, y_mean_hires, 'k--', label='CR expected')
+		# ax1.errorbar(x_eval_points, y_mean, yerr=[y_std_lower, 2*y_std], xerr=0, fmt='k--', ecolor='k', capthick=1, capsize=3, errorevery=5, label='CR expected')
+		ax1.errorbar(x_eval_points, y_mean, yerr=[y_std_lower, 2*y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='CR expected')
 
 		# Plot the carbon cooling curve from I.Hutchinson
 		Te = self.Te_values
@@ -435,7 +436,7 @@ class AtomicSolver(object):
 
 
 		ax1.set_xlabel(r'Plasma temperature (eV)')
-		plt.legend(loc=0)
+		plt.legend(loc=4)
 
 		ax1.grid(which=grid, axis='both')
 		
@@ -688,7 +689,7 @@ class AtomicSolver(object):
 					pass
 					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}".format("g.s."))
 				elif k == self.Z+1:
-					ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}".format(r"$P_{rad}$"))
+					ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], 'k--', label="{}".format(r"$P_{rad}$"))
 				else:
 					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}+".format(k))
 					if(k in [4,5]):
@@ -705,7 +706,7 @@ class AtomicSolver(object):
 					pass
 					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}".format("g.s."))
 				elif k == self.Z+1:
-					ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}".format(r"$P_{rad}$"))
+					ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], 'k--', label="{}".format(r"$P_{rad}$"))
 				else:
 					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}+".format(k))
 					if(k in [4,5]):
@@ -713,6 +714,13 @@ class AtomicSolver(object):
 			ax2.legend()
 			ax2.set_xlabel(r'Relative error in $N_e$')
 			# ax2.set_ylabel(r'Relative error in parameter ($\sigma/\mu$)')
+			ax1.grid()
+			ax2.grid()
+			# vals = ax1.get_yticks()
+			# ax1.set_yticklabels(['{:3.2f}%'.format(x*100) for x in vals])
+			# vals = ax2.get_yticks()
+			# ax2.set_yticklabels(['{:3.2f}%'.format(x*100) for x in vals])
+			ax1.set_xlim(0,0.5)
 			fig.text(0.04, 0.5, r'Relative error in parameter ($\sigma/\mu$)', va='center', rotation='vertical')
 
 		self.Nzk = np.zeros((self.Z+1,)) #m^-3
@@ -738,7 +746,7 @@ if __name__ == "__main__":
 	solver.reevaluate_scan         = False
 	solver.error_estimation        = False
 	solver.plot_scan_temp_dens     = False
-	solver.plot_scan_temp_prad     = False
+	# solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
 	# solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
