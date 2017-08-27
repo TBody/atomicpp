@@ -383,25 +383,59 @@ class AtomicSolver(object):
 		return fig
 
 	def plotScanTempCR_Prad_tau(self, refuelling_results, x_axis_scale = "log", y_axis_scale = "log", grid = "none", show=False):
+		from scipy.interpolate import interp1d
 		
+
+		# Extract the radiation curves from Post PSI paper. Plot the carbon result against these
+		x_eval_points = np.logspace(0.1,3,15)
+		x_eval_points_hires = np.logspace(0.1,3,100)
+		y_data_points = []
+		y_data_points_hires = []
+		for dataset in range(0,4):
+			Prad = np.loadtxt('python_results/Prad{}.csv'.format(dataset+1),delimiter=', ')
+			x = np.array(Prad[:,0])
+			y = np.array(Prad[:,1])/1e12
+			Prad_interp = interp1d(x,y,bounds_error=False)
+			Prad_interp_hires = interp1d(x,y,bounds_error=False)
+			# plt.loglog(x,y,label=(dataset+1))
+			y_data_points.append(Prad_interp(x_eval_points))
+			y_data_points_hires.append(Prad_interp(x_eval_points_hires))
+		y_data_points = np.array(y_data_points)
+		y_mean = np.nanmean(y_data_points,0)
+		y_mean_hires = np.nanmean(y_data_points_hires,0)
+		y_std = np.nanstd(y_data_points,0)
+		ylower = np.maximum(1e-50, y_mean - y_std)
+		y_std_lower = y_mean - ylower
+
 		fig, ax1 = plt.subplots()
 
-		
 		Prad = np.array(self.additional_out['Prad'])
 
-		for ne_tau_index in range(len(self.Ne_tau_values)):
+		for ne_tau_index in range(len(self.Ne_tau_values)-1,-1,-1):
 			ne_tau = self.Ne_tau_values[ne_tau_index]
 
 			total_density = np.sum(refuelling_results[-1,ne_tau_index,:],0)
 
-			ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),label="{:.1e}".format(ne_tau))
+			if ne_tau > 1e18:
+				ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),'r-.',label="CR")
+			else:
+				ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),label="{:.1e}".format(ne_tau))
 
-			ax1.set_ylabel(r'$P_{rad}(\tau)/(n_e n_z)$ ($W m^3$)')
-			
-			ax1.set_xlim(min(self.Te_values), max(self.Te_values))
+		ax1.set_ylabel(r'$P_{rad}(\tau)/(N_e N_z)$ ($W m^3$)')
+		ax1.set_xlim(min(self.Te_values), max(self.Te_values))
+		ax1.set_ylim(1e-37, 1e-30)
+
+		ax1.semilogx(x_eval_points_hires, y_mean_hires, 'k--', label='CR expected')
+		ax1.errorbar(x_eval_points, y_mean, yerr=[y_std_lower, 2*y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3)
+
+		# Plot the carbon cooling curve from I.Hutchinson
+		Te = self.Te_values
+		P = 2e-31 * (Te/10.)**3 / ( 1.0 + (Te/10.)**4.5 )
+		ax1.semilogx(self.Te_values, P, 'b-.',label="Hutchinson")
+
 
 		ax1.set_xlabel(r'Plasma temperature (eV)')
-		plt.legend()
+		plt.legend(loc=0)
 
 		ax1.grid(which=grid, axis='both')
 		
@@ -707,7 +741,8 @@ if __name__ == "__main__":
 	solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
-	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	# solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15] #m^-3 s, values to return Prad(tau) for
 
 	if solver.plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 0)
@@ -756,11 +791,11 @@ if __name__ == "__main__":
 				solver.additional_out = pickle.load(handle)
 
 		if solver.plot_scan_temp_prad_tau:
-			plot_scan_temp_prad_tau = solver.plotScanTempCR_Prad_tau(scan_temp_refuelling, grid="major", show=False)
+			plot_scan_temp_prad_tau = solver.plotScanTempCR_Prad_tau(scan_temp_refuelling, grid="major", show=True)
 			plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf")
 
 
-	plt.show()
+	# plt.show()
 
 
 
