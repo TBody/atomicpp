@@ -30,7 +30,8 @@ class AtomicSolver(object):
 
 		# Control booleans
 		self.plot_solver_evolution   = False
-		self.reevaluate_scan_temp    = False
+		self.reevaluate_scan         = False
+		self.error_estimation        = False
 		self.plot_scan_temp_dens     = False
 		self.plot_scan_temp_prad     = False
 		self.plot_scan_temp_prad_tau = False
@@ -173,8 +174,10 @@ class AtomicSolver(object):
 				self.Nzk = np.zeros((self.Z+1,)) #m^-3 Always need to start system is g.s. for Prad_tau calculation 
 				self.Nzk[0] = 1e17 #m^-3 - start in g.s. 
 			else: 
-				# Can use previous result to try speed up evaluation if not calculating Prad(tau) 
-				self.Nzk = result[-1,:] 
+				# self.Nzk = result[-1,:] # Can use previous result to try speed up evaluation if not calculating Prad(tau)
+				pass # However, this is found to result in odd numerical behaviour
+				
+
 
 		return result
 
@@ -244,7 +247,6 @@ class AtomicSolver(object):
 
 		return results
 
-
 	def scanDensityCREquilibrium(self):
 		self.reset_additional_out()
 
@@ -266,7 +268,7 @@ class AtomicSolver(object):
 # Plotting methods
 	def plotResultFromDensityEvolution(self, result, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", show=False):
 		fig, ax1 = plt.subplots()
-		for k in range(solver.Z+1):
+		for k in range(self.Z+1):
 			if k == 0:
 				ax1.semilogx(self.t_values, result[:,k], label="{}".format("g.s."))
 			else:
@@ -410,6 +412,284 @@ class AtomicSolver(object):
 			plt.show()
 		return fig
 
+	def error_estimations(self, show=False, plot_time_test = False, plot_start_test = False, find_stddev = False, plot_stddev_Ne = False, plot_stddev_Te = False, plot_together = False):
+		self.t_values = np.logspace(-10, 2, 10000)
+		if self.reevaluate_scan:
+			error_analysis = self.timeIntegrate(self.Te_const, self.Ne_const, 0)
+			comparison_values = error_analysis[-1,:]
+			comparison_values = np.append(comparison_values,self.additional_out['Prad'][-1])
+
+			with open('python_results/error_analysis({},{})(res+{})-comparison_values.pickle'.format(self.Te_const,self.Ne_const,len(self.t_values)), 'wb') as handle:
+				pickle.dump(comparison_values, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		else:
+			with open('python_results/error_analysis({},{})(res+{})-comparison_values.pickle'.format(self.Te_const,self.Ne_const,len(self.t_values)), 'rb') as handle:
+				comparison_values = pickle.load(handle)
+		
+		if plot_time_test:
+			time_test_values = np.round(np.logspace(1, 3, 20))
+			time_test_results = [];
+			for time_it in range(len(time_test_values)):
+				self.reset_additional_out()
+
+				time_test = time_test_values[time_it]
+				print("Evaluating for time-resolution = {}pts".format(time_test))
+				self.t_values = np.logspace(-6, 2, time_test)
+				error_analysis = self.timeIntegrate(self.Te_const, self.Ne_const, 0)
+				# plot_self_evolution = self.plotResultFromDensityEvolution(error_analysis, plot_power = True, grid="major", show=True)
+				test_values = error_analysis[-1,:]
+				test_values = np.append(test_values,self.additional_out['Prad'][-1])
+				time_test_results.append(comparison_values-test_values)
+			plt.plot(time_test_values, time_test_results)
+
+		if plot_start_test:
+			start_time_log = -6
+			shift_test_values = np.linspace(-3,10, num=100)
+			original_test_length = len(shift_test_values)
+			if self.reevaluate_scan:	
+				shift_test_values = shift_test_values.tolist()
+				shift_test_results = [];
+				failed_test_values = [];
+				for shift_it in range(len(shift_test_values)):
+					self.reset_additional_out()
+
+					shift_test = shift_test_values[shift_it]
+					print("Evaluating for shift = {}".format(shift_test))
+					try:
+						self.t_values = np.logspace(start_time_log+shift_test, 5, 200)
+						error_analysis = self.timeIntegrate(self.Te_const, self.Ne_const, 0)
+						# print("COMPARISON: ", comparison_values)
+						# plot_self_evolution = self.plotResultFromDensityEvolution(error_analysis, plot_power = True, grid="major", show=True)
+						test_values = error_analysis[-1,:]
+						test_values = np.append(test_values,self.additional_out['Prad'][-1])
+						shift_test_results.append((comparison_values - test_values)/comparison_values)
+					except:
+						print("Evaluation failed for shift = {}".format(shift_test))
+						failed_test_values.append(shift_test)
+
+				for shift_test in failed_test_values:
+					shift_test_values.remove(shift_test)
+
+				shift_test_results = np.absolute(shift_test_results)
+				shift_test_values = np.array(shift_test_values)+start_time_log
+				start_times = np.power(10*np.ones_like(shift_test_values), shift_test_values)
+
+				shift_test_data = {}
+				shift_test_data['results'] = shift_test_results
+				shift_test_data['times'] = start_times
+
+				with open('python_results/error_analysis({},{})(res+{})-shift_test_data.pickle'.format(self.Te_const,self.Ne_const,original_test_length), 'wb') as handle:
+					pickle.dump(shift_test_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+			else:
+				with open('python_results/error_analysis({},{})(res+{})-shift_test_data.pickle'.format(self.Te_const,self.Ne_const,original_test_length), 'rb') as handle:
+					shift_test_data = pickle.load(handle)
+
+			for k in range(self.Z+2):
+				if k == 0:
+					plt.loglog(shift_test_data['times'], shift_test_data['results'][:,k], label="{}".format("g.s."))
+				elif k == self.Z+1:
+					plt.loglog(shift_test_data['times'], shift_test_data['results'][:,k], label="{}".format(r"$P_{rad}$"))
+				else:
+					plt.loglog(shift_test_data['times'], shift_test_data['results'][:,k], label="{}+".format(k))
+			
+			plt.xlabel('Start time for evaluation (s)')
+			plt.ylabel('Deviation from expected answer (relative error)')
+
+			plt.legend()
+
+		if find_stddev:
+			if self.reevaluate_scan:
+				import random
+				random.seed(1)
+				random_results = []
+				for iterator in range(100):
+					self.reset_additional_out()
+					Nzk = np.zeros((self.Z+1,))
+					for k in range(self.Z+1):
+						Nzk[k] = random.random()*(10**random.uniform(1, 17))
+					self.Nzk = 1e17*Nzk/sum(Nzk)
+
+					self.t_values = np.logspace(-6, 2, 200)
+					random_init = self.timeIntegrate(self.Te_const, self.Ne_const, 0)
+					random_values = random_init[-1,:]
+					random_values = np.append(random_values,self.additional_out['Prad'][-1])
+					random_results.append(random_values)
+				
+				random_results = np.array(random_results)
+				with open('python_results/error_analysis({},{})(res+{})-random_results.pickle'.format(self.Te_const,self.Ne_const,len(self.t_values)), 'wb') as handle:
+					pickle.dump(random_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+			else:
+				with open('python_results/error_analysis({},{})(res+{})-random_results.pickle'.format(self.Te_const,self.Ne_const,len(self.t_values)), 'rb') as handle:
+					random_results = pickle.load(handle)
+
+
+			for k in range(self.Z+2):
+				mean = np.mean(random_results[:,k])
+				stdev = np.std(random_results[:,k])
+				stdev_norm = stdev/mean
+				diff = (mean - comparison_values[k])/comparison_values[k]
+				if k == 0:
+					print("{:5} -> mean = {:.2e}, stdev = {:.2e}, stdev_norm = {:.2e}, mean_diff = {:.2e}".format("g.s.", mean, stdev, stdev_norm, diff))
+				elif k == self.Z+1:
+					print("{:5} -> mean = {:.2e}, stdev = {:.2e}, stdev_norm = {:.2e}, mean_diff = {:.2e}".format("P_rad", mean, stdev, stdev_norm, diff))
+				else:
+					print("{:5} -> mean = {:.2e}, stdev = {:.2e}, stdev_norm = {:.2e}, mean_diff = {:.2e}".format(k, mean, stdev, stdev_norm, diff))
+
+			self.Nzk = np.zeros((self.Z+1,)) #m^-3
+			self.Nzk[0] = 1e17 #m^-3 - start in g.s.
+
+		if plot_stddev_Te:
+			self.t_values = np.logspace(-6, 2, 200)
+			stdev_Te = np.linspace(0,self.Te_const/2,num=20)
+			stdev_norm = []
+			if self.reevaluate_scan:
+				import random
+				random.seed(1)
+				for sigma in stdev_Te:
+					random_results = []
+					for iterator in range(50):
+						try:
+							self.reset_additional_out()
+							Te = random.normalvariate(self.Te_const, sigma)
+							Nzk = np.zeros((self.Z+1,))
+							for k in range(self.Z+1):
+								Nzk[k] = random.random()*(10**random.uniform(1, 17))
+							self.Nzk = 1e17*Nzk/sum(Nzk)
+
+							random_te = self.timeIntegrate(Te, self.Ne_const, 0)
+							random_values = random_te[-1,:]
+							random_values = np.append(random_values,self.additional_out['Prad'][-1])
+							if not(np.isnan(random_values).any()):
+								random_results.append(random_values)
+							else:
+								print("NaN for Te = {}".format(Te))
+						except:
+							print("Error for Te = {}".format(Te))
+
+					mean = np.mean(random_results,0)
+					stdev = np.std(random_results,0)
+					stdev_norm.append(np.absolute(stdev/mean))
+
+					
+				stdev_norm = np.array(stdev_norm)
+				with open('python_results/error_analysis(rand{},{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Te)), 'wb') as handle:
+					pickle.dump(stdev_norm, handle, protocol=pickle.HIGHEST_PROTOCOL)
+			else:
+				with open('python_results/error_analysis(rand{},{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Te)), 'rb') as handle:
+					stdev_norm = pickle.load(handle)
+
+			for k in range(self.Z+2):
+				if k == 0:
+					plt.plot(stdev_Te/self.Te_const, stdev_norm[:,k], label="{}".format("g.s."))
+				elif k == self.Z+1:
+					plt.plot(stdev_Te/self.Te_const, stdev_norm[:,k], label="{}".format(r"$P_{rad}$"))
+				else:
+					plt.plot(stdev_Te/self.Te_const, stdev_norm[:,k], label="{}+".format(k))
+			plt.legend()
+			plt.xlabel(r'Relative error in $T_e$')
+			plt.ylabel(r'Relative error in parameter ($\sigma/\mu$)')
+
+		if plot_stddev_Ne:
+			self.t_values = np.logspace(-6, 2, 200)
+			stdev_Ne = np.linspace(0,self.Ne_const/2,num=20)
+			stdev_norm = []
+			if self.reevaluate_scan:
+				import random
+				random.seed(1)
+				for sigma in stdev_Ne:
+					random_results = []
+					for iterator in range(50):
+						try:
+							self.reset_additional_out()
+							Ne = random.normalvariate(self.Ne_const, sigma)
+							Nzk = np.zeros((self.Z+1,))
+							for k in range(self.Z+1):
+								Nzk[k] = random.random()*(10**random.uniform(1, 17))
+							self.Nzk = 1e17*Nzk/sum(Nzk)
+
+							random_te = self.timeIntegrate(self.Te_const, Ne, 0)
+							random_values = random_te[-1,:]
+							random_values = np.append(random_values,self.additional_out['Prad'][-1])
+							if not(np.isnan(random_values).any()):
+								random_results.append(random_values)
+							else:
+								print("NaN for Ne = {}".format(Ne))
+						except:
+							print("Error for Ne = {}".format(Ne))
+
+					mean = np.mean(random_results,0)
+					stdev = np.std(random_results,0)
+					stdev_norm.append(np.absolute(stdev/mean))
+
+					
+				stdev_norm = np.array(stdev_norm)
+				with open('python_results/error_analysis({},rand{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Ne)), 'wb') as handle:
+					pickle.dump(stdev_norm, handle, protocol=pickle.HIGHEST_PROTOCOL)
+			else:
+				with open('python_results/error_analysis({},rand{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Ne)), 'rb') as handle:
+					stdev_norm = pickle.load(handle)
+
+			for k in range(self.Z+2):
+				if k == 0:
+					plt.plot(stdev_Ne/self.Ne_const, stdev_norm[:,k], label="{}".format("g.s."))
+				elif k == self.Z+1:
+					plt.plot(stdev_Ne/self.Ne_const, stdev_norm[:,k], label="{}".format(r"$P_{rad}$"))
+				else:
+					plt.plot(stdev_Ne/self.Ne_const, stdev_norm[:,k], label="{}+".format(k))
+					# if(k==4 or k==5):
+					# 	plt.plot(stdev_Ne/self.Ne_const, stdev_norm[:,k], label="{}+".format(k))
+			plt.legend()
+			plt.xlabel(r'Relative error in $N_e$')
+			plt.ylabel(r'Relative error in parameter ($\sigma/\mu$)')
+
+		if plot_together:
+			fig, (ax1, ax2) = plt.subplots(2, sharex = True)
+
+			stdev_Te = np.linspace(0,self.Te_const/2,num=20)
+
+			with open('python_results/error_analysis(rand{},{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Te)), 'rb') as handle:
+				stdev_norm_Te = pickle.load(handle)
+
+			for k in range(self.Z+2):
+				if k == 0:
+					pass
+					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}".format("g.s."))
+				elif k == self.Z+1:
+					ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}".format(r"$P_{rad}$"))
+				else:
+					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}+".format(k))
+					if(k in [4,5]):
+						ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}+".format(k))
+			ax1.legend()
+			ax1.set_xlabel(r'Relative error in $T_e$')
+			# ax1.set_ylabel(r'Relative error in parameter ($\sigma/\mu$)')
+
+			stdev_Ne = np.linspace(0,self.Ne_const/2,num=20)
+			with open('python_results/error_analysis({},rand{})(res+{})-stdev_norm.pickle'.format(self.Te_const,self.Ne_const,len(stdev_Ne)), 'rb') as handle:
+					stdev_norm_Ne = pickle.load(handle)
+			for k in range(self.Z+2):
+				if k == 0:
+					pass
+					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}".format("g.s."))
+				elif k == self.Z+1:
+					ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}".format(r"$P_{rad}$"))
+				else:
+					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}+".format(k))
+					if(k in [4,5]):
+						ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}+".format(k))
+			ax2.legend()
+			ax2.set_xlabel(r'Relative error in $N_e$')
+			# ax2.set_ylabel(r'Relative error in parameter ($\sigma/\mu$)')
+			fig.text(0.04, 0.5, r'Relative error in parameter ($\sigma/\mu$)', va='center', rotation='vertical')
+
+		self.Nzk = np.zeros((self.Z+1,)) #m^-3
+		self.Nzk[0] = 1e17 #m^-3 - start in g.s.
+		self.t_values = np.logspace(-6, 2, 200)
+
+		if show:
+			plt.show()
+		return fig
+
+
 if __name__ == "__main__":
 
 	import matplotlib.pyplot as plt
@@ -420,23 +700,26 @@ if __name__ == "__main__":
 
 	path_to_output = 'Figures/'
 
-	solver.plot_solver_evolution   = True
-	solver.reevaluate_scan_temp    = True
-	solver.plot_scan_temp_dens     = True
-	solver.plot_scan_temp_prad     = True
+	solver.plot_solver_evolution   = False
+	solver.reevaluate_scan         = False
+	solver.error_estimation        = False
+	solver.plot_scan_temp_dens     = False
+	solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
 	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
 
-	# solver.Te_values = np.logspace(0, 3, 20) #eV
-
 	if solver.plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 0)
-		plot_solver_evolution = solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major", show=False)
+		plot_solver_evolution = solver.plotResultFromDensityEvolution(solver_evolution, plot_power = True, grid="major", show=False, y_axis_scale="linear")
 		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf")
-	
+
+	if solver.error_estimation:
+		error_estimation = solver.error_estimations(show=True, plot_together=True)
+		error_estimation.savefig(path_to_output+"error_estimation.pdf")
+
 	if solver.plot_scan_temp_dens or solver.plot_scan_temp_prad:
-		if solver.reevaluate_scan_temp:
+		if solver.reevaluate_scan:
 
 			scan_temp = solver.scanTempCREquilibrium()
 
@@ -458,7 +741,7 @@ if __name__ == "__main__":
 			plot_scan_temp_prad.savefig(path_to_output+"plot_scan_temp_prad.pdf")
 
 	if solver.plot_scan_temp_prad_tau:
-		if solver.reevaluate_scan_temp:
+		if solver.reevaluate_scan:
 
 			scan_temp_refuelling = solver.scanTempRefuelling()
 
@@ -475,6 +758,9 @@ if __name__ == "__main__":
 		if solver.plot_scan_temp_prad_tau:
 			plot_scan_temp_prad_tau = solver.plotScanTempCR_Prad_tau(scan_temp_refuelling, grid="major", show=False)
 			plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf")
+
+
+	plt.show()
 
 
 
