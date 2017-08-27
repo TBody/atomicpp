@@ -422,56 +422,6 @@ void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
 	std::printf("F_n:         %+.2e [N]\n",F_n);
 };
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::makeDerivativeTuple(){
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >derivative_tuple = 
-	std::make_tuple(
-		Pcool,
-		Prad,
-		dNzk,
-		F_zk,
-		dNe,
-		F_i,
-		dNn,
-		F_n
-	);
-	return derivative_tuple;
-	//Code to unpack
-		// double Pcool = std::get<0>(derivative_tuple);
-		// double Prad  = std::get<1>(derivative_tuple);
-		// std::vector<double> dNzk = std::get<2>(derivative_tuple);
-		// std::vector<double> F_zk = std::get<3>(derivative_tuple);
-
-		// double dNe = std::get<4>(derivative_tuple);
-		// double F_i  = std::get<5>(derivative_tuple);
-		// double dNn = std::get<6>(derivative_tuple);
-		// double F_n  = std::get<7>(derivative_tuple);
-};
-void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple){
-	// //Unpacking the return from computeDerivs
-	double Pcool             = std::get<0>(derivative_tuple);
-	double Prad              = std::get<1>(derivative_tuple);
-	std::vector<double> dNzk = std::get<2>(derivative_tuple);
-	std::vector<double> F_zk = std::get<3>(derivative_tuple);
-
-	double dNe               = std::get<4>(derivative_tuple);
-	double F_i               = std::get<5>(derivative_tuple);
-	double dNn               = std::get<6>(derivative_tuple);
-	double F_n               = std::get<7>(derivative_tuple);
-
-	//Print-verifying the return from computeDerivs
-	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
-	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
-	for(int k=0; k<=Z; ++k){
-	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
-	}
-	for(int k=0; k<=Z; ++k){
-	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
-	}
-	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
-	std::printf("F_i:         %+.2e [N]\n",F_i);
-	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
-	std::printf("F_n:         %+.2e [N]\n",F_n);
-};
 std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
     double sum = 0.0;
 

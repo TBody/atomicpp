@@ -183,18 +183,6 @@
 
 	void printDerivativeStruct(DerivStruct& derivative_struct);
 
-	/**
-	 * @brief makeDerivativeTuple
-	 * @details packs the calculated derivatives into a tuple to return to the main code
-	 * @return See commented out source code for a method to unpack return
-	 */
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > makeDerivativeTuple();
-
-	/**
-	 * @brief print check for the returned derivative tuple
-	 */
-	void printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple);
-
 	private:
 	//Map of RateCoefficient objects, copied from an ImpuritySpecies object
 	std::map<std::string,std::shared_ptr<RateCoefficient> > rate_coefficients;
