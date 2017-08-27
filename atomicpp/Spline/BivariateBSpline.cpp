@@ -1,3 +1,21 @@
+// This algorithm is closely based on the FITPACK routines from http://www.netlib.org/dierckx/
+// by Paul Dierckx. For more information see
+// 
+//   dierckx p. : a fast algorithm for smoothing data on a rectangular
+//                grid while using spline functions, siam j.numer.anal.
+//                19 (1982) 1286-1304.
+//   dierckx p. : a fast algorithm for smoothing data on a rectangular
+//                grid while using spline functions, report tw53, dept.
+//                computer science,k.u.leuven, 1980.
+//   dierckx p. : curve and surface fitting with splines, monographs on
+//                numerical analysis, oxford university press, 1993.
+//
+//  author:
+//    p.dierckx
+//    dept. computer science, k.u. leuven
+//    celestijnenlaan 200a, b-3001 heverlee, belgium.
+//    e-mail : Paul.Dierckx@cs.kuleuven.ac.be
+
 #include <vector>
 #include <math.h>
 #include <algorithm> //for upper/lower_bound
