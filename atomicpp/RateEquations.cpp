@@ -34,7 +34,8 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	dNzk(impurity.get_atomic_number()+1, 0.0),
 	F_zk(impurity.get_atomic_number()+1, 0.0),
 	dNzk_correction(impurity.get_atomic_number()+1, 0.0),
-	F_zk_correction(impurity.get_atomic_number()+1, 0.0)
+	F_zk_correction(impurity.get_atomic_number()+1, 0.0),
+	P_stage(impurity.get_atomic_number()+1, 0.0)
 	{
 
 	// Set parameters that are useful for multiple functions
@@ -53,6 +54,10 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
+
+	P_line = 0.0;
+	P_cont = 0.0;
+	P_cx = 0.0;
 
 	//Calculate the factor that doesn't change throughout evaluation
 	calculateStoppingTimeConstantFactor();
@@ -154,12 +159,17 @@ void RateEquations::resetDerivatives(){
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
+
+	P_line = 0.0;
+	P_cont = 0.0;
+	P_cx = 0.0;
 	
 	for(int k = 0; k<= Z; ++k){
 		dNzk[k] = 0.0;
 		F_zk[k] = 0.0;
 		dNzk_correction[k] = 0.0;
 		F_zk_correction[k] = 0.0;
+		P_stage[k] = 0.0;
 	};
 };
 void RateEquations::calculateElectronImpactPopulationEquation(
@@ -402,6 +412,12 @@ void RateEquations::calculateElectronImpactPowerEquation(
 
 		Prad  += line_power_rate + continuum_power_rate;
 		Pcool += line_power_rate + continuum_power_rate;
+
+		P_stage[k] += line_power_rate;
+		P_line += line_power_rate;
+		
+		P_stage[k+1] += continuum_power_rate;
+		P_cont += continuum_power_rate;
 	}
 };
 void RateEquations::calculateChargeExchangePowerEquation(
@@ -418,6 +434,9 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
 		Pcool += cx_power_rate;
+
+		P_cx += cx_power_rate;
+		P_stage[k+1] += cx_power_rate;
 	}
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
@@ -432,6 +451,11 @@ DerivStruct RateEquations::makeDerivativeStruct(){
 	derivative_struct.dNn   = dNn;
 	derivative_struct.F_n   = F_n;
 
+	derivative_struct.P_stage = P_stage;	
+	derivative_struct.P_line = P_line;
+	derivative_struct.P_cont = P_cont;
+	derivative_struct.P_cx = P_cx;
+
 	return derivative_struct;
 };
 void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
@@ -443,6 +467,11 @@ void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
 	double F_i               = derivative_struct.F_i;
 	double dNn               = derivative_struct.dNn;
 	double F_n               = derivative_struct.F_n;
+
+	std::vector<double> P_stage = derivative_struct.P_stage;
+	P_line = derivative_struct.P_line;
+	P_cont = derivative_struct.P_cont;
+	P_cx = derivative_struct.P_cx;
 
 	//Print-verifying the return from computeDerivs
 	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
@@ -457,6 +486,12 @@ void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
 	std::printf("F_i:         %+.2e [N]\n",F_i);
 	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
 	std::printf("F_n:         %+.2e [N]\n",F_n);
+	for(int k=0; k<=Z; ++k){
+	std::printf("Pz^(%i):      %+.2e [W/m3]\n",k ,P_stage[k]);
+	}
+	std::printf("P_li:         %+.2e [N]\n",P_line);
+	std::printf("P_co:         %+.2e [N]\n",P_cont);
+	std::printf("P_cx:         %+.2e [N]\n",P_cx);
 };
 std::pair<double, double> atomicpp::neumaierSum(const std::vector<double>& list_to_sum, const double previous_correction /* = 0.0*/){
     double sum = 0.0;

@@ -40,6 +40,7 @@ clean:
 	rm -rf **/*.dSYM
 	rm -f *.html
 	rm -f Prad
+	rm -f Prad.o
 
 Prad.o: Prad.cpp $(atomicpp)/sharedFunctions.hpp $(atomicpp)/ImpuritySpecies.hpp
 $(atomicpp)sharedFunctions.o: $(atomicpp)/sharedFunctions.cpp $(atomicpp)/sharedFunctions.hpp
