@@ -46,7 +46,7 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	Nthres                   = density_threshold;
 	mi                       = mi_in_amu;
 
-	//Initialise the 
+	//Initialise the outputs
 	Pcool                    = 0.0;
 	Prad                     = 0.0;
 	dNe                      = 0.0;
@@ -241,7 +241,9 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential
 		// Rates will be zero for edge cases (from initialisation)
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
-		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
+		std::printf("k:%d, V:%f, iz:%.2e, rec:%.2e, diff:%.2e \n",k,ionisation_potential_evaluated,iz_to_above[k],rec_from_above[k],iz_to_above[k]+rec_from_above[k]);
+		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] + rec_from_above[k]); //N.b. iz_to_above is -ve, rec_from_above is +ve
+		std::printf("k: %d, Pcool: %.2e\n", k, eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] + rec_from_above[k]));
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
 	// Perturbation on electron density
@@ -253,9 +255,9 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
 	const double Te,
-	const double Ne
+	const double Ne,
+	const double plasma_ionisation_potential
 	){
-	// Consider charge exchange after calculating Pcool
 	
 	std::vector<double>     cx_rec_to_below(Z+1, 0.0); //Rate (m^-3 s^-1)
 	std::vector<double>   cx_rec_from_above(Z+1, 0.0);
@@ -282,10 +284,8 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 		// Otherwise, the rates stay as default = 0
 	}
 
-	//For Neumaier summation of the change in Nn from the different rates 
-	std::vector<double> dNn_from_stage(Z+1, 0.0); //Only need Z indices, but adding an extra to the end means that the calculation
-	// can be performed in a single loop
-	for(int k=0; k <= Z; ++k){//Consider all states at once
+
+	for(int k=0; k <= Z; ++k){
 		std::vector<double> rates_for_stage          = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]}; //Add cx to the sum
 		std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
 		dNzk[k]                                      = neumaier_pair_dNzk.first;
@@ -295,6 +295,20 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 		std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage,F_zk_correction[k]);
 		F_zk[k]                                          = neumaier_pair_momentum.first; 
 		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Overwrite compensation with updated value
+	}
+	//For Neumaier summation of the change in Nn from the different rates 
+	std::vector<double> dNn_from_stage(Z, 0.0); //Only need Z indices, but adding an extra to the end means that the calculation
+	// can be performed in a single loop
+	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
+	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
+	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients["ionisation_potential"];
+	for(int k=0; k < Z; ++k){
+		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
+		// Charge exchange simultaneously neutralises an impurity ion and ionises a dominant-species neutral. Modify Pcool to reflect this.
+		std::printf("k: %d, V: %f, Vdiff: %f, cx_rec: %.2e\n", k, ionisation_potential_evaluated, (ionisation_potential_evaluated-plasma_ionisation_potential), cx_rec_from_above[k]);
+		Pcool                                            += eV_to_J * (ionisation_potential_evaluated-plasma_ionisation_potential) * cx_rec_from_above[k];
+		std::printf("k: %d, Pcool: %.2e\n", k, eV_to_J * (ionisation_potential_evaluated-plasma_ionisation_potential) * cx_rec_from_above[k]);
+
 		dNn_from_stage[k] = -cx_rec_from_above[k]; //N.b. cx_rec_from_above[Z] = 0.0 always, included so we can use a single loop
 	}
 	
@@ -382,6 +396,7 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
+		Pcool += cx_power_rate;
 	}
 };
 DerivStruct RateEquations::makeDerivativeStruct(){

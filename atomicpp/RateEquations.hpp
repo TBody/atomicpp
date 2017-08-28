@@ -131,8 +131,7 @@
 	 * @brief calculates the effects of charge-exchange on the impurity-species populations
 	 * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
 	 * values with significantly varied magnitudes. See computeDerivs for description of parameters.
-	 * Also computes the transfer of momentum between states due to cx_rec transfer. N.b. cx will not affect
-	 * the electron population
+	 * Also computes the transfer of momentum between states due to cx_rec transfer.
 	 * @param[in] Nn
 	 * @param[in] Nzk
 	 * @param[in] Vzk
@@ -144,7 +143,8 @@
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
 		const double Te,
-		const double Ne
+		const double Ne,
+		const double plasma_ionisation_potential = 13.6 //eV, ionisation potential of neutral hydrogen
 		);
 
 	/**
