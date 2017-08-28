@@ -1,0 +1,375 @@
+
+BOUT++ version 4.00
+Revision: 4d8eaba75538195edf3a69213f758e3ef063cbaa
+MD5 checksum: e6c0851fbd4c4c9a5a8d59c69a729094
+Code compiled on Jul 19 2017 at 15:03:18
+
+B.Dudson (University of York), M.Umansky (LLNL) 2007
+Based on BOUT by Xueqiao Xu, 1999
+
+Processor number: 7 of 16
+
+pid: 18122
+
+Compile-time options:
+	Checking enabled, level 2
+	Signal handling enabled
+	netCDF support disabled
+	Parallel NetCDF support disabled
+	OpenMP parallelisation disabled
+Reading options file MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+Writing options to file MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.settings
+
+Getting grid data from options
+	Option mesh:type = bout (default)
+	Option mesh:StaggerGrids = false  (default)
+Setting X differencing methods
+	First       : 	Option mesh:ddx:first = C2 (default)
+ Second order central (C2)
+	Second      : 	Option mesh:ddx:second = C2 (default)
+ Second order central (C2)
+	Upwind      : 	Option mesh:ddx:upwind = U1 (default)
+ First order upwinding (U1)
+	Flux        : 	Option mesh:ddx:flux = U1 (default)
+ First order upwinding (U1)
+Setting Y differencing methods
+	First       : 	Option mesh:ddy:first = C2 (default)
+ Second order central (C2)
+	Second      : 	Option mesh:ddy:second = C2 (default)
+ Second order central (C2)
+	Upwind      : 	Option mesh:ddy:upwind = U1 (default)
+ First order upwinding (U1)
+	Flux        : 	Option mesh:ddy:flux = U1 (default)
+ First order upwinding (U1)
+Setting Z differencing methods
+	First       : 	Option mesh:ddz:first = C2 (default)
+ Second order central (C2)
+	Second      : 	Option mesh:ddz:second = C2 (default)
+ Second order central (C2)
+	Upwind      : 	Option mesh:ddz:upwind = U1 (default)
+ First order upwinding (U1)
+	Flux        : 	Option mesh:ddz:flux = U1 (default)
+ First order upwinding (U1)
+	Option mesh:symmetricGlobalX = true   (default)
+	Option mesh:symmetricglobaly = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+Loading mesh
+	Option mesh:nx = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:ny = 400 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option :mz = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Grid size: 1 x 400 x 1
+	Option :mxg = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option :MYG = 2 (default)
+	Guard cells (x,y): 0, 2
+	Option mesh:ixseps1 = -1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:ixseps2 = -1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	WARNING: Branch-cut 'jyseps1_1' not found. Setting to -1
+	WARNING: Branch-cut 'jyseps1_2' not found. Setting to 200
+	WARNING: Branch-cut 'jyseps2_1' not found. Setting to 200
+	WARNING: Branch-cut 'jyseps2_2' not found. Setting to 399
+	WARNING: Number of inner y points 'ny_inner' not found. Setting to 200
+Finding value for NXPE
+	Candidate value: 1
+	 -> Good value
+	Domain split (NXPE=1, NYPE=16) into domains (localNx=1, localNy=25)
+	Option :IncIntShear = false  (default)
+	Option :periodicX = false  (default)
+	Option :async_send = false  (default)
+	Option :ZMIN = 0 (default)
+	Option :ZMAX = 1 (default)
+	EQUILIBRIUM IS SINGLE NULL (SND) 
+	MYPE_IN_CORE = 0
+	DXS = 0, DIN = -1. DOUT = 6
+	UXS = 0, UIN = -1. UOUT = 8
+	XIN = -1, XOUT = -1
+	Twist-shift: 
+	Option :TwistShift = false  (default)
+No boundary regions in this processor
+	done
+	Option mesh:paralleltransform = identity (default)
+	Option :append = true (Command line)
+	Option :dump_format = nc (default)
+Setting up output (dump) file
+	Option output:parallel = false  (default)
+	Option output:flush = true   (default)
+	Option output:guards = true   (default)
+	Option output:floats = false  (default)
+	Option output:openclose = true   (default)
+	Option output:enabled = true   (default)
+	Option output:init_missing = false  (default)
+	Option output:shiftOutput = false  (default)
+	Option output:flushFrequency = 1 (default)
+	Using NetCDF4 format for file 'MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.dmp.nc'
+	Option mesh:dx = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:dy = (length / ny) * (1 + (1-dymin)*(1-y/pi)) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:length = 30 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:ny = 400 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:dymin = 0.1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option :zmin = 0 (default)	Option :zmax = 1 (default)Variable 'g11' not in mesh options. Setting to 1.000000e+00
+Variable 'g22' not in mesh options. Setting to 1.000000e+00
+Variable 'g33' not in mesh options. Setting to 1.000000e+00
+Variable 'g12' not in mesh options. Setting to 0.000000e+00
+Variable 'g13' not in mesh options. Setting to 0.000000e+00
+Variable 'g23' not in mesh options. Setting to 0.000000e+00
+	Maximum error in diagonal inversion is 0.000000e+00
+	Maximum error in off-diagonal inversion is 0.000000e+00
+Variable 'J' not in mesh options. Setting to 0.000000e+00
+	WARNING: Jacobian 'J' not found. Calculating from metric tensor
+	Option mesh:bxy = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Maximum difference in Bxy is 0.000000e+00
+Calculating differential geometry terms
+	Communicating connection terms
+	Option :non_uniform = false  (default)
+Variable 'd2x' not in mesh options. Setting to 0.000000e+00
+	WARNING: differencing quantity 'd2x' not found. Calculating from dx
+Variable 'd2y' not in mesh options. Setting to 0.000000e+00
+	WARNING: differencing quantity 'd2y' not found. Calculating from dy
+Variable 'ShiftTorsion' not in mesh options. Setting to 0.000000e+00
+	WARNING: No Torsion specified for zShift. Derivatives may not be correct
+	Option restart:parallel = false  (default)
+	Option restart:flush = true   (default)
+	Option restart:guards = true   (default)
+	Option restart:floats = false  (default)
+	Option restart:openclose = true   (default)
+	Option restart:enabled = true   (default)
+	Option restart:init_missing = false  (default)
+	Option restart:shiftOutput = false  (default)
+	Option restart:flushFrequency = 1 (default)
+	Option solver:type = cvode (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option solver:monitor_timestep = false  (default)
+	Option solver:mms = false  (default)
+	Option solver:mms_initialise = false  (default)
+	Option :restart = true (Command line)
+	Option sd1d:cfl_info = false  (default)
+	Option sd1d:tnorm = 100 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:nnorm = 1e+20 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:bnorm = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:aa = 2 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:vwall = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:frecycle = 0.99 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:fredistribute = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:density_sheath = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:pressure_sheath = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:gaspuff = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:dneut = 10 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:nloss = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:eionize = 13.6 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:sheath_gamma = 6 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:neutral_gamma = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:anomalous_D = -1 (default)
+	Option sd1d:anomalous_chi = -1 (default)
+	Option sd1d:tn_floor = 3.5 (default)
+	Option sd1d:atomic = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:neutral_f_pn = true   (default)
+	Option sd1d:hyper = -1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:adpar = -1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:viscos = -0.0001 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:ion_viscosity = false (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:heat_conduction = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:elastic_scattering = false  (default)
+	Option sd1d:excitation = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:gamma_sound = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:bndry_flux_fix = false  (default)
+	Option sd1d:density_form = 4 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:momentum_form = 6 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:energy_form = 8 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:volume_source = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option ne:source = (flux/(mesh:length_xpt))*h(mesh:y_xpt - y) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option ne:flux = 4e23 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:length_xpt = 10 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:y_xpt = pi * ( 2 - dymin - sqrt( (2-dymin)^2 - 4*(1-dymin)*source ) ) / (1 - dymin) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:dymin = 0.1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:source = length_xpt / length (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:length = 30 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option p:source = (powerflux*2/3 / (mesh:length_xpt))*h(mesh:y_xpt - y) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option p:powerflux = 5e7 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:density_upstream = 4.5e+19 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:density_controller_p = 0.05 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:density_controller_i = 0.001 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:density_integral_positive = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:density_source_positive = false (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nvn:evolve = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option pn:evolve = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+Setting boundary for variable Ne
+	Option ne:function = 0.4 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option ne:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false  (default)
+	Option ne:evolve_bndry = false  (default)
+Setting boundary for variable NVi
+	Option nvi:function = vtarg * ne:scale * ne:function * y / (2*pi) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nvi:vtarg = 0.3 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option ne:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option ne:function = 0.4 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nvi:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false (default)
+	Option nvi:evolve_bndry = false  (default)
+Setting boundary for variable P
+	Option p:function = 0.1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option p:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false (default)
+	Option p:evolve_bndry = false  (default)
+Setting boundary for variable Nn
+	Option nn:function = 1e-4 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nn:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false (default)
+	Option nn:evolve_bndry = false  (default)
+Setting boundary for variable NVn
+	Option all:function = 0.0 (default)
+	Option all:scale = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false (default)
+	Option nvn:evolve_bndry = false  (default)
+Setting boundary for variable Pn
+	Option pn:function = nn:scale * nn:function * pn:tstart / sd1d:tnorm (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nn:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option nn:function = 1e-4 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option pn:tstart = 3.5 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:tnorm = 100 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option pn:scale = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option all:evolve_bndry = false (default)
+	Option pn:evolve_bndry = false  (default)
+	Option mesh:rxy = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:bpxy = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:btxy = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:hthe = 1 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:sinty = 0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+Variable 'dpsi' not in mesh options. Setting to 0.000000e+00
+	Using dx as the x grid spacing
+Calculating differential geometry terms
+	Communicating connection terms
+	Option sd1d:area = 1 + (mesh:area_expansion - 1) * h(y - mesh:y_xpt)*(y - mesh:y_xpt)/(2*pi - mesh:y_xpt) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option mesh:area_expansion = 2.0 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:fimp = 0.01 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option sd1d:impurity_adas = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:impurity_species = c (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:diagnose = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:redist_weight = h(y - pi) (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option sd1d:split_operator = false  (default)
+	Option :datadir = MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45/
+	Option :dump_format = nc (default)
+	Option :restart_format = nc (default)
+Loading restart file: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.restart.nc
+	Using NetCDF4 format for file 'MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.restart.nc'
+	Using NetCDF4 format for file 'MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.restart.nc'
+	Option :nout = 100 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option :timestep = 5000 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option solver:NOUT = 100 (default)
+	Option solver:output_step = 5000 (default)
+Solver running for 100 outputs with output timestep of 5.000000e+03
+Initialising solver
+Initialising SUNDIALS' CVODE solver
+	Boundary region inner X
+	Boundary region outer X
+	3d fields = 6, 2d fields = 0 neq=2400, local_N=150
+	Option solver:mudq = 18 (default)
+	Option solver:mldq = 18 (default)
+	Option solver:mukeep = 6 (default)
+	Option solver:mlkeep = 6 (default)
+	Option solver:atol = 1e-10 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option solver:rtol = 1e-05 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)	Option solver:cvode_max_order = -1 (default)
+	Option solver:cvode_stability_limit_detection = false  (default)
+	Option solver:use_vector_abstol = false  (default)
+	Option solver:maxl = 5 (default)
+	Option solver:use_precon = true (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option solver:use_jacobian = false  (default)
+	Option solver:max_timestep = -1 (default)
+	Option solver:start_timestep = -1 (default)
+	Option solver:diagnose = false  (default)
+	Option solver:mxstep = 100000 (MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp)
+	Option solver:mxorder = -1 (default)
+	Option solver:adams_moulton = false  (default)
+	Using BDF method
+	Option solver:func_iter = false  (default)
+	Using Newton iteration
+	Option solver:rightprec = false  (default)
+	Using user-supplied preconditioner
+	Using difference quotient approximation for Jacobian
+Running simulation
+
+
+Run started at  : Fri Jul 28 07:08:36 2017
+
+	Option :restart = true (Command line)
+	Option :append = true (Command line)
+	Option :dump_on_restart = false  (default)
+	Option parderiv:type = cyclic (default)
+	Option fft:fft_measure = false  (default)
+	Option :wall_limit = -1 (default)
+Sim Time  |  RHS evals  | Wall Time |  Calc    Inv   Comm    I/O   SOLVER
+
+5.105e+06      41460       3.46e+02    88.7    0.0    3.0    0.2    8.2
+5.110e+06      41143       3.45e+02    88.2    0.0    2.9    0.3    8.6
+5.115e+06      41380       3.55e+02    86.8    0.0    2.9    0.3   10.0
+5.120e+06      41680       3.60e+02    86.5    0.0    3.3    0.3   10.0
+5.125e+06      41860       3.54e+02    87.8    0.0    2.9    0.3    8.9
+5.130e+06      42430       3.56e+02    88.5    0.0    2.9    0.3    8.4
+5.135e+06      43054       3.61e+02    88.5    0.0    2.8    0.3    8.4
+5.140e+06      43794       3.80e+02    86.2    0.0    3.2    0.2   10.3
+5.145e+06      44500       3.81e+02    87.2    0.0    3.0    0.2    9.5
+5.150e+06      44900       3.77e+02    88.4    0.0    2.8    0.3    8.5
+5.155e+06      45273       3.80e+02    88.5    0.0    2.8    0.3    8.5
+5.160e+06      45485       3.82e+02    88.4    0.0    2.9    0.3    8.4
+5.165e+06      45739       4.05e+02    85.3    0.0    3.1    0.2   11.4
+5.170e+06      46406       3.88e+02    88.6    0.0    2.8    0.3    8.3
+5.175e+06      44620       3.74e+02    88.8    0.0    2.7    0.2    8.3
+5.180e+06      43360       3.64e+02    88.7    0.0    2.6    0.3    8.4
+5.185e+06      43951       3.70e+02    88.4    0.0    2.7    0.3    8.5
+5.190e+06      44190       3.92e+02    85.1    0.0    3.4    0.3   11.2
+5.195e+06      44975       3.92e+02    86.4    0.0    2.9    0.0   10.7
+5.200e+06      46081       3.86e+02    88.9    0.0    2.5    0.3    8.3
+5.205e+06      46957       3.94e+02    88.7    0.0    2.7    0.2    8.4
+5.210e+06      47373       4.11e+02    86.2    0.0    3.1    0.1   10.6
+5.215e+06      48076       4.09e+02    87.7    0.0    2.9    0.1    9.4
+5.220e+06      48767       4.08e+02    88.8    0.0    2.8    0.1    8.4
+5.225e+06      49495       4.13e+02    88.8    0.0    2.8    0.1    8.3
+5.230e+06      49397       4.13e+02    88.7    0.0    2.9    0.1    8.3
+5.235e+06      49387       4.35e+02    85.5    0.0    3.1    0.1   11.3
+5.240e+06      49920       4.17e+02    88.9    0.0    2.7    0.1    8.3
+5.245e+06      50262       4.20e+02    88.7    0.0    2.9    0.1    8.3
+5.250e+06      47952       4.01e+02    88.7    0.0    2.8    0.1    8.4
+5.255e+06      48740       4.29e+02    85.7    0.0    3.1    0.1   11.1
+5.260e+06      49500       4.15e+02    88.8    0.0    2.8    0.1    8.3
+5.265e+06      50099       4.42e+02    85.7    0.0    3.2    0.2   10.9
+5.270e+06      50726       5.87e+02    71.5    0.0    4.8    0.1   23.5
+5.275e+06      51426       5.87e+02    72.5    0.0    4.8    0.2   22.6
+5.280e+06      51889       6.25e+02    70.2    0.0    5.0    0.2   24.6
+5.285e+06      52491       6.02e+02    71.8    0.0    4.9    0.1   23.2
+5.290e+06      53411       6.54e+02    68.8    0.0    4.9    0.4   25.9
+5.295e+06      54372       6.40e+02    71.9    0.0    4.8    0.1   23.3
+5.300e+06      54431       6.22e+02    72.4    0.0    4.6    0.3   22.7
+5.305e+06      51052       5.71e+02    73.4    0.0    4.8    0.2   21.7
+5.310e+06      52778       6.10e+02    71.6    0.0    4.5    0.2   23.7
+5.315e+06      53506       6.32e+02    70.5    0.0    4.8    0.2   24.5
+5.320e+06      54176       6.64e+02    69.4    0.0    5.3    0.2   25.1
+5.325e+06      54825       6.45e+02    71.2    0.0    4.8    0.3   23.6
+5.330e+06      56109       7.01e+02    68.5    0.0    5.4    0.2   26.0
+5.335e+06      56571       6.61e+02    71.0    0.0    5.0    0.2   23.8
+5.340e+06      55184       6.11e+02    74.2    0.0    4.5    0.2   21.0
+5.345e+06      55962       7.06e+02    67.5    0.0    5.5    0.0   27.0
+5.350e+06      57161       7.05e+02    69.2    0.0    5.2    0.0   25.6
+5.355e+06      57533       7.53e+02    66.8    0.0    5.4    0.0   27.8
+5.360e+06      54733       6.26e+02    72.2    0.0    5.1    0.3   22.4
+5.365e+06      55905       6.74e+02    69.8    0.0    5.3    0.2   24.7
+5.370e+06      56873       6.97e+02    69.1    0.0    5.3    0.2   25.3
+5.375e+06      57856       6.71e+02    71.6    0.0    5.0    0.3   23.1
+5.380e+06      58459       6.77e+02    71.9    0.0    4.5    0.2   23.4
+5.385e+06      58722       6.46e+02    74.6    0.0    4.4    0.4   20.6
+5.390e+06      59202       6.46e+02    74.6    0.0    4.4    0.3   20.6
+5.395e+06      59002       6.60e+02    73.3    0.0    4.4    0.6   21.7
+5.400e+06      57303       6.95e+02    69.9    0.0    5.3    0.3   24.5
+5.405e+06      55625       6.16e+02    73.5    0.0    4.3    0.5   21.7
+5.410e+06      56404       4.91e+02    86.6    0.0    3.0    0.2   10.2
+5.415e+06      57035       4.96e+02    86.5    0.0    3.2    0.1   10.2
+5.420e+06      57797       4.83e+02    88.8    0.0    3.0    0.2    8.0
+5.425e+06      58494       5.17e+02    85.8    0.0    3.3    0.2   10.8
+5.430e+06      59653       8.90e+02    63.9    0.0    7.5    0.0   28.5
+5.435e+06      60221       9.47e+02    61.7    0.0    8.2    0.1   30.0
+5.440e+06      60861       9.46e+02    62.7    0.0    8.2    0.2   28.8
+5.445e+06      61526       9.29e+02    63.3    0.0    8.1    0.1   28.6
+5.450e+06      61622       9.48e+02    62.7    0.0    8.0    0.2   29.2
+5.455e+06      61836       9.61e+02    62.4    0.0    8.5    0.0   29.0
+5.460e+06      61981       9.95e+02    65.7    0.0    9.5    0.1   24.6
+5.465e+06      61593       1.00e+03    67.1    0.0   10.5    0.1   22.3
+5.470e+06      62144       1.03e+03    67.2    0.0   11.9    0.1   20.8
+5.475e+06      62715       1.03e+03    67.4    0.0   10.5    0.3   21.7
+5.480e+06      63018       1.03e+03    68.8    0.0   11.0    0.0   20.2
+5.485e+06      63084       1.04e+03    67.8    0.0   10.8    0.1   21.3
+5.490e+06      63459       1.04e+03    67.1    0.0   11.1    0.1   21.7
+5.495e+06      63639       1.02e+03    66.2    0.0   10.4    0.0   23.4
+5.500e+06      63661       1.05e+03    67.7    0.0   11.1    0.0   21.1
+5.505e+06      66260       1.08e+03    67.7    0.0   11.0    0.0   21.3
+5.510e+06      75340       1.23e+03    66.4    0.0   11.8    0.0   21.7
+5.515e+06      75884       1.24e+03    67.3    0.0   11.3    0.2   21.2
+5.520e+06      76045       1.24e+03    68.0    0.0   10.5    0.0   21.5
+5.525e+06      76211       1.25e+03    67.4    0.0   11.0    0.0   21.5
+5.530e+06      76656       1.26e+03    67.9    0.0   11.1    0.0   20.9
+5.535e+06      76836       1.24e+03    67.4    0.0   11.6    0.1   20.9
+5.540e+06      77231       1.27e+03    67.0    0.0   11.1    0.0   21.9
+5.545e+06      77195       1.18e+03    66.4    0.0    9.0    0.0   24.6
+5.550e+06      77721       1.10e+03    65.9    0.0    7.0    0.1   27.1
+5.555e+06      77892       1.10e+03    65.6    0.0    7.1    0.1   27.2
+5.560e+06      78367       1.07e+03    66.1    0.0    6.4    0.1   27.4
+5.565e+06      78617       1.05e+03    67.2    0.0    6.5    0.1   26.2
+5.570e+06      78934       1.13e+03    65.2    0.0    7.4    0.1   27.3
+5.575e+06      79507       1.06e+03    67.5    0.0    6.9    0.0   25.7
+5.580e+06      79702       9.51e+02    71.2    0.0    5.7    0.1   23.0
+5.585e+06      79716       1.02e+03    69.1    0.0    6.1    0.1   24.8
+5.590e+06      80179       1.08e+03    66.6    0.0    6.5    0.1   26.9
+5.595e+06      80383       1.14e+03    65.3    0.0    6.8    0.1   27.8
+5.600e+06      80549       1.18e+03    65.6    0.0    7.3    0.1   27.0
+
+Run finished at  : Sat Jul 29 02:47:30 2017
+
+Run time : 19 h 38 m 54 s
+	Option :datadir = MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45/
+	Option :settingsfile = BOUT.settings
+Writing options to file MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.settings

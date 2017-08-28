@@ -95,11 +95,11 @@ class SD1DData(object):
 		self.ion_velocity 	  = np.squeeze(np.array(Vi*sound_speed))
 		self.neutral_velocity = np.squeeze(np.array(Vn*sound_speed))
 
-def alpha_e(k):
-	return 0.71 * (k**2)
+# def alpha_e(k):
+# 	return 0.71 * (k**2)
 
-def beta_i(k, mu):
-	return 3*(mu + 5*sqrt(2)*(k**2) * (1.1 * (mu**(5/2)) - 0.34 * (mu*(3/2)) -1 ))/(2.6 - 2*mu * 5.4 * (mu**2))
+# def beta_i(k, mu):
+# 	return 3*(mu + 5*sqrt(2)*(k**2) * (1.1 * (mu**(5/2)) - 0.34 * (mu*(3/2)) -1 ))/(2.6 - 2*mu * 5.4 * (mu**2))
 
 if __name__ == '__main__':
 
@@ -152,24 +152,25 @@ if __name__ == '__main__':
 		plot_Nzk.append(Nzk)
 		Vzk = np.zeros((Z+1,))
 
-		collision_frequency_ii_PF = impurity_derivatives.calculateIonIonDragFactor(50, 1e19)
+		# collision_frequency_ii_PF = impurity_derivatives.calculateIonIonDragFactor(50, 1e19)
 
-		if not(index == 0 or index == len(position)-1):
-			# Central difference
-			dPe = (test_data.pressure[index+1]-test_data.pressure[index-1])/(test_data.position[index+1]-test_data.position[index-1])
-			dTe = (test_data.temperature[index+1]-test_data.temperature[index-1])/(test_data.position[index+1]-test_data.position[index-1])
-		elif (index == 0):
-			# Forward difference
-			dPe = (test_data.pressure[index+1]-test_data.pressure[index])/(test_data.position[index+1]-test_data.position[index])
-			dTe = (test_data.temperature[index+1]-test_data.temperature[index])/(test_data.position[index+1]-test_data.position[index])
-		elif (index == len(position)-1):
-			# Backward difference
-			dPe = (test_data.pressure[index]-test_data.pressure[index-1])/(test_data.position[index]-test_data.position[index-1])
-			dTe = (test_data.temperature[index]-test_data.temperature[index-1])/(test_data.position[index]-test_data.position[index-1])
+		# if not(index == 0 or index == len(position)-1):
+		# 	# Central difference
+		# 	dPe = (test_data.pressure[index+1]-test_data.pressure[index-1])/(test_data.position[index+1]-test_data.position[index-1])
+		# 	dTe = (test_data.temperature[index+1]-test_data.temperature[index-1])/(test_data.position[index+1]-test_data.position[index-1])
+		# elif (index == 0):
+		# 	# Forward difference
+		# 	dPe = (test_data.pressure[index+1]-test_data.pressure[index])/(test_data.position[index+1]-test_data.position[index])
+		# 	dTe = (test_data.temperature[index+1]-test_data.temperature[index])/(test_data.position[index+1]-test_data.position[index])
+		# elif (index == len(position)-1):
+		# 	# Backward difference
+		# 	dPe = (test_data.pressure[index]-test_data.pressure[index-1])/(test_data.position[index]-test_data.position[index-1])
+		# 	dTe = (test_data.temperature[index]-test_data.temperature[index-1])/(test_data.position[index]-test_data.position[index-1])
 
 		# print(Vi)
 		for k in range(1,Z+1):
-			Vzk[k] = Vi + (1/(mz*collision_frequency_ii_PF*k*k)) * ((1+k)*(-1/Ne)*dPe + (alpha_e(k)+beta_i(k, mu))*dTe)
+			Vzk[k] = Vi
+			# Vi + (1/(mz*collision_frequency_ii_PF*k*k)) * ((1+k)*(-1/Ne)*dPe + (alpha_e(k)+beta_i(k, mu))*dTe)
 			# print(Vzk[k])
 
 		derivative_struct = impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk)

@@ -167,42 +167,62 @@ def sort_by_upstream(scan_data):
 
 	return processed_data
 
-def plot_compare(plot_data):
+def plot_compare(plot_data, show=False):
 
+	fig, ax = plt.subplots()
 
 	# plot adas as solid lines
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_density_pos'], 'r-', label='Density')
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_z_rad_pos'], 'g-', label='Impurity rad.')
-	plt.plot(plot_data['ADAS']['n_upstream'], plot_data['ADAS']['max_h_rad_pos'], 'b-', label='Hydrogen rad.')
+	ADAS_x = plot_data['ADAS']['n_upstream']
+	ax.plot(ADAS_x, 30-plot_data['ADAS']['max_density_pos'], 'r.-', label='Density')
+	ax.plot(ADAS_x, 30-plot_data['ADAS']['max_z_rad_pos'], 'g.-', label='Impurity rad.')
+	ax.plot(ADAS_x, 30-plot_data['ADAS']['max_h_rad_pos'], 'b.-', label='Hydrogen rad.')
 
 	# Plot hutchinson as dashed
-	plt.plot(plot_data['Hutchinson']['n_upstream'], plot_data['Hutchinson']['max_density_pos'], 'r--')
-	plt.plot(plot_data['Hutchinson']['n_upstream'], plot_data['Hutchinson']['max_z_rad_pos'], 'g--')
-	plt.plot(plot_data['Hutchinson']['n_upstream'], plot_data['Hutchinson']['max_h_rad_pos'], 'b--')
+	Hutchinson_x = plot_data['Hutchinson']['n_upstream']
+	ax.plot(Hutchinson_x, 30-plot_data['Hutchinson']['max_density_pos'], 'rx')
+	ax.plot(Hutchinson_x, 30-plot_data['Hutchinson']['max_z_rad_pos'], 'gx')
+	ax.plot(Hutchinson_x, 30-plot_data['Hutchinson']['max_h_rad_pos'], 'bx')
 
-	plt.xlabel('Upstream density [m^-3]')
-	plt.ylabel('Distance to strike point [m]')
+	ax.set_xlabel(r'Upstream density [$m^{-3}$]')
+	ax.set_ylabel('Distance to strike point [m]')
 
-	plt.legend()
+	ax.legend(loc=4)
+	ax.invert_yaxis()
+	ax.set_ylim(0.5,0)
+	ax.grid()
 	
-	plt.show()
+	if show:
+		plt.show()
+	return fig
 
 if __name__ == '__main__':
 	
+	import pickle	
 	# directories = {'ADAS': 'ex-C-1.0/area-2.0/nloss-0.0/tn-0.5', 'Hutchinson': 'ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5'}
 	directories = {'ADAS': 'ADAS', 'Hutchinson': 'Hutchinson'}
+	path_to_output = 'Figures/'
 
-	plot_data = {}
+	reread = False
+	if reread:
+		plot_data = {}
 
-	for key, directory in directories.items():
+		for key, directory in directories.items():
 
-		scan_data = extract_data(directory)
+			scan_data = extract_data(directory)
 
-		scan_data = sort_by_upstream(scan_data)
+			scan_data = sort_by_upstream(scan_data)
 
-		plot_data[key] = scan_data
+			plot_data[key] = scan_data
 
-	plot_compare(plot_data)
+		with open('python_results/SD1D_data_density_scan.pickle', 'wb') as handle:
+				pickle.dump(plot_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	else:
+		with open('python_results/SD1D_data_density_scan.pickle', 'rb') as handle:
+			plot_data = pickle.load(handle)
+
+	density_scan_plot = plot_compare(plot_data)
+	density_scan_plot.savefig(path_to_output+"density_scan_SD1D.pdf")
+
 
 
 

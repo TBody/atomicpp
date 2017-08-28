@@ -1,0 +1,119 @@
+d = 1  # not used , from: Command line
+datadir = MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4  # not used , from: 
+mast-u/ex-ch-1.0/area-2.0/nloss-0.0/tn-0.5/0.4 = 1  # not used , from: Command line
+mxg = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+mz = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+nout = 200  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+optionfile = BOUT.inp  # not used , from: 
+restart = 1  # not used , from: Command line
+settingsfile = BOUT.settings  # not used , from: 
+timestep = 5000.  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[all]
+bndry_all = neumann_o2  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 0.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[ddy]
+first = c2  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+second = c2  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+upwind = w3  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[mesh]
+area_expansion = 2.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+bpxy = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+btxy = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+bxy = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+dx = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+dy = (length / ny) * (1 + (1-dymin)*(1-y/pi))  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+dymin = 0.1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+hthe = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+ixseps1 = -1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+ixseps2 = -1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+length = 30  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+length_xpt = 10  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+nx = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+ny = 400  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+rxy = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+sinty = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+source = length_xpt / length  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+symmetricglobaly = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+y_xpt = pi * ( 2 - dymin - sqrt( (2-dymin)^2 - 4*(1-dymin)*source ) ) / (1 - dymin)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[ne]
+flux = 4e23  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+function = 0.4  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+source = (flux/(mesh:length_xpt))*h(mesh:y_xpt - y)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[nn]
+function = 1e-4  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[nvi]
+bndry_target = dirichlet_o2  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+function = vtarg * ne:scale * ne:function * y / (2*pi)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+vtarg = 0.3  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[nvn]
+evolve = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[p]
+function = 0.1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+powerflux = 5e7  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+source = (powerflux*2/3 / (mesh:length_xpt))*h(mesh:y_xpt - y)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[pn]
+evolve = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+function = nn:scale * nn:function * pn:tstart / sd1d:tnorm  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+scale = 1.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+tstart = 3.5  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[sd1d]
+aa = 2.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+adpar = -1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+area = 1 + (mesh:area_expansion - 1) * h(y - mesh:y_xpt)*(y - mesh:y_xpt)/(2*pi - mesh:y_xpt)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+atomic = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+bnorm = 1.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_controller_i = 1e-3  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_controller_p = 5e-2  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_form = 4  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_integral_positive = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_sheath = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_source_positive = false  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+density_upstream = 4e19  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+diagnose = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+dneut = 10.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+eionize = 13.6  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+energy_form = 8  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+excitation = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+fimp = 0.01  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+frecycle = 0.99  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+fredistribute = 0.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+gamma_sound = 1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+gaspuff = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+heat_conduction = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+hyper = -1  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+impurity_adas = false  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+impurity_species = c  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+ion_viscosity = false  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+momentum_form = 6  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+neutral_gamma = 0.  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+nloss = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+nnorm = 1e20  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+pressure_sheath = 0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+redist_weight = h(y - pi)  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+sheath_gamma = 6  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+tn_floor = 0.5  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+tnorm = 100  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+viscos = -0.0001  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+volume_source = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+vwall = 0.0  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+
+[solver]
+atol = 1e-10  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+mxstep = 100000  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+rtol = 1e-5  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+type = cvode  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp
+use_precon = true  # not used , from: MAST-U/ex-CH-1.0/area-2.0/nloss-0.0/tn-0.5/0.4/BOUT.inp

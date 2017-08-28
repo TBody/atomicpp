@@ -1,0 +1,218 @@
+append = true
+async_send = false
+d = true  # not used , from: Command line
+datadir = MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45/
+dump_format = nc
+dump_on_restart = false
+incintshear = false
+mast-u/ex-c-1.0/area-2.0/nloss-0.0/0.45/ = true  # not used , from: Command line
+mxg = 0
+myg = 2
+mz = 1
+non_uniform = false
+nout = 100
+optionfile = BOUT.inp  # not used , from: 
+periodicx = false
+restart = true
+restart_format = nc
+settingsfile = BOUT.settings
+timestep = 5000.
+twistshift = false
+wall_limit = -1
+zmax = 1
+zmin = 0
+
+[all]
+bndry_all = neumann_o2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+evolve_bndry = false
+function = 0.0
+scale = 0.0
+
+[ddy]
+first = c2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+second = c2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+upwind = w3  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+
+[fft]
+fft_measure = false
+
+[mesh]
+area_expansion = 2.0
+bpxy = 1
+btxy = 0
+bxy = 1
+dx = 1
+dy = (length / ny) * (1 + (1-dymin)*(1-y/pi))
+dymin = 0.1
+hthe = 1
+ixseps1 = -1
+ixseps2 = -1
+length = 30
+length_xpt = 10
+nx = 1
+ny = 400
+paralleltransform = identity
+rxy = 1
+sinty = 0
+source = length_xpt / length
+staggergrids = false
+symmetricglobalx = true
+symmetricglobaly = true
+type = bout
+y_xpt = pi * ( 2 - dymin - sqrt( (2-dymin)^2 - 4*(1-dymin)*source ) ) / (1 - dymin)
+
+[mesh:ddx]
+first = C2
+flux = U1
+second = C2
+upwind = U1
+
+[mesh:ddy]
+first = C2
+flux = U1
+second = C2
+upwind = U1
+
+[mesh:ddz]
+first = C2
+flux = U1
+second = C2
+upwind = U1
+
+[ne]
+evolve_bndry = false
+flux = 4e23
+function = 0.4
+scale = 1
+source = (flux/(mesh:length_xpt))*h(mesh:y_xpt - y)
+
+[nn]
+evolve_bndry = false
+function = 1e-4
+scale = 1
+
+[nvi]
+bndry_target = dirichlet_o2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/0.45//BOUT.inp
+evolve_bndry = false
+function = vtarg * ne:scale * ne:function * y / (2*pi)
+scale = 1
+vtarg = 0.3
+
+[nvn]
+evolve = true
+evolve_bndry = false
+
+[output]
+enabled = true
+floats = false
+flush = true
+flushfrequency = 1
+guards = true
+init_missing = false
+openclose = true
+parallel = false
+shiftoutput = false
+
+[p]
+evolve_bndry = false
+function = 0.1
+powerflux = 5e7
+scale = 1
+source = (powerflux*2/3 / (mesh:length_xpt))*h(mesh:y_xpt - y)
+
+[parderiv]
+type = cyclic
+
+[pn]
+evolve = true
+evolve_bndry = false
+function = nn:scale * nn:function * pn:tstart / sd1d:tnorm
+scale = 1.0
+tstart = 3.5
+
+[restart]
+enabled = true
+floats = false
+flush = true
+flushfrequency = 1
+guards = true
+init_missing = false
+openclose = true
+parallel = false
+shiftoutput = false
+
+[sd1d]
+aa = 2.0
+adpar = -1
+anomalous_chi = -1
+anomalous_d = -1
+area = 1 + (mesh:area_expansion - 1) * h(y - mesh:y_xpt)*(y - mesh:y_xpt)/(2*pi - mesh:y_xpt)
+atomic = true
+bndry_flux_fix = false
+bnorm = 1.0
+cfl_info = false
+density_controller_i = 1e-3
+density_controller_p = 5e-2
+density_form = 4
+density_integral_positive = true
+density_sheath = 0
+density_source_positive = false
+density_upstream = 4.5e19
+diagnose = true
+dneut = 10.0
+eionize = 13.6
+elastic_scattering = false
+energy_form = 8
+excitation = true
+fimp = 0.01
+frecycle = 0.99
+fredistribute = 0.0
+gamma_sound = 1
+gaspuff = 0
+heat_conduction = true
+hyper = -1
+impurity_adas = true
+impurity_species = c
+ion_viscosity = false
+momentum_form = 6
+neutral_f_pn = true
+neutral_gamma = 0.
+nloss = 0
+nnorm = 1e20
+pressure_sheath = 0
+redist_weight = h(y - pi)
+sheath_gamma = 6
+split_operator = false
+tn_floor = 3.5
+tnorm = 100
+viscos = -0.0001
+volume_source = true
+vwall = 0.0
+
+[solver]
+adams_moulton = false
+atol = 1e-10
+cvode_max_order = -1
+cvode_stability_limit_detection = false
+diagnose = false
+func_iter = false
+max_timestep = -1
+maxl = 5
+mldq = 18
+mlkeep = 6
+mms = false
+mms_initialise = false
+monitor_timestep = false
+mudq = 18
+mukeep = 6
+mxorder = -1
+mxstep = 100000
+nout = 100
+output_step = 5000
+rightprec = false
+rtol = 1e-5
+start_timestep = -1
+type = cvode
+use_jacobian = false
+use_precon = true
+use_vector_abstol = false

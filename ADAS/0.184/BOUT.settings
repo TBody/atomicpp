@@ -1,0 +1,138 @@
+d = 1  # not used , from: Command line
+datadir = MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5//0.184
+mast-u/ex-c-1.0/area-2.0/nloss-0.0/tn-0.5//0.184 = 1  # not used , from: Command line
+mxg = 0
+mz = 1
+nout = 100
+optionfile = BOUT.inp  # not used , from: 
+restart = 1
+settingsfile = BOUT.settings
+timestep = 5000.
+
+[all]
+bndry_all = neumann_o2
+scale = 0.0
+
+[ddy]
+first = c2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5//0.184/BOUT.inp
+second = c2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5//0.184/BOUT.inp
+upwind = w3  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5//0.184/BOUT.inp
+
+[fft]
+
+[mesh]
+area_expansion = 2.0
+bpxy = 1
+btxy = 0
+bxy = 1
+dx = 1
+dy = (length / ny) * (1 + (1-dymin)*(1-y/pi))
+dymin = 0.1
+hthe = 1
+ixseps1 = -1
+ixseps2 = -1
+length = 30
+length_xpt = 10
+nx = 1
+ny = 400
+rxy = 1
+sinty = 0
+source = length_xpt / length
+symmetricglobaly = true
+y_xpt = pi * ( 2 - dymin - sqrt( (2-dymin)^2 - 4*(1-dymin)*source ) ) / (1 - dymin)
+
+[mesh:ddx]
+
+[mesh:ddy]
+
+[mesh:ddz]
+
+[ne]
+flux = 4e23
+function = 0.4
+scale = 1
+source = (flux/(mesh:length_xpt))*h(mesh:y_xpt - y)
+
+[nn]
+function = 1e-4
+scale = 1
+
+[nvi]
+bndry_target = dirichlet_o2  # not used , from: MAST-U/ex-C-1.0/area-2.0/nloss-0.0/tn-0.5//0.184/BOUT.inp
+function = vtarg * ne:scale * ne:function * y / (2*pi)
+scale = 1
+vtarg = 0.3
+
+[nvn]
+evolve = true
+
+[output]
+
+[p]
+function = 0.1
+powerflux = 5e7
+scale = 1
+source = (powerflux*2/3 / (mesh:length_xpt))*h(mesh:y_xpt - y)
+
+[parderiv]
+
+[pn]
+evolve = true
+function = nn:scale * nn:function * pn:tstart 
+[parderiv]
+
+[pn]
+evolve = true
+function = nn:scale * nn:function * pn:tstart / sd1d:tnorm
+scale = 1.0
+tstart = 3.5
+
+[restart]
+
+[sd1d]
+aa = 2.0
+adpar = -1
+area = 1 + (mesh:area_expansion - 1) * h(y - mesh:y_xpt)*(y - mesh:y_xpt)/(2*pi - mesh:y_xpt)
+atomic = true
+bnorm = 1.0
+density_controller_i = 1e-3
+density_controller_p = 5e-2
+density_form = 4
+density_integral_positive = true
+density_sheath = 0
+density_source_positive = false
+density_upstream = 1.84e19
+diagnose = true
+dneut = 10.0
+eionize = 13.6
+energy_form = 8
+excitation = true
+fimp = 0.01
+frecycle = 0.99
+fredistribute = 0.0
+gamma_sound = 1
+gaspuff = 0
+heat_conduction = true
+hyper = -1
+impurity_adas = true
+impurity_species = c
+ion_viscosity = false
+momentum_form = 6
+neutral_gamma = 0.
+nloss = 0
+nnorm = 1e20
+pressure_sheath = 0
+redist_weight = h(y - pi)
+sheath_gamma = 6
+tn_floor = 0.5
+tnorm = 100
+viscos = -0.0001
+volume_source = true
+vwall = 0.0
+
+[solver]
+atol = 1e-10
+mxstep = 100000
+rtol = 1e-5
+type = cvode
+use_precon = true
