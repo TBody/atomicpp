@@ -160,6 +160,13 @@
 		const std::vector<double>& Vzk
 	);
 
+	void calculateIonNeutralDrag(
+		const double Nn,
+		const double Vn,
+		const std::vector<double>& Nzk,
+		const std::vector<double>& Vzk
+	);
+
 	/**
 	 * @brief Calculates the radiation rates for line power and continuum power
 	 */

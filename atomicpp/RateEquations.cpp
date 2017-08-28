@@ -104,7 +104,9 @@ DerivStruct RateEquations::computeDerivs(
 	verifyNeumaierSummation(Te, Ne);
 
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
-	
+
+	calculateIonNeutralDrag(Nn, Vn, Nzk, Vzk);
+
 	calculateElectronImpactPowerEquation(Ne, Nzk, Te);
 	
 	if (use_charge_exchange){
@@ -351,9 +353,32 @@ void RateEquations::calculateIonIonDrag(
 	for(int k=1; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
 		if(Nzk[k] > Nthres){
 			double collision_frequency_s_ii = collision_frequency_ii_PF * k*k;
-			double IonIonDrag_FF = mz * amu_to_kg * (Vi - Vzk[k]) * collision_frequency_s_ii;
+			double IonIonDrag_FF = mz * amu_to_kg * ((Vi+1) - Vzk[k]) * collision_frequency_s_ii;
 			F_zk[k] += IonIonDrag_FF; //Calculate the force on the impurity ion due to ion-ion drag
 			F_i     -= IonIonDrag_FF; //Calculate the force on the dominant ion due to ion-ion drag
+		};
+	}
+};
+void RateEquations::calculateIonNeutralDrag(
+	const double Nn,
+	const double Vn,
+	const std::vector<double>& Nzk,
+	const std::vector<double>& Vzk
+	){
+
+	// Hard sphere's approximation
+	// Radius of Carbon and Hydrogen atoms are ~ 50pm
+	// a12 radius = a1+a2 = 100pm = 100e-12 = 1e-10
+	// a12^2 = 1e-20
+	// The cross-section (from Lieberman & Lichtenberg, 1994, Principles of Plasma Discharges & Materials Processing, eqn 3.1.4) is
+	double sigma = M_PI * 1e-20;
+
+	for(int k=0; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
+		if(Nzk[k] > Nthres){
+			double velocity_shear = Vn - Vzk[k];
+			double IonNeutralDrag_FF = mz * amu_to_kg * Nn * sigma * (velocity_shear*velocity_shear);
+			F_zk[k] += IonNeutralDrag_FF; //Calculate the force on the impurity ion due to ion-neutral drag
+			F_n     -= IonNeutralDrag_FF; //Calculate the force on the dominant neutral due to ion-neutral drag
 		};
 	}
 };
