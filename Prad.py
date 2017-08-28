@@ -280,7 +280,7 @@ class AtomicSolver(object):
 		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
 		# plt.title('Time evolution of ionisation stages')
 		ax1.tick_params('y', colors = 'b')
-		ax1.legend()
+		# ax1.legend()
 
 		ax1.set_xlim(min(self.t_values), max(self.t_values))
 
@@ -289,11 +289,15 @@ class AtomicSolver(object):
 		if plot_power:
 			ax2 = ax1.twinx()
 			scaled_power = np.array(self.additional_out['Prad'])*1e-3
-			ax2.semilogx(self.t_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.semilogx(self.t_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
 			ax2.set_ylim(min(scaled_power), max(scaled_power))
-			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
+			ax2.set_ylabel(r'$P_{rad}$ (W $m^{-3}$)')
 			ax2.tick_params('y', colors='k')
-			ax2.legend(loc=0)
+			# ax2.legend(loc=0)
+
+		h1, l1 = ax1.get_legend_handles_labels()
+		h2, l2 = ax2.get_legend_handles_labels()
+		ax1.legend(h1+h2, l1+l2, loc=0)
 		
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
@@ -322,7 +326,7 @@ class AtomicSolver(object):
 		ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
 		# plt.title(r'Ionisation stage at C.R. as $f(T_e)$')
 		ax1.tick_params('y', colors = 'b')
-		plt.legend()
+		# plt.legend()
 
 		ax1.set_xlim(min(self.Te_values), max(self.Te_values))
 
@@ -331,15 +335,23 @@ class AtomicSolver(object):
 		if plot_power:
 			ax2 = ax1.twinx()
 			scaled_power = np.array(self.additional_out['Prad'])*1e-3
-			ax2.semilogx(self.Te_values, scaled_power,'k--',label=r'$P_{rad}$')
+			ax2.semilogx(self.Te_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
 			ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
 			ax2.tick_params('y', colors='k')
-			ax2.legend(loc=0)
+			ax2.set_ylim(0,max(scaled_power))
+			# ax2.legend(loc=0)
+
+			h1, l1 = ax1.get_legend_handles_labels()
+			h2, l2 = ax2.get_legend_handles_labels()
+			# ax1.set_zorder(1)
+			ax1.legend(h1+h2, l1+l2, loc=0)
+		else:
+			ax1.legend(loc=0)
 		
 		ax1.set_xscale(x_axis_scale)
 		ax1.set_yscale(y_axis_scale)
-		if plot_power:
-			ax2.set_yscale(y_axis_scale)
+		# if plot_power:
+			# ax2.set_yscale(y_axis_scale)
 
 		if show:
 			plt.show()
@@ -417,7 +429,7 @@ class AtomicSolver(object):
 			total_density = np.sum(refuelling_results[-1,ne_tau_index,:],0)
 
 			if ne_tau > 1e18:
-				ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),'r-.',label="CR")
+				ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),'k-.',label="CR", linewidth=1)
 			else:
 				ax1.semilogx(self.Te_values, Prad[:,ne_tau_index]/(total_density*self.Ne_const),label="{:.1e}".format(ne_tau))
 
@@ -432,7 +444,7 @@ class AtomicSolver(object):
 		# Plot the carbon cooling curve from I.Hutchinson
 		Te = self.Te_values
 		P = 2e-31 * (Te/10.)**3 / ( 1.0 + (Te/10.)**4.5 )
-		ax1.semilogx(self.Te_values, P, 'b-.',label="Hutchinson")
+		ax1.semilogx(self.Te_values, P, 'r-.',label="Hutchinson",linewidth=1)
 
 
 		ax1.set_xlabel(r'Plasma temperature (eV)')
@@ -689,7 +701,7 @@ class AtomicSolver(object):
 					pass
 					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}".format("g.s."))
 				elif k == self.Z+1:
-					ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], 'k--', label="{}".format(r"$P_{rad}$"))
+					ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], 'k-.', label="{}".format(r"$P_{rad}$"), linewidth=1)
 				else:
 					# ax1.plot(stdev_Te/self.Te_const, stdev_norm_Te[:,k], label="{}+".format(k))
 					if(k in [4,5]):
@@ -706,7 +718,7 @@ class AtomicSolver(object):
 					pass
 					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}".format("g.s."))
 				elif k == self.Z+1:
-					ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], 'k--', label="{}".format(r"$P_{rad}$"))
+					ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], 'k-.', label="{}".format(r"$P_{rad}$"), linewidth=1)
 				else:
 					# ax2.plot(stdev_Ne/self.Ne_const, stdev_norm_Ne[:,k], label="{}+".format(k))
 					if(k in [4,5]):
@@ -744,8 +756,8 @@ if __name__ == "__main__":
 
 	solver.plot_solver_evolution   = True
 	solver.reevaluate_scan         = False
-	solver.error_estimation        = False
-	solver.plot_scan_temp_dens     = False
+	solver.error_estimation        = True
+	solver.plot_scan_temp_dens     = True
 	# solver.plot_scan_temp_prad     = False
 	solver.plot_scan_temp_prad_tau = True
 
@@ -803,7 +815,7 @@ if __name__ == "__main__":
 			plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf")
 
 
-	# plt.show()
+	plt.show()
 
 
 
