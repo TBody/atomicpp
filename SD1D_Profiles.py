@@ -230,7 +230,7 @@ if __name__ == '__main__':
 	# plt.show()
 	path_to_output = 'Figures/'
 
-	show = True
+	show = False
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
 		if show:
 			plt.show()
-		f.savefig(path_to_output+"Plasma_profiles.pdf")
+		f.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 
 		if show:
 			plt.show()
-		f.savefig(path_to_output+"Density_profiles.pdf")
+		f.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 
 

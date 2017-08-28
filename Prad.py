@@ -822,11 +822,11 @@ if __name__ == "__main__":
 
 	# Control booleans
 	reevaluate_scan           = False
-	plot_solver_evolution     = False
-	find_stddev               = False
-	plot_test_time_integrator = False
-	plot_error_propagation    = False
-	plot_scan_temp_dens       = False
+	plot_solver_evolution     = True
+	find_stddev               = True
+	plot_test_time_integrator = True
+	plot_error_propagation    = True
+	plot_scan_temp_dens       = True
 	plot_scan_temp_prad_tau   = True
 
 	impurity_symbol = b'c' #need to include b (bytes) before the string for it to be sent as a std::string to C++
@@ -839,28 +839,28 @@ if __name__ == "__main__":
 	if plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 0)
 		plot_solver_evolution = plotResultFromDensityEvolution(solver, solver_evolution, plot_power = True, grid="major", show=False, y_axis_scale="linear")
-		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf")
+		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if find_stddev:
 		findStddev(solver, reevaluate_scan = reevaluate_scan)
 
 	if plot_test_time_integrator:
 		plot_test_time_integrator = plotTestTimeIntegrator(solver, reevaluate_scan = reevaluate_scan)
-		plot_test_time_integrator.savefig(path_to_output+"test_time_integrator.pdf")
+		plot_test_time_integrator.savefig(path_to_output+"test_time_integrator.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if plot_error_propagation:
 		plot_error_propagation = plotErrorPropagation(solver, show_species=[4, 5], reevaluate_scan = reevaluate_scan)
-		plot_error_propagation.savefig(path_to_output+"error_propagation.pdf")
+		plot_error_propagation.savefig(path_to_output+"error_propagation.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if plot_scan_temp_dens:
 		plot_scan_temp_dens = plotScanTempCR_Dens(solver, grid="major", plot_power=True, reevaluate_scan = reevaluate_scan)
-		plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf")
+		plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if plot_scan_temp_prad_tau:
 		if not(impurity_symbol is b'c'):
 			raise NotImplementedError('Prad_tau plot comparison data is for Carbon. Will need to add data for species {}'.format(str(impurity_symbol,'utf-8')))
 		plot_scan_temp_prad_tau = plotScanTempCR_Prad_tau(solver, grid="major")
-		plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf")
+		plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	plt.show()
 	

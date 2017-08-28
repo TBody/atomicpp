@@ -221,7 +221,7 @@ if __name__ == '__main__':
 			plot_data = pickle.load(handle)
 
 	density_scan_plot = plot_compare(plot_data)
-	density_scan_plot.savefig(path_to_output+"density_scan_SD1D.pdf")
+	density_scan_plot.savefig(path_to_output+"density_scan_SD1D.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 
 
