@@ -188,7 +188,7 @@ def plot_compare(plot_data, show=False):
 
 	ax.legend(loc=4)
 	ax.invert_yaxis()
-	ax.set_ylim(0.5,0)
+	ax.set_ylim(1,0)
 	ax.grid()
 	
 	if show:

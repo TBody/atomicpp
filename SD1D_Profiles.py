@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
 		Vi = test_data.ion_velocity[index]
 		Vn = test_data.neutral_velocity[index]
-
+		# print("{}, {}, {}".format( Ne, Nz, Nz/Ne))
 		Nzk = impurity.calculateNzk(Te, Ne, Nz, Nn)
 		plot_Nzk.append(Nzk)
 		Vzk = np.zeros((Z+1,))
@@ -230,7 +230,7 @@ if __name__ == '__main__':
 	# plt.show()
 	path_to_output = 'Figures/'
 
-	show = False
+	show = True
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -251,42 +251,68 @@ if __name__ == '__main__':
 		ax1_twin.tick_params('y', colors='r')
 		h1, l1 = ax1.get_legend_handles_labels()
 		h2, l2 = ax1_twin.get_legend_handles_labels()
-		ax1.set_zorder(1)
-		ax1.legend(h1+h2, l1+l2, loc=2)
+		ax1_twin.set_ylim(0, 20)
+
+		# ax1.set_zorder(1)
+		ax1.legend(h1+h2, l1+l2, loc=3)
 
 		# Centre plot - power
 
-		ax2.semilogy(position, test_data.p_rad_hydrogen, label=r'H')
-		ax2.semilogy(position, test_data.p_rad_carbon, label=r'C')
+		ax2.semilogy(position, test_data.p_rad_hydrogen, label=r'$P_{rad,H}$')
+		ax2.semilogy(position, test_data.p_rad_carbon, label=r'$P_{rad,C}$')
 		ax2.semilogy(position, plot_P_line, label=r'Line')
 		ax2.semilogy(position, plot_P_cont, label=r'Cont.')
 		ax2.semilogy(position, plot_P_cx, label=r'C.X.')
 		ax2.grid()
-		ax2.legend()
+		ax2.legend(loc=4)
 		ax2.set_ylabel(r"P$_{rad}$ [$W/m^{3}$]")
 		ax2.set_ylim(1, )
-		# ax3.set_ylim(1e6, 1e21)
 
-		# # Bottom plot - instantaneous change
-
-		# for k in range(Z+1):
-		# 	if k == 0:
-		# 		ax3.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
-		# 	else:
-		# 		ax3.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
-
-		# ax3.legend()
-		# ax3.set_ylim(1e6, 1e21)
-
-		# ax3.set_xlabel("Position [$m$]")
-
-		# ax1.set_xbound(lower = min(position), upper = max(position))
 		ax1.set_xbound(lower = 0, upper = 1)
 		ax1.invert_xaxis()
+
+		ax2.set_xlabel('Distance to strike point [m]')
 
 		if show:
 			plt.show()
 		f.savefig(path_to_output+"Plasma_profiles.pdf")
+
+	if True:
+		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
+		
+		for k in range(Z+1):
+			if k == 0:
+				ax1.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
+			else:
+				ax1.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
+
+		ax1.set_ylim(1, 1e20)
+
+		for k in range(Z+1):
+			if k == 0:
+				ax2.semilogy(position, plot_P_stage[:,k], label='g.s.'.format(k))
+			else:
+				ax2.semilogy(position, plot_P_stage[:,k], label='C{}+'.format(k))
+
+		ax2.set_ylim(1,1e8)
+
+		ax1.set_xbound(lower = 0, upper = 1)
+		ax1.invert_xaxis()
+
+		ax1.set_ylabel(r'$Z^{k}$ density [$m^{-3}$]')
+		ax2.set_ylabel(r'$P_{rad}^{k}$ [$Wm^{-3}$]')
+
+		ax2.set_xlabel('Distance to strike point [m]')
+
+		ax2.legend(loc=1)
+
+		ax1.grid()
+		ax2.grid()
+
+
+		if show:
+			plt.show()
+		f.savefig(path_to_output+"Density_profiles.pdf")
 
 
 
