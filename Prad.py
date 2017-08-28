@@ -132,16 +132,11 @@ class AtomicSolver(object):
 		derivative_struct = self.impurity_derivatives.computeDerivs(Te, Ne, Vi, Nn, Vn, Nzk, Vzk);
 		dNzk = derivative_struct["dNzk"]
 
-		# print("Refuel: ", sum(Nzk)*refuelling_rate)
-		# print("No refuelling", dNzk)
-		# dNzk_store = dNzk
 		fraction_in_stage = Nzk/sum(Nzk)
 		# Add neutrals at a rate of tau^-1
 		dNzk[0] += sum(Nzk)*refuelling_rate
 		# Remove other stages based on their density
 		dNzk -= sum(Nzk)*refuelling_rate*fraction_in_stage
-		# print("Refuelling", dNzk)
-		# print("Ratio", dNzk/dNzk_store)
 
 		for key in self.additional_out_keys:
 			self.additional_out[key].append(derivative_struct[key])
@@ -302,7 +297,7 @@ class AtomicSolver(object):
 # End class methods
 
 # Plotting methods
-def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", show=False):
+def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", align_yticks = True, show=False):
 	fig, ax1 = plt.subplots()
 	for k in range(solver.Z+1):
 		if k == 0:
@@ -339,12 +334,14 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 	ax1.set_yscale(y_axis_scale)
 	if plot_power:
 		ax2.set_yscale(y_axis_scale)
+		if align_yticks:
+			ax2.set_yticks(np.linspace(ax2.get_yticks()[0],ax2.get_yticks()[-1],len(ax1.get_yticks())))
 
 	if show:
 		plt.show()
 	return fig
 
-def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", show=False):
+def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", align_yticks = True, show=False):
 	
 	if reevaluate_scan:
 
@@ -386,7 +383,7 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 		ax2.semilogx(solver.Te_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
 		ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
 		ax2.tick_params('y', colors='k')
-		ax2.set_ylim(0,max(scaled_power))
+		ax2.set_ylim(0,)
 
 		h1, l1 = ax1.get_legend_handles_labels()
 		h2, l2 = ax2.get_legend_handles_labels()
@@ -398,6 +395,8 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 	ax1.set_yscale(y_axis_scale)
 	if plot_power:
 		ax2.set_yscale(y_axis_scale)
+		if align_yticks:
+			ax2.set_yticks(np.linspace(ax2.get_yticks()[0],ax2.get_yticks()[-1],len(ax1.get_yticks())))
 
 	if show:
 		plt.show()
@@ -453,21 +452,26 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 		total_density = np.sum(scan_temp_refuelling[-1,ne_tau_index,:],0)
 
 		if ne_tau > 1e18:
-			ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),'k-.',label="CR", linewidth=1)
+			ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),'k-.',label="C.R.", linewidth=1)
 		else:
-			ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label="{:.1e}".format(ne_tau))
+			power = int(np.floor(np.log10(ne_tau)))
+			factor = ne_tau/10**power
+			if(factor == 1.0): #if ne_tau is a perfect power of 10
+				ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"$N_e\tau$=$10^{{{:d}}}$".format(power))
+			else:
+				ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"$N_e\tau$={:.1f}$\times10^{{{:d}}}$".format(factor,power))
 
 	ax.set_ylabel(r'$P_{rad}(\tau)/(N_e N_z)$ ($W m^3$)')
 	ax.set_xlim(min(solver.Te_values), max(solver.Te_values))
 	ax.set_ylim(ylim[0], ylim[1])
 
 	# Plot the POST radiation curves
-	ax.errorbar(POST_x_eval, POST_y_mean, yerr=[POST_y_std_lower, 2*POST_y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='CR expected')
+	ax.errorbar(POST_x_eval, POST_y_mean, yerr=[POST_y_std_lower, 2*POST_y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='C.R. expected')
 	# Plot the HUTCHINSON radiation curves
 	ax.semilogx(solver.Te_values, HUTCHINSON_y, 'r-.',label="Hutchinson",linewidth=1)
 
 	ax.set_xlabel(r'Plasma temperature (eV)')
-	plt.legend(loc=4)
+	plt.legend(loc=0)
 
 	ax.grid(which=grid, axis='both')
 	
@@ -645,9 +649,9 @@ def findStddev(solver, reevaluate_scan=False):
 
 def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both', show_species=[]):
 
-	stdev_Te = np.linspace(0,solver.Te_const/2,num=3)
-	stdev_Ne = np.linspace(0,solver.Ne_const/2,num=3)
-	samples_per_point = 5
+	stdev_Te = np.linspace(0,solver.Te_const/2,num=20)
+	stdev_Ne = np.linspace(0,solver.Ne_const/2,num=20)
+	samples_per_point = 50
 	if reevaluate_scan:
 		solver.t_values = np.logspace(-6, 2, 200)
 
@@ -737,6 +741,11 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 		ax.grid()
 		ax.set_xlim(min(stdev_Te/solver.Te_const), max(stdev_Te/solver.Te_const))
 
+		vals = ax.get_xticks()
+		ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals])
+		vals = ax.get_yticks()
+		ax.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
+
 	if plot is 'Ne':
 		fig, ax = plt.subplots()	
 		for k in range(solver.Z+2):
@@ -754,6 +763,11 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 		ax.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals])
 		ax.grid()
 		ax.set_xlim(min(stdev_Ne/solver.Ne_const), max(stdev_Ne/solver.Ne_const))
+
+		vals = ax.get_xticks()
+		ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals])
+		vals = ax.get_yticks()
+		ax.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
 
 
 	if plot is 'both':
@@ -783,13 +797,19 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 		ax2.set_xlabel(r'Relative error in $N_e$')
 		ax2.grid()
 
-		vals = ax1.get_yticks()
-		ax1.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals])
-		vals = ax2.get_yticks()
-		ax2.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals])
-		
 		ax1.set_xlim(min(stdev_Te/solver.Te_const), max(stdev_Te/solver.Te_const))
 		ax2.set_xlim(min(stdev_Ne/solver.Ne_const), max(stdev_Ne/solver.Ne_const))
+
+		vals = ax1.get_xticks()
+		ax1.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals])
+		vals = ax2.get_xticks()
+		ax2.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals])
+
+		vals = ax1.get_yticks()
+		ax1.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
+		vals = ax2.get_yticks()
+		ax2.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
+		
 		fig.text(0.04, 0.5, r'Relative error in parameter ($\sigma/\mu$)', va='center', rotation='vertical')
 
 		plt.subplots_adjust(hspace=0.3, left=0.15)
@@ -802,12 +822,12 @@ if __name__ == "__main__":
 
 	# Control booleans
 	reevaluate_scan           = False
-	plot_solver_evolution     = True
+	plot_solver_evolution     = False
 	find_stddev               = False
 	plot_test_time_integrator = False
 	plot_error_propagation    = False
 	plot_scan_temp_dens       = False
-	plot_scan_temp_prad_tau   = False
+	plot_scan_temp_prad_tau   = True
 
 	impurity_symbol = b'c' #need to include b (bytes) before the string for it to be sent as a std::string to C++
 
