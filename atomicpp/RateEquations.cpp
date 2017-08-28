@@ -34,8 +34,7 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	dNzk(impurity.get_atomic_number()+1, 0.0),
 	F_zk(impurity.get_atomic_number()+1, 0.0),
 	dNzk_correction(impurity.get_atomic_number()+1, 0.0),
-	F_zk_correction(impurity.get_atomic_number()+1, 0.0),
-	P_stage(impurity.get_atomic_number()+1, 0.0)
+	F_zk_correction(impurity.get_atomic_number()+1, 0.0)
 	{
 
 	// Set parameters that are useful for multiple functions
@@ -47,17 +46,13 @@ RateEquations::RateEquations(ImpuritySpecies& impurity, const double density_thr
 	Nthres                   = density_threshold;
 	mi                       = mi_in_amu;
 
-	//Initialise the 
+	//Initialise the outputs
 	Pcool                    = 0.0;
 	Prad                     = 0.0;
 	dNe                      = 0.0;
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
-
-	P_line = 0.0;
-	P_cont = 0.0;
-	P_cx = 0.0;
 
 	//Calculate the factor that doesn't change throughout evaluation
 	calculateStoppingTimeConstantFactor();
@@ -109,7 +104,9 @@ DerivStruct RateEquations::computeDerivs(
 	verifyNeumaierSummation(Te, Ne);
 
 	calculateIonIonDrag(Ne, Te, Vi, Nzk, Vzk);
-	
+
+	calculateIonNeutralDrag(Nn, Vn, Nzk, Vzk);
+
 	calculateElectronImpactPowerEquation(Ne, Nzk, Te);
 	
 	if (use_charge_exchange){
@@ -157,17 +154,12 @@ void RateEquations::resetDerivatives(){
 	F_i                      = 0.0;
 	dNn                      = 0.0;
 	F_n                      = 0.0;
-
-	P_line = 0.0;
-	P_cont = 0.0;
-	P_cx = 0.0;
 	
 	for(int k = 0; k<= Z; ++k){
 		dNzk[k] = 0.0;
 		F_zk[k] = 0.0;
 		dNzk_correction[k] = 0.0;
 		F_zk_correction[k] = 0.0;
-		P_stage[k] = 0.0;
 	};
 };
 void RateEquations::calculateElectronImpactPopulationEquation(
@@ -251,7 +243,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential
 		// Rates will be zero for edge cases (from initialisation)
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
-		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] - rec_from_above[k]);
+		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] + rec_from_above[k]); //N.b. iz_to_above is -ve, rec_from_above is +ve
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
 	// Perturbation on electron density
@@ -263,9 +255,9 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	const std::vector<double>& Nzk,
 	const std::vector<double>& Vzk,
 	const double Te,
-	const double Ne
+	const double Ne,
+	const double plasma_ionisation_potential
 	){
-	// Consider charge exchange after calculating Pcool
 	
 	std::vector<double>     cx_rec_to_below(Z+1, 0.0); //Rate (m^-3 s^-1)
 	std::vector<double>   cx_rec_from_above(Z+1, 0.0);
@@ -292,10 +284,8 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 		// Otherwise, the rates stay as default = 0
 	}
 
-	//For Neumaier summation of the change in Nn from the different rates 
-	std::vector<double> dNn_from_stage(Z+1, 0.0); //Only need Z indices, but adding an extra to the end means that the calculation
-	// can be performed in a single loop
-	for(int k=0; k <= Z; ++k){//Consider all states at once
+
+	for(int k=0; k <= Z; ++k){
 		std::vector<double> rates_for_stage          = {dNzk[k], cx_rec_to_below[k], cx_rec_from_above[k]}; //Add cx to the sum
 		std::pair<double, double> neumaier_pair_dNzk = neumaierSum(rates_for_stage,dNzk_correction[k]); //Extend on previous compensation
 		dNzk[k]                                      = neumaier_pair_dNzk.first;
@@ -305,6 +295,18 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 		std::pair<double, double> neumaier_pair_momentum = neumaierSum(momentum_for_stage,F_zk_correction[k]);
 		F_zk[k]                                          = neumaier_pair_momentum.first; 
 		F_zk_correction[k]                               = neumaier_pair_momentum.second; //Overwrite compensation with updated value
+	}
+	//For Neumaier summation of the change in Nn from the different rates 
+	std::vector<double> dNn_from_stage(Z, 0.0); //Only need Z indices, but adding an extra to the end means that the calculation
+	// can be performed in a single loop
+	// Ionisation potential (in eV per transition) is not a rate coefficient, but is treated as one since the interpolation methods and
+	// data shape are identical. This is used to calculate the effect of iz and rec on the electron energy (in Pcool).
+	std::shared_ptr<RateCoefficient> ionisation_potential = rate_coefficients["ionisation_potential"];
+	for(int k=0; k < Z; ++k){
+		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
+		// Charge exchange simultaneously neutralises an impurity ion and ionises a dominant-species neutral. Modify Pcool to reflect this.
+		Pcool                                            += eV_to_J * (ionisation_potential_evaluated-plasma_ionisation_potential) * cx_rec_from_above[k];
+
 		dNn_from_stage[k] = -cx_rec_from_above[k]; //N.b. cx_rec_from_above[Z] = 0.0 always, included so we can use a single loop
 	}
 	
@@ -351,9 +353,32 @@ void RateEquations::calculateIonIonDrag(
 	for(int k=1; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
 		if(Nzk[k] > Nthres){
 			double collision_frequency_s_ii = collision_frequency_ii_PF * k*k;
-			double IonIonDrag_FF = mz * amu_to_kg * (Vi - Vzk[k]) * collision_frequency_s_ii;
+			double IonIonDrag_FF = mz * amu_to_kg * ((Vi+1) - Vzk[k]) * collision_frequency_s_ii;
 			F_zk[k] += IonIonDrag_FF; //Calculate the force on the impurity ion due to ion-ion drag
 			F_i     -= IonIonDrag_FF; //Calculate the force on the dominant ion due to ion-ion drag
+		};
+	}
+};
+void RateEquations::calculateIonNeutralDrag(
+	const double Nn,
+	const double Vn,
+	const std::vector<double>& Nzk,
+	const std::vector<double>& Vzk
+	){
+
+	// Hard sphere's approximation
+	// Radius of Carbon and Hydrogen atoms are ~ 50pm
+	// a12 radius = a1+a2 = 100pm = 100e-12 = 1e-10
+	// a12^2 = 1e-20
+	// The cross-section (from Lieberman & Lichtenberg, 1994, Principles of Plasma Discharges & Materials Processing, eqn 3.1.4) is
+	double sigma = M_PI * 1e-20;
+
+	for(int k=0; k <= Z; ++k){//Don't consider the ground state -- not an ion so must be treated separately
+		if(Nzk[k] > Nthres){
+			double velocity_shear = Vn - Vzk[k];
+			double IonNeutralDrag_FF = mz * amu_to_kg * Nn * sigma * (velocity_shear*velocity_shear);
+			F_zk[k] += IonNeutralDrag_FF; //Calculate the force on the impurity ion due to ion-neutral drag
+			F_n     -= IonNeutralDrag_FF; //Calculate the force on the dominant neutral due to ion-neutral drag
 		};
 	}
 };
@@ -376,13 +401,6 @@ void RateEquations::calculateElectronImpactPowerEquation(
 		double continuum_power_rate = continuum_power_coefficient_evaluated * Ne * Nzk[k+1];
 
 		Prad  += line_power_rate + continuum_power_rate;
-		
-		P_stage[k] += line_power_rate;
-		P_line += line_power_rate;
-		
-		P_stage[k+1] += continuum_power_rate;
-		P_cont += continuum_power_rate;
-
 		Pcool += line_power_rate + continuum_power_rate;
 	}
 };
@@ -399,8 +417,7 @@ void RateEquations::calculateChargeExchangePowerEquation(
 		double cx_power_coefficient_evaluated = cx_power_coefficient->call0D(k, Te, Ne);
 		double cx_power_rate = cx_power_coefficient_evaluated * Nn * Nzk[k+1];
 		Prad  += cx_power_rate;
-		P_cx += cx_power_rate;
-		P_stage[k+1] += cx_power_rate;
+		Pcool += cx_power_rate;
 	}
 };
 DerivStruct RateEquations::makeDerivativeStruct(){
@@ -415,11 +432,6 @@ DerivStruct RateEquations::makeDerivativeStruct(){
 	derivative_struct.dNn   = dNn;
 	derivative_struct.F_n   = F_n;
 
-	derivative_struct.P_stage = P_stage;	
-	derivative_struct.P_line = P_line;
-	derivative_struct.P_cont = P_cont;
-	derivative_struct.P_cx = P_cx;
-
 	return derivative_struct;
 };
 void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
@@ -431,67 +443,6 @@ void RateEquations::printDerivativeStruct(DerivStruct& derivative_struct){
 	double F_i               = derivative_struct.F_i;
 	double dNn               = derivative_struct.dNn;
 	double F_n               = derivative_struct.F_n;
-
-	std::vector<double> P_stage = derivative_struct.P_stage;
-	P_line = derivative_struct.P_line;
-	P_cont = derivative_struct.P_cont;
-	P_cx = derivative_struct.P_cx;
-
-	//Print-verifying the return from computeDerivs
-	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);
-	std::printf("Prad:        %+.2e [J m^-3 s^-1]\n" , Prad);
-	for(int k=0; k<=Z; ++k){
-	std::printf("dNz^(%i)/dt:  %+.2e [p m^-3 s^-1]\n",k ,dNzk[k]);
-	}
-	for(int k=0; k<=Z; ++k){
-	std::printf("Fz^(%i):      %+.2e [N]\n",k ,F_zk[k]);
-	}
-	std::printf("dNe/dt:      %+.2e [p m^-3 s^-1]\n",dNe);
-	std::printf("F_i:         %+.2e [N]\n",F_i);
-	std::printf("dNn/dt:      %+.2e [p m^-3 s^-1]\n",dNn);
-	std::printf("F_n:         %+.2e [N]\n",F_n);
-	for(int k=0; k<=Z; ++k){
-	std::printf("Pz^(%i):      %+.2e [W/m3]\n",k ,P_stage[k]);
-	}
-	std::printf("P_li:         %+.2e [N]\n",P_line);
-	std::printf("P_co:         %+.2e [N]\n",P_cont);
-	std::printf("P_cx:         %+.2e [N]\n",P_cx);
-};
-std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > RateEquations::makeDerivativeTuple(){
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double >derivative_tuple = 
-	std::make_tuple(
-		Pcool,
-		Prad,
-		dNzk,
-		F_zk,
-		dNe,
-		F_i,
-		dNn,
-		F_n
-	);
-	return derivative_tuple;
-	//Code to unpack
-		// double Pcool = std::get<0>(derivative_tuple);
-		// double Prad  = std::get<1>(derivative_tuple);
-		// std::vector<double> dNzk = std::get<2>(derivative_tuple);
-		// std::vector<double> F_zk = std::get<3>(derivative_tuple);
-
-		// double dNe = std::get<4>(derivative_tuple);
-		// double F_i  = std::get<5>(derivative_tuple);
-		// double dNn = std::get<6>(derivative_tuple);
-		// double F_n  = std::get<7>(derivative_tuple);
-};
-void RateEquations::printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple){
-	// //Unpacking the return from computeDerivs
-	double Pcool             = std::get<0>(derivative_tuple);
-	double Prad              = std::get<1>(derivative_tuple);
-	std::vector<double> dNzk = std::get<2>(derivative_tuple);
-	std::vector<double> F_zk = std::get<3>(derivative_tuple);
-
-	double dNe               = std::get<4>(derivative_tuple);
-	double F_i               = std::get<5>(derivative_tuple);
-	double dNn               = std::get<6>(derivative_tuple);
-	double F_n               = std::get<7>(derivative_tuple);
 
 	//Print-verifying the return from computeDerivs
 	std::printf("Pcool:       %+.2e [J m^-3 s^-1]\n", Pcool);

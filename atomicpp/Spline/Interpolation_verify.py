@@ -1,3 +1,5 @@
+# Must be run in the parent directory of atomicpp, unless atomicpp is added to the PYTHONPATH
+
 import numpy as np
 from atomicpp.Spline.interpolate import PyBicubicSpline
 from atomicpp.Spline.interpolate import PyBilinearSpline

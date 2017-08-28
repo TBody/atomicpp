@@ -20,10 +20,6 @@
 		double F_i;
 		double dNn;
 		double F_n;
-		std::vector<double> P_stage;
-		double P_line;
-		double P_cont;
-		double P_cx;
 	};
 
 	class RateEquations{
@@ -135,8 +131,7 @@
 	 * @brief calculates the effects of charge-exchange on the impurity-species populations
 	 * @details Uses Neumaier summation to prevent floating-point rounding error when taking difference of
 	 * values with significantly varied magnitudes. See computeDerivs for description of parameters.
-	 * Also computes the transfer of momentum between states due to cx_rec transfer. N.b. cx will not affect
-	 * the electron population
+	 * Also computes the transfer of momentum between states due to cx_rec transfer.
 	 * @param[in] Nn
 	 * @param[in] Nzk
 	 * @param[in] Vzk
@@ -148,7 +143,8 @@
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk,
 		const double Te,
-		const double Ne
+		const double Ne,
+		const double plasma_ionisation_potential = 13.6 //eV, ionisation potential of neutral hydrogen
 		);
 
 	/**
@@ -160,6 +156,13 @@
 		const double Ne,
 		const double Te,
 		const double Vi,
+		const std::vector<double>& Nzk,
+		const std::vector<double>& Vzk
+	);
+
+	void calculateIonNeutralDrag(
+		const double Nn,
+		const double Vn,
 		const std::vector<double>& Nzk,
 		const std::vector<double>& Vzk
 	);
@@ -186,18 +189,6 @@
 	DerivStruct makeDerivativeStruct();
 
 	void printDerivativeStruct(DerivStruct& derivative_struct);
-
-	/**
-	 * @brief makeDerivativeTuple
-	 * @details packs the calculated derivatives into a tuple to return to the main code
-	 * @return See commented out source code for a method to unpack return
-	 */
-	std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > makeDerivativeTuple();
-
-	/**
-	 * @brief print check for the returned derivative tuple
-	 */
-	void printDerivativeTuple(std::tuple<double, double, std::vector<double>, std::vector<double>, double, double, double, double > derivative_tuple);
 
 	private:
 	//Map of RateCoefficient objects, copied from an ImpuritySpecies object
@@ -244,10 +235,6 @@
 	double dNn; 												// = std::get<6>(derivative_tuple);
 	// ... and perturbation force (in N) on the neutral population due to atomic processes
 	double F_n; 												// = std::get<7>(derivative_tuple);
-	std::vector<double> P_stage;
-	double P_line;
-	double P_cont;
-	double P_cx;
 	};
 
 	//Public functions
