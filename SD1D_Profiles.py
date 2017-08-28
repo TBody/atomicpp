@@ -228,7 +228,9 @@ if __name__ == '__main__':
 	# ax1.plot(position, plot_dNzk)
 	# # ax2.plot(position, calc_NVzk)
 	# plt.show()
+	path_to_output = 'Figures/'
 
+	show = False
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -279,10 +281,12 @@ if __name__ == '__main__':
 		# ax3.set_xlabel("Position [$m$]")
 
 		# ax1.set_xbound(lower = min(position), upper = max(position))
-		ax1.set_xbound(lower = 0, upper = 5)
+		ax1.set_xbound(lower = 0, upper = 1)
 		ax1.invert_xaxis()
 
-		plt.show()
+		if show:
+			plt.show()
+		f.savefig(path_to_output+"Plasma_profiles.pdf")
 
 
 

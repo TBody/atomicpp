@@ -19,6 +19,7 @@ cdef extern from "ImpuritySpecies.hpp" namespace "atomicpp":
 		ImpuritySpecies(string& impurity_symbol_supplied) except +
 		string get_name()
 		int get_atomic_number()
+		vector[double] calculateNzk(double Te, double Ne, double Nz, double Nn) 
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef struct DerivStruct:
@@ -30,6 +31,10 @@ cdef extern from "RateEquations.hpp" namespace "atomicpp":
 		double F_i
 		double dNn
 		double F_n
+		vector[double] P_stage 
+		double P_line 
+		double P_cont 
+		double P_cx 
 
 cdef extern from "RateEquations.hpp" namespace "atomicpp":
 	cdef cppclass RateEquations:
@@ -43,6 +48,8 @@ cdef class PyImpuritySpecies:
 	cdef unique_ptr[ImpuritySpecies] ImpuritySpeciesPtr
 	def __init__(self, string impurity_symbol_supplied):
 		self.ImpuritySpeciesPtr.reset(new ImpuritySpecies(impurity_symbol_supplied))
+	def calculateNzk(self, double Te, double Ne, double Nz, double Nn): 
+		return deref(self.ImpuritySpeciesPtr).calculateNzk(Te, Ne, Nz, Nn)
 
 	def get_name(self):
 		return deref(self.ImpuritySpeciesPtr).get_name()
