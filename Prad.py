@@ -87,7 +87,7 @@ class AtomicSolver(object):
 
 		# Additional output initialisation
 		self.additional_out = {'Prad':[], 'Pcool':[], 'dNzk':[], 'F_zk':[], 'dNe':[], 'F_i':[], 'dNn':[], 'F_n':[]} #Blank lists to append onto
-		self.additional_out_keys = ['Prad', 'dNzk'] #Keys to record data for
+		self.additional_out_keys = ['Prad', 'Pcool', 'dNzk'] #Keys to record data for
 	
 	@staticmethod
 	def evolveDensity(Nzk, t, self, Te, Ne):
@@ -313,16 +313,17 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 	ax1.tick_params('y', colors = 'b')
 	# ax1.legend()
 
-	ax1.set_xlim(min(solver.t_values), max(solver.t_values))
 
 	ax1.grid(which=grid, axis='both')
 
 	if plot_power:
 		ax2 = ax1.twinx()
-		scaled_power = np.array(solver.additional_out['Prad'])*1e-3
-		ax2.semilogx(solver.t_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
-		ax2.set_ylim(min(scaled_power), max(scaled_power))
-		ax2.set_ylabel(r'$P_{rad}$ (W $m^{-3}$)')
+		scaled_Prad = np.array(solver.additional_out['Prad'])*1e-3
+		ax2.semilogx(solver.t_values, scaled_Prad,'k-.',label=r'$P_{rad}$',linewidth=1)
+		scaled_Pcool = np.array(solver.additional_out['Pcool'])*1e-3
+		ax2.semilogx(solver.t_values, scaled_Pcool,'r-.',label=r'$P_{cool}$',linewidth=1)
+		ax2.set_ylim(min(min(scaled_Prad),min(scaled_Pcool)), max(max(scaled_Prad),max(scaled_Pcool)))
+		ax2.set_ylabel(r'$Power$ (kW $m^{-3}$)')
 		ax2.tick_params('y', colors='k')
 		# ax2.legend(loc=0)
 
@@ -332,6 +333,7 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 	
 	ax1.set_xscale(x_axis_scale)
 	ax1.set_yscale(y_axis_scale)
+	ax1.set_xlim(min(solver.t_values), max(solver.t_values))
 	if plot_power:
 		ax2.set_yscale(y_axis_scale)
 		if align_yticks:
@@ -591,7 +593,7 @@ def plotTestTimeIntegrator(solver, reevaluate_scan=False, show=False):
 	return fig
 
 def findStddev(solver, reevaluate_scan=False):
-	
+	solver.reset_additional_out()
 	# Determine high-resolution comparison results to compare against
 	t_values_hi_res = np.logspace(-10, 2, 10000)
 
@@ -838,11 +840,11 @@ if __name__ == "__main__":
 	# Control booleans
 	reevaluate_scan           = False
 	plot_solver_evolution     = True
-	find_stddev               = True
-	plot_test_time_integrator = True
-	plot_error_propagation    = True
-	plot_scan_temp_dens       = True
-	plot_scan_temp_prad_tau   = True
+	find_stddev               = False
+	plot_test_time_integrator = False
+	plot_error_propagation    = False
+	plot_scan_temp_dens       = False
+	plot_scan_temp_prad_tau   = False
 
 	SMALL_SIZE = 10
 	MEDIUM_SIZE = 12

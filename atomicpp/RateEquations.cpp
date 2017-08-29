@@ -253,7 +253,7 @@ void RateEquations::calculateElectronImpactPopulationEquation(
 		// N.b. bare nucleus will not contribute to electron density nor have an ionisation potential
 		// Rates will be zero for edge cases (from initialisation)
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
-		Pcool                                            += eV_to_J * ionisation_potential_evaluated * (iz_to_above[k] + rec_from_above[k]); //N.b. iz_to_above is -ve, rec_from_above is +ve
+		Pcool                                            += eV_to_J * ionisation_potential_evaluated * -1 *(iz_to_above[k] + rec_from_above[k]); //N.b. iz_to_above is -ve, rec_from_above is +ve. Want Pcool > Prad for iz > rec, so factor of -1
 		dNe_from_stage[k]                                = -(iz_to_above[k] + rec_from_above[k]); //N.b. rates already have signs
 	}
 	// Perturbation on electron density
@@ -315,7 +315,7 @@ void RateEquations::calculateChargeExchangePopulationEquation(
 	for(int k=0; k < Z; ++k){
 		double ionisation_potential_evaluated            = ionisation_potential->call0D(k, Te, Ne);
 		// Charge exchange simultaneously neutralises an impurity ion and ionises a dominant-species neutral. Modify Pcool to reflect this.
-		Pcool                                            += eV_to_J * (ionisation_potential_evaluated-plasma_ionisation_potential) * cx_rec_from_above[k];
+		Pcool                                            += eV_to_J * (ionisation_potential_evaluated-plasma_ionisation_potential) * -1 * cx_rec_from_above[k];//N.b. iz_to_above is -ve, rec_from_above is +ve. Want Pcool > Prad for iz > rec, so factor of -1
 
 		dNn_from_stage[k] = -cx_rec_from_above[k]; //N.b. cx_rec_from_above[Z] = 0.0 always, included so we can use a single loop
 	}
