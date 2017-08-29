@@ -452,7 +452,7 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 		total_density = np.sum(scan_temp_refuelling[-1,ne_tau_index,:],0)
 
 		if ne_tau > 1e18:
-			ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),'k-.',label="C.R.", linewidth=1)
+			ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),'k-.',label="ADAS-CR", linewidth=1)
 		else:
 			power = int(np.floor(np.log10(ne_tau)))
 			factor = ne_tau/10**power

@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
 	# input_file = "sd1d-MAST-U-nups_0.2.json"
 	# input_file = "0.2.json"
-	input_file = "0.5.json"
+	input_file = "ADAS/0.15.json"
 
 	fixed_fraction = 1e-2
 	Z = 6
@@ -245,7 +245,7 @@ if __name__ == '__main__':
 		ax1.set_ylabel(r"Density [$m^{-3}$]")
 
 		ax1_twin = ax1.twinx()
-		ax1_twin.plot(position, test_data.temperature, 'r--', label=r'T_e')
+		ax1_twin.plot(position, test_data.temperature, 'r--', label=r'$T_e$')
 		ax1_twin.set_ylabel(r"Temperature [$eV$]", color='r')
 		# ax1_twin.set_ylim(0, 100)
 		ax1_twin.tick_params('y', colors='r')
@@ -275,7 +275,7 @@ if __name__ == '__main__':
 
 		f.set_size_inches(6.268*1.065, 3.52575, forward=True)
 		plt.tight_layout()
-		f.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+		# f.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 
 		f.set_size_inches(6.268, 3.52575, forward=True)
 		plt.tight_layout()
-		f.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+		# f.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if show:
 		plt.show()
