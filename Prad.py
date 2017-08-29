@@ -349,7 +349,7 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 	# Extract the density curves from Florido 2009 paper. Plot the carbon result against these
 	FLORIDO_x_eval = np.logspace(-1,3,50) #Points to return function values for
 	FLORIDO_y_mean = []
-	FLORIDO_y_std  = []
+	FLORIDO_y_diff  = []
 	for k in range(solver.Z+1):
 
 		# For each charge state, load the results from each model
@@ -372,10 +372,10 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 		# Will give NaN if off grid
 		FLORIDO_y_mean.append(np.mean([ABAKO_y_interp,ATOMIC_y_interp],0))
 		# Find the std at the points specified
-		FLORIDO_y_std.append(np.std([ABAKO_y_interp,ATOMIC_y_interp],0))
+		FLORIDO_y_diff.append(np.absolute(ABAKO_y_interp-ATOMIC_y_interp))
 
 	FLORIDO_y_mean = np.array(FLORIDO_y_mean)
-	FLORIDO_y_std = np.array(FLORIDO_y_std)
+	FLORIDO_y_diff = np.array(FLORIDO_y_diff)
 
 	if reevaluate_scan:
 
@@ -400,7 +400,7 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 			ax1.semilogx(solver.Te_values, scan_temp[:,k], label="{}+".format(k))
 	
 	for k in range(solver.Z+1):
-		ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_std[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), capthick=1, capsize=3)
+		ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_diff[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), capthick=1, capsize=3)
 
 	# plt.semilogx(solver.Te_values, np.sum(scan_temp[:,:],1), label="Total")
 
