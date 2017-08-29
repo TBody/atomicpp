@@ -344,7 +344,39 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 	return fig
 
 def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", align_yticks = True, show=False):
-	
+	from scipy.interpolate import interp1d
+
+	# Extract the density curves from Florido 2009 paper. Plot the carbon result against these
+	FLORIDO_x_eval = np.logspace(-1,3,50) #Points to return function values for
+	FLORIDO_y_mean = []
+	FLORIDO_y_std  = []
+	for k in range(solver.Z+1):
+
+		# For each charge state, load the results from each model
+		ABAKO_dens_data = np.loadtxt('python_results/ABAKO_C_{}.csv'.format(k),delimiter=', ')
+		ABAKO_x = np.array(ABAKO_dens_data[:,0])
+		ABAKO_y = np.array(ABAKO_dens_data[:,1])
+		ABAKO_dens_interp = interp1d(ABAKO_x,ABAKO_y,bounds_error=False)
+
+		ATOMIC_dens_data = np.loadtxt('python_results/ATOMIC_C_{}.csv'.format(k),delimiter=', ')
+		ATOMIC_x = np.array(ATOMIC_dens_data[:,0])
+		ATOMIC_y = np.array(ATOMIC_dens_data[:,1])
+		ATOMIC_dens_interp = interp1d(ATOMIC_x,ATOMIC_y,bounds_error=False)
+
+		# Linearly interpolate to the points specified
+		ABAKO_y_interp = ABAKO_dens_interp(FLORIDO_x_eval)
+		ATOMIC_y_interp = ATOMIC_dens_interp(FLORIDO_x_eval)
+
+		# print(np.mean([ABAKO_y_interp,ATOMIC_y_interp],0))
+		# print(np.std([ABAKO_y_interp,ATOMIC_y_interp],0))
+		# Will give NaN if off grid
+		FLORIDO_y_mean.append(np.mean([ABAKO_y_interp,ATOMIC_y_interp],0))
+		# Find the std at the points specified
+		FLORIDO_y_std.append(np.std([ABAKO_y_interp,ATOMIC_y_interp],0))
+
+	FLORIDO_y_mean = np.array(FLORIDO_y_mean)
+	FLORIDO_y_std = np.array(FLORIDO_y_std)
+
 	if reevaluate_scan:
 
 		scan_temp = solver.scanTempCREquilibrium()
@@ -366,6 +398,9 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 			ax1.semilogx(solver.Te_values, scan_temp[:,k], label="{}".format("g.s."))
 		else:
 			ax1.semilogx(solver.Te_values, scan_temp[:,k], label="{}+".format(k))
+	
+	for k in range(solver.Z+1):
+		ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_std[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), capthick=1, capsize=3)
 
 	# plt.semilogx(solver.Te_values, np.sum(scan_temp[:,:],1), label="Total")
 
@@ -395,6 +430,8 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 	
 	ax1.set_xscale(x_axis_scale)
 	ax1.set_yscale(y_axis_scale)
+
+
 	if plot_power:
 		ax2.set_yscale(y_axis_scale)
 		if align_yticks:
@@ -839,11 +876,11 @@ if __name__ == "__main__":
 
 	# Control booleans
 	reevaluate_scan           = False
-	plot_solver_evolution     = True
+	plot_solver_evolution     = False
 	find_stddev               = False
 	plot_test_time_integrator = False
 	plot_error_propagation    = False
-	plot_scan_temp_dens       = False
+	plot_scan_temp_dens       = True
 	plot_scan_temp_prad_tau   = False
 
 	SMALL_SIZE = 10
@@ -892,7 +929,9 @@ if __name__ == "__main__":
 		plot_error_propagation.savefig(path_to_output+"error_propagation.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	if plot_scan_temp_dens:
-		plot_scan_temp_dens = plotScanTempCR_Dens(solver, grid="major", plot_power=True, reevaluate_scan = reevaluate_scan)
+		if not(impurity_symbol is b'c'):
+			raise NotImplementedError('Prad_tau plot comparison data is for Carbon. Will need to add data for species {}'.format(str(impurity_symbol,'utf-8')))
+		plot_scan_temp_dens = plotScanTempCR_Dens(solver, grid="major", plot_power=False, reevaluate_scan = reevaluate_scan)
 
 		plot_scan_temp_dens.set_size_inches(6.268, 3.52575, forward=True)
 		plt.tight_layout()
