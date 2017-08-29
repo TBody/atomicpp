@@ -202,6 +202,7 @@ if __name__ == '__main__':
 	directories = {'ADAS': 'ADAS', 'Hutchinson': 'Hutchinson'}
 	path_to_output = 'Figures/'
 
+	show = True
 	reread = False
 	if reread:
 		plot_data = {}
@@ -221,8 +222,12 @@ if __name__ == '__main__':
 			plot_data = pickle.load(handle)
 
 	density_scan_plot = plot_compare(plot_data)
+	density_scan_plot.set_size_inches(6.268, 3.52575, forward=True)
+	plt.tight_layout()
 	density_scan_plot.savefig(path_to_output+"density_scan_SD1D.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
+	if show:
+		plt.show()
 
 
 

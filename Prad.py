@@ -466,12 +466,12 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 	ax.set_ylim(ylim[0], ylim[1])
 
 	# Plot the POST radiation curves
-	ax.errorbar(POST_x_eval, POST_y_mean, yerr=[POST_y_std_lower, 2*POST_y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='C.R. expected')
+	ax.errorbar(POST_x_eval, POST_y_mean, yerr=[POST_y_std_lower, 2*POST_y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='Post')
 	# Plot the HUTCHINSON radiation curves
 	ax.semilogx(solver.Te_values, HUTCHINSON_y, 'r-.',label="Hutchinson",linewidth=1)
 
 	ax.set_xlabel(r'Plasma temperature (eV)')
-	plt.legend(loc=0)
+	plt.legend(loc=4)
 
 	ax.grid(which=grid, axis='both')
 	
@@ -581,7 +581,7 @@ def plotTestTimeIntegrator(solver, reevaluate_scan=False, show=False):
 			ax2.loglog(shift_test_data['times'], shift_test_data['results'][:,k], label="{}+".format(k))
 	
 	ax2.set_xlabel('Start time for evaluation (s)')
-	fig.text(0.04, 0.5, r'Relative deviation from expected answer ($\Delta x/x$)', va='center', rotation='vertical')
+	fig.text(0.0, 0.5, r'Relative deviation from expected answer ($\Delta x/x$)', va='center', rotation='vertical')
 	
 	# ax2.legend(loc=0)
 	plt.subplots_adjust(hspace=0.3, left=0.15)
@@ -647,7 +647,7 @@ def findStddev(solver, reevaluate_scan=False):
 		else:
 			print("{:5} -> mean = {:.2e}, stdev = {:.2e}, stdev_norm = {:.2e}, mean_diff = {:.2e}".format(k, mean, stdev, stdev_norm, diff))
 
-def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both', show_species=[]):
+def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both', show_species=[], find_regression=False):
 
 	stdev_Te = np.linspace(0,solver.Te_const/2,num=20)
 	stdev_Ne = np.linspace(0,solver.Ne_const/2,num=20)
@@ -800,6 +800,20 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 		ax1.set_xlim(min(stdev_Te/solver.Te_const), max(stdev_Te/solver.Te_const))
 		ax2.set_xlim(min(stdev_Ne/solver.Ne_const), max(stdev_Ne/solver.Ne_const))
 
+		if find_regression:
+			crop_ind_Te = np.searchsorted(stdev_Te/solver.Te_const, 0.25)
+			p_Te = np.polyfit((stdev_Te/solver.Te_const)[:crop_ind_Te], stdev_norm_Te[:crop_ind_Te,solver.Z+1],1)
+			fit_regress_Te = np.polyval(p_Te, (stdev_Te/solver.Te_const)[:crop_ind_Te])
+			ax1.plot((stdev_Te/solver.Te_const)[:crop_ind_Te], fit_regress_Te)
+			# ax1.set_ylim(0,0.5)
+			print("dPrad = {:.2f}dTe + {:.2f}".format(p_Te[0],p_Te[1]))
+
+			crop_ind_Ne = np.searchsorted(stdev_Ne/solver.Ne_const, 0.5)
+			p_Ne = np.polyfit((stdev_Ne/solver.Ne_const)[:crop_ind_Ne], stdev_norm_Ne[:crop_ind_Ne,solver.Z+1],1)
+			fit_regress_Ne = np.polyval(p_Ne, (stdev_Ne/solver.Ne_const)[:crop_ind_Ne])
+			ax2.plot((stdev_Ne/solver.Ne_const)[:crop_ind_Ne], fit_regress_Ne)
+			print("dPrad = {:.2f}dNe + {:.2f}".format(p_Ne[0],p_Ne[1]))
+
 		vals = ax1.get_xticks()
 		ax1.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals])
 		vals = ax2.get_xticks()
@@ -809,8 +823,9 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 		ax1.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
 		vals = ax2.get_yticks()
 		ax2.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals])
+
 		
-		fig.text(0.04, 0.5, r'Relative error in parameter ($\sigma/\mu$)', va='center', rotation='vertical')
+		fig.text(0.0, 0.5, r'Relative error in parameter ($\sigma/\mu$)', va='center', rotation='vertical')
 
 		plt.subplots_adjust(hspace=0.3, left=0.15)
 
@@ -829,38 +844,66 @@ if __name__ == "__main__":
 	plot_scan_temp_dens       = True
 	plot_scan_temp_prad_tau   = True
 
+	SMALL_SIZE = 10
+	MEDIUM_SIZE = 12
+	BIGGER_SIZE = 14
+
+	plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+	plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+	plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+	plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+	plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+	plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+	# plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
 	impurity_symbol = b'c' #need to include b (bytes) before the string for it to be sent as a std::string to C++
 
 	solver = AtomicSolver(impurity_symbol)
 
 	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15] #m^-3 s, values to return Prad(tau) for
 	path_to_output = 'Figures/'
-	
+	# tight_layout() can take keyword arguments of pad, w_pad and h_pad. These control the extra padding around the figure border and between subplots. The pads are specified in fraction of fontsize.
+
 	if plot_solver_evolution:
 		solver_evolution = solver.timeIntegrate(solver.Te_const, solver.Ne_const, 0)
 		plot_solver_evolution = plotResultFromDensityEvolution(solver, solver_evolution, plot_power = True, grid="major", show=False, y_axis_scale="linear")
-		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+
+		plot_solver_evolution.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_solver_evolution.savefig(path_to_output+"solver_evolution.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	if find_stddev:
 		findStddev(solver, reevaluate_scan = reevaluate_scan)
 
 	if plot_test_time_integrator:
 		plot_test_time_integrator = plotTestTimeIntegrator(solver, reevaluate_scan = reevaluate_scan)
-		plot_test_time_integrator.savefig(path_to_output+"test_time_integrator.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+
+		plot_test_time_integrator.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_test_time_integrator.savefig(path_to_output+"test_time_integrator.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	if plot_error_propagation:
-		plot_error_propagation = plotErrorPropagation(solver, show_species=[4, 5], reevaluate_scan = reevaluate_scan)
-		plot_error_propagation.savefig(path_to_output+"error_propagation.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+		plot_error_propagation = plotErrorPropagation(solver, show_species=[4, 5], reevaluate_scan = reevaluate_scan, find_regression=False)
+
+		plot_error_propagation.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_error_propagation.savefig(path_to_output+"error_propagation.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	if plot_scan_temp_dens:
 		plot_scan_temp_dens = plotScanTempCR_Dens(solver, grid="major", plot_power=True, reevaluate_scan = reevaluate_scan)
-		plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+
+		plot_scan_temp_dens.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_scan_temp_dens.savefig(path_to_output+"plot_scan_temp_dens.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	if plot_scan_temp_prad_tau:
 		if not(impurity_symbol is b'c'):
 			raise NotImplementedError('Prad_tau plot comparison data is for Carbon. Will need to add data for species {}'.format(str(impurity_symbol,'utf-8')))
 		plot_scan_temp_prad_tau = plotScanTempCR_Prad_tau(solver, grid="major")
-		plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+
+		plot_scan_temp_prad_tau.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	plt.show()
 	

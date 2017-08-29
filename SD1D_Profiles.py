@@ -230,7 +230,7 @@ if __name__ == '__main__':
 	# plt.show()
 	path_to_output = 'Figures/'
 
-	show = False
+	show = True
 
 	if True:
 		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
@@ -273,8 +273,8 @@ if __name__ == '__main__':
 
 		ax2.set_xlabel('Distance to strike point [m]')
 
-		if show:
-			plt.show()
+		f.set_size_inches(6.268*1.065, 3.52575, forward=True)
+		plt.tight_layout()
 		f.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if True:
@@ -284,7 +284,7 @@ if __name__ == '__main__':
 			if k == 0:
 				ax1.semilogy(position, plot_Nzk[:,k], label='g.s.'.format(k))
 			else:
-				ax1.semilogy(position, plot_Nzk[:,k], label='C{}+'.format(k))
+				ax1.semilogy(position, plot_Nzk[:,k], label=r'$C^{{{}}}$'.format(str(k)+"+"))
 
 		ax1.set_ylim(1, 1e20)
 
@@ -292,7 +292,7 @@ if __name__ == '__main__':
 			if k == 0:
 				ax2.semilogy(position, plot_P_stage[:,k], label='g.s.'.format(k))
 			else:
-				ax2.semilogy(position, plot_P_stage[:,k], label='C{}+'.format(k))
+				ax2.semilogy(position, plot_P_stage[:,k], label=r'$C^{{{}}}$'.format(str(k)+"+"))
 
 		ax2.set_ylim(1,1e8)
 
@@ -304,16 +304,18 @@ if __name__ == '__main__':
 
 		ax2.set_xlabel('Distance to strike point [m]')
 
-		ax2.legend(loc=1)
+		ax2.legend(loc=4)
 
 		ax1.grid()
 		ax2.grid()
 
 
-		if show:
-			plt.show()
+		f.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
 		f.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
+	if show:
+		plt.show()
 
 
 
