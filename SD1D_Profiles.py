@@ -103,9 +103,20 @@ class SD1DData(object):
 
 if __name__ == '__main__':
 
+	SMALL_SIZE = 10
+	MEDIUM_SIZE = 12
+	BIGGER_SIZE = 14
+
+	plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+	plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+	plt.rc('axes', labelsize=SMALL_SIZE)    # fontsize of the x and y labels
+	plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+	plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+	plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+
 	# input_file = "sd1d-MAST-U-nups_0.2.json"
-	# input_file = "0.2.json"
-	input_file = "ADAS/0.15.json"
+	input_file = "ADAS/0.5.json"
+	# input_file = "ADAS/0.15.json"
 
 	fixed_fraction = 1e-2
 	Z = 6
@@ -223,7 +234,7 @@ if __name__ == '__main__':
 	plot_dNzk 	 = np.array(plot_dNzk)
 
 
-	# f, (ax1, ax2) = plt.subplots(2, sharex = True)
+	# fig, (ax1, ax2) = plt.subplots(2, sharex = True)
 
 	# ax1.plot(position, plot_dNzk)
 	# # ax2.plot(position, calc_NVzk)
@@ -233,7 +244,7 @@ if __name__ == '__main__':
 	show = True
 
 	if True:
-		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
+		fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
 
 		# Top plot - density and temperature
 
@@ -273,12 +284,19 @@ if __name__ == '__main__':
 
 		ax2.set_xlabel('Distance to strike point [m]')
 
-		f.set_size_inches(6.268*1.065, 3.52575, forward=True)
+		fig.set_size_inches(6.268*1.065, 3.52575, forward=True)
 		plt.tight_layout()
-		# f.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+
+		ax1.set_ybound(lower = 1e16, upper = 1e24)
+		# Making this even-spaced lets the grid line up, even though the points are still different to get_yticks()
+
+		# ax1.set_yticks(np.logspace(ax1.get_yticks()[0],ax1.get_yticks()[-1],len(ax1.get_yticks())))
+		# ax2.set_yticks(np.linspace(ax2.get_yticks()[0],ax2.get_yticks()[-1],len(ax1.get_yticks())))
+
+		fig.savefig(path_to_output+"Plasma_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if True:
-		f, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
+		fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=False)
 		
 		for k in range(Z+1):
 			if k == 0:
@@ -310,9 +328,9 @@ if __name__ == '__main__':
 		ax2.grid()
 
 
-		f.set_size_inches(6.268, 3.52575, forward=True)
+		fig.set_size_inches(6.268, 3.52575, forward=True)
 		plt.tight_layout()
-		# f.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
+		fig.savefig(path_to_output+"Density_profiles.pdf",bbox_inches = 'tight',pad_inches = 0.03)
 
 	if show:
 		plt.show()

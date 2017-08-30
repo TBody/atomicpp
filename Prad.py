@@ -319,6 +319,7 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 	if plot_power:
 		ax2 = ax1.twinx()
 		scaled_Prad = np.array(solver.additional_out['Prad'])*1e-3
+		print(scaled_Prad[-1])
 		ax2.semilogx(solver.t_values, scaled_Prad,'k-.',label=r'$P_{rad}$',linewidth=1)
 		scaled_Pcool = np.array(solver.additional_out['Pcool'])*1e-3
 		ax2.semilogx(solver.t_values, scaled_Pcool,'r-.',label=r'$P_{cool}$',linewidth=1)
@@ -346,10 +347,27 @@ def plotResultFromDensityEvolution(solver, result, plot_power = False, x_axis_sc
 def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axis_scale = "log", y_axis_scale = "linear", grid = "none", align_yticks = True, show=False):
 	from scipy.interpolate import interp1d
 
+	fig, (ax1,ax2) = plt.subplots(2,sharex=True)
+
+	if reevaluate_scan:
+
+		scan_temp = solver.scanTempCREquilibrium()
+
+		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
+			pickle.dump(scan_temp, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
+			pickle.dump(solver.additional_out, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	else:
+		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
+			scan_temp = pickle.load(handle)
+		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
+			solver.additional_out = pickle.load(handle)
+
 	# Extract the density curves from Florido 2009 paper. Plot the carbon result against these
-	FLORIDO_x_eval = np.logspace(-1,3,50) #Points to return function values for
+	FLORIDO_x_eval = np.logspace(-1,3,100) #Points to return function values for
 	FLORIDO_y_mean = []
 	FLORIDO_y_diff  = []
+
 	for k in range(solver.Z+1):
 
 		# For each charge state, load the results from each model
@@ -370,72 +388,79 @@ def plotScanTempCR_Dens(solver, reevaluate_scan=False, plot_power = False, x_axi
 		# print(np.mean([ABAKO_y_interp,ATOMIC_y_interp],0))
 		# print(np.std([ABAKO_y_interp,ATOMIC_y_interp],0))
 		# Will give NaN if off grid
-		FLORIDO_y_mean.append(np.mean([ABAKO_y_interp,ATOMIC_y_interp],0))
+		k_state_mean = np.mean([ABAKO_y_interp,ATOMIC_y_interp],0)
+		FLORIDO_y_mean.append(k_state_mean)
 		# Find the std at the points specified
-		FLORIDO_y_diff.append(np.absolute(ABAKO_y_interp-ATOMIC_y_interp))
+		k_state_diff = np.absolute(ABAKO_y_interp-ATOMIC_y_interp)/2
+		FLORIDO_y_diff.append(k_state_diff)
+
+		if k == 0:
+			ax2.semilogx(FLORIDO_x_eval, ABAKO_y_interp, '{}-.'.format('C'+str(k)))
+			ax2.semilogx(FLORIDO_x_eval, ATOMIC_y_interp, '{}-'.format('C'+str(k)), label="{}".format("g.s."))
+		else:
+			ax2.semilogx(FLORIDO_x_eval, ABAKO_y_interp, '{}-.'.format('C'+str(k)))
+			ax2.semilogx(FLORIDO_x_eval, ATOMIC_y_interp, '{}-'.format('C'+str(k)), label=r"$C^{{{}}}$".format(str(k)+"+"))
 
 	FLORIDO_y_mean = np.array(FLORIDO_y_mean)
 	FLORIDO_y_diff = np.array(FLORIDO_y_diff)
 
-	if reevaluate_scan:
-
-		scan_temp = solver.scanTempCREquilibrium()
-
-		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
-			pickle.dump(scan_temp, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
-			pickle.dump(solver.additional_out, handle, protocol=pickle.HIGHEST_PROTOCOL)
-	else:
-		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
-			scan_temp = pickle.load(handle)
-		with open('python_results/scanTempCREquilibrium({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
-			solver.additional_out = pickle.load(handle)
-
-	fig, ax1 = plt.subplots()
+	total_density = np.sum(scan_temp[-1,:],0)
 
 	for k in range(solver.Z+1):
 		if k == 0:
-			ax1.semilogx(solver.Te_values, scan_temp[:,k], label="{}".format("g.s."))
+			ax1.semilogx(solver.Te_values, scan_temp[:,k]/total_density, label="{}".format("g.s."))
 		else:
-			ax1.semilogx(solver.Te_values, scan_temp[:,k], label="{}+".format(k))
+			ax1.semilogx(solver.Te_values, scan_temp[:,k]/total_density, label=r"$C^{{{}}}$".format(str(k)+"+"))
 	
-	for k in range(solver.Z+1):
-		ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_diff[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), capthick=1, capsize=3)
+	# for k in range(solver.Z+1):
+	# 	# ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_diff[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), capthick=1, capsize=3)
+	# 	ax1.errorbar(FLORIDO_x_eval, FLORIDO_y_mean[k,:]*1e17, yerr=FLORIDO_y_diff[k,:]*1e17, fmt='{}.'.format('C'+str(k)), ecolor='{}'.format('C'+str(k)), elinewidth=1 ,capthick=1, capsize=0)
 
 	# plt.semilogx(solver.Te_values, np.sum(scan_temp[:,:],1), label="Total")
 
-	total_density = np.sum(scan_temp[-1,:],0)
-	ax1.set_ylim([1e-3*total_density, total_density])
-	ax1.set_xlabel(r'Plasma temperature (eV)')
-	ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
-	ax1.tick_params('y', colors = 'b')
+	# ax1.set_xlabel(r'Plasma temperature (eV)')
+	ax2.set_xlabel(r'Plasma temperature (eV)')
+	# ax1.set_ylabel(r'Density of stage ($m^{-3}$)')
+	# ax1.tick_params('y', colors = 'b')
+	fig.text(0.0, 0.5, r'Relative density of stage', va='center', rotation='vertical')
 
-	ax1.set_xlim(min(solver.Te_values), max(solver.Te_values))
+	# ax1.set_xlim(min(solver.Te_values), max(solver.Te_values))
+	ax1.set_xlim(10**-0.5, 10**3.5)
+	ax1.set_ylim([0, 1])
+	ax2.set_ylim([0, 1])
 
 	ax1.grid(which=grid, axis='both')
+	ax2.grid(which=grid, axis='both')
 
 	if plot_power:
-		ax2 = ax1.twinx()
+		ax1_twin = ax1.twinx()
 		scaled_power = np.array(solver.additional_out['Prad'])*1e-3
-		ax2.semilogx(solver.Te_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
-		ax2.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
-		ax2.tick_params('y', colors='k')
-		ax2.set_ylim(0,)
+		ax1_twin.semilogx(solver.Te_values, scaled_power,'k-.',label=r'$P_{rad}$',linewidth=1)
+		ax1_twin.set_ylabel(r'$P_{rad}$ (KW $m^{-3}$)')
+		ax1_twin.tick_params('y', colors='k')
+		ax1_twin.set_ylim(0,)
 
 		h1, l1 = ax1.get_legend_handles_labels()
-		h2, l2 = ax2.get_legend_handles_labels()
+		h2, l2 = ax1_twin.get_legend_handles_labels()
 		ax1.legend(h1+h2, l1+l2, loc=0)
 	else:
-		ax1.legend(loc=0)
+		ax2.legend(loc=4)
 	
 	ax1.set_xscale(x_axis_scale)
 	ax1.set_yscale(y_axis_scale)
-
+	ax2.set_yscale(y_axis_scale)
 
 	if plot_power:
-		ax2.set_yscale(y_axis_scale)
+		ax1_twin.set_yscale(y_axis_scale)
 		if align_yticks:
-			ax2.set_yticks(np.linspace(ax2.get_yticks()[0],ax2.get_yticks()[-1],len(ax1.get_yticks())))
+			ax1_twin.set_yticks(np.linspace(ax1_twin.get_yticks()[0],ax1_twin.get_yticks()[-1],len(ax1.get_yticks())))
+
+	fig.set_size_inches(6.268, 3.52575, forward=True)
+	plt.tight_layout()
+	vals1 = ax1.get_yticks()
+	ax1.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals1])
+	vals2 = ax2.get_yticks()
+	ax2.set_yticklabels(['{:3.0f}%'.format(y*100) for y in vals2])
 
 	if show:
 		plt.show()
