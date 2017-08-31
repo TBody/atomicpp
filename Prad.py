@@ -503,7 +503,7 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 	POST_y_std_lower = POST_y_mean - POST_y_lower
 
 	# Extract the radiation Ne_tau curves from Mavrin 2017 paper. Plot the carbon result against these
-	MAVRIN_x_eval = np.logspace(1,4,20) #Points to return function values for
+	MAVRIN_x_eval = np.logspace(0,4,25) #Points to return function values for
 	MAVRIN_y_eval = {}
 	for dataset in [16, 17, 18, 19]:
 		MAVRIN_Ne_tau_data = np.loadtxt('python_results/MAVRIN_{}.csv'.format(dataset),delimiter=', ')
@@ -524,20 +524,26 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 
 	Prad = np.array(solver.additional_out['Prad'])
 
-	for ne_tau_index in range(len(solver.Ne_tau_values)-1,-1,-1):
+	for ne_tau_index in range(len(solver.Ne_tau_values)-1,-1,-1): #Plot in reverse
 		ne_tau = solver.Ne_tau_values[ne_tau_index]
+		if ne_tau == 1e19:
+			# This line makes the resulting plot look cluttered, since it's basically CR
+			continue
+		colour_index = ne_tau_index -1
+		if ne_tau_index == 4:
+			colour_index = 0
 
 		total_density = np.sum(scan_temp_refuelling[-1,ne_tau_index,:],0)
 
+		# ax.loglog(MAVRIN_x_eval, MAVRIN_y_eval['low_T'], "oC{}".format(1),markersize=3,markerfacecolor='none')
 		if ne_tau > 1e20:
 			ax.loglog(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),'k-.',label="ADAS-CR", linewidth=1)
 		else:
 			power = int(np.floor(np.log10(ne_tau)))
 			factor = ne_tau/10**power
 			if(factor == 1.0): #if ne_tau is a perfect power of 10
-				ax.loglog(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),"C{}".format(ne_tau_index-1),label=r"$N_e\tau$=$10^{{{:d}}}$".format(power))
-				ax.loglog(MAVRIN_x_eval, MAVRIN_y_eval[power], ".C{}".format(ne_tau_index-1))
-
+				ax.loglog(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),"C{}".format(colour_index),label=r"$N_e\tau$=$10^{{{:d}}}$".format(power))
+				ax.loglog(MAVRIN_x_eval, MAVRIN_y_eval[power], "oC{}".format(colour_index),markersize=3,markerfacecolor='none')
 			else:
 				ax.loglog(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"$N_e\tau$={:.1f}$\times10^{{{:d}}}$".format(factor,power))
 		# ax.loglog(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"{:.2e}".format(ne_tau))
@@ -1018,8 +1024,8 @@ if __name__ == "__main__":
 	find_stddev               = False
 	plot_test_time_integrator = False
 	plot_error_propagation    = False
-	plot_scan_temp_dens       = False
-	plot_scan_temp_prad_tau   = True
+	plot_scan_temp_dens       = True
+	plot_scan_temp_prad_tau   = False
 	plot_scan_temp_prad_tau_noDiff = False #no diffusion
 
 	SMALL_SIZE = 10
