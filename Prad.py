@@ -211,7 +211,7 @@ class AtomicSolver(object):
 
 		return result
 
-	def scanTempCREquilibrium(self):
+	def scanTempCREquilibrium(self, output_index = -1):
 
 		additional_out = {}
 		for key in self.additional_out.keys():
@@ -227,10 +227,10 @@ class AtomicSolver(object):
 
 			result = self.timeIntegrate(Te, self.Ne_const)
 
-			results[Te_iterator,:] = result[-1,:]
+			results[Te_iterator,:] = result[output_index,:]
 
 			for key in self.additional_out_keys:
-				additional_out[key].append(self.additional_out[key][-1]) #Take the last time slice
+				additional_out[key].append(self.additional_out[key][output_index]) #Take the last time slice if using default output_index
 
 		self.additional_out = additional_out #Replace the additional_out with the end-values
 
@@ -524,6 +524,104 @@ def plotScanTempCR_Prad_tau(solver, x_axis_scale = "log", y_axis_scale = "log", 
 				ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"$N_e\tau$=$10^{{{:d}}}$".format(power))
 			else:
 				ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"$N_e\tau$={:.1f}$\times10^{{{:d}}}$".format(factor,power))
+		# ax.semilogx(solver.Te_values, Prad[:,ne_tau_index]/(total_density*solver.Ne_const),label=r"{:.2e}".format(ne_tau))
+
+	ax.set_ylabel(r'$P_{rad}(\tau)/(N_e N_z)$ ($W m^3$)')
+	ax.set_xlim(min(solver.Te_values), max(solver.Te_values))
+	ax.set_ylim(ylim[0], ylim[1])
+
+	# Plot the POST radiation curves
+	ax.errorbar(POST_x_eval, POST_y_mean, yerr=[POST_y_std_lower, 2*POST_y_std], xerr=0, fmt='k.', ecolor='k', capthick=1, capsize=3, label='Post')
+	# Plot the HUTCHINSON radiation curves
+	ax.semilogx(solver.Te_values, HUTCHINSON_y, 'r-.',label="Hutchinson",linewidth=1)
+
+	ax.set_xlabel(r'Plasma temperature (eV)')
+	plt.legend(loc=4)
+
+	ax.grid(which=grid, axis='both')
+	
+	ax.set_xscale(x_axis_scale)
+	ax.set_yscale(y_axis_scale)
+
+	if show:
+		plt.show()
+	return fig
+
+def plotScanTempCR_Prad_tau_noDiff(solver, x_axis_scale = "log", y_axis_scale = "log", grid = "none", show=False, ylim = [1e-37, 1e-30]):
+	from scipy.interpolate import interp1d
+	
+	if reevaluate_scan:
+		cropped_results = {}
+		cropped_additional = {}
+		for Ne_tau in solver.Ne_tau_values:
+			print("For Ne_tau = {:.2e}".format(Ne_tau))
+			tau = Ne_tau/solver.Ne_const
+
+			time_index = np.searchsorted(solver.t_values, tau) #Find the output slice to return for
+			if time_index == len(solver.t_values):
+				time_index -= 1
+				# Shift the CR time index back into the time values, since otherwise will get an out-of-bounds error
+
+			results = solver.scanTempCREquilibrium(output_index=time_index)
+			cropped_results[Ne_tau] = results
+			cropped_additional[Ne_tau] = solver.additional_out
+
+		with open('python_results/scanTemp_tau_noDiff({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
+			pickle.dump(cropped_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		with open('python_results/scanTemp_tau_noDiff({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'wb') as handle:
+			pickle.dump(cropped_additional, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	else:
+		with open('python_results/scanTemp_tau_noDiff({}_at_{},res+{})-INTEG_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
+			cropped_results = pickle.load(handle)
+		with open('python_results/scanTemp_tau_noDiff({}_at_{},res+{})-ADDIT_results.pickle'.format(len(solver.Te_values),solver.Ne_const,len(solver.t_values)), 'rb') as handle:
+			cropped_additional = pickle.load(handle)
+
+	# Post PSI radiation curves (4 datasets) are saved as Prad#.csv in python_results
+
+	# Extract the radiation curves from Post PSI paper. Plot the carbon result against these
+	POST_x_eval = np.logspace(0.1,3,20) #Points to return function values for
+	POST_y_eval = []
+	for dataset in range(0,4):
+		POST_Prad_data = np.loadtxt('python_results/POST_Prad_data_{}.csv'.format(dataset+1),delimiter=', ')
+		
+		x = np.array(POST_Prad_data[:,0])
+		y = np.array(POST_Prad_data[:,1])/1e12
+
+		Prad_interp = interp1d(x,y,bounds_error=False)
+		POST_y_eval.append(Prad_interp(POST_x_eval))
+
+	POST_y_eval      = np.array(POST_y_eval)
+	POST_y_mean      = np.nanmean(POST_y_eval,0)
+	POST_y_std       = np.nanstd(POST_y_eval,0)
+	POST_y_lower     = np.maximum(ylim[0], POST_y_mean - POST_y_std)
+	POST_y_std_lower = POST_y_mean - POST_y_lower
+
+	# Construct the carbon cooling curve from I.Hutchinson
+	HUTCHINSON_y = 2e-31 * (solver.Te_values/10.)**3 / ( 1.0 + (solver.Te_values/10.)**4.5 )
+
+	# Plot the results for the specified ne_tau values
+	fig, ax = plt.subplots()
+
+
+	for Ne_tau_index in range(len(solver.Ne_tau_values)-1,-1,-1):
+		
+		Ne_tau = solver.Ne_tau_values[Ne_tau_index]
+		print("For Ne_tau = {:.2e}".format(Ne_tau))
+		tau = Ne_tau/solver.Ne_const
+
+		Prad = np.array(cropped_additional[Ne_tau]['Prad'])
+		total_density = np.sum(cropped_results[Ne_tau][-1,:],0)
+
+		if Ne_tau > 1e18:
+			ax.semilogx(solver.Te_values, Prad[:]/(total_density*solver.Ne_const),'k-.',label="ADAS-CR", linewidth=1)
+		else:
+			power = int(np.floor(np.log10(Ne_tau)))
+			factor = Ne_tau/10**power
+			if(factor == 1.0): #if Ne_tau is a perfect power of 10
+				ax.semilogx(solver.Te_values, Prad[:]/(total_density*solver.Ne_const),label=r"$N_e\tau$=$10^{{{:d}}}$".format(power))
+			else:
+				ax.semilogx(solver.Te_values, Prad[:]/(total_density*solver.Ne_const),label=r"$N_e\tau$={:.1f}$\times10^{{{:d}}}$".format(factor,power))
+		# ax.semilogx(solver.Te_values, Prad[:,Ne_tau_index]/(total_density*solver.Ne_const),label=r"{:.2e}".format(Ne_tau))
 
 	ax.set_ylabel(r'$P_{rad}(\tau)/(N_e N_z)$ ($W m^3$)')
 	ax.set_xlim(min(solver.Te_values), max(solver.Te_values))
@@ -900,13 +998,14 @@ def plotErrorPropagation(solver, reevaluate_scan=False, show=False, plot='both',
 if __name__ == "__main__":
 
 	# Control booleans
-	reevaluate_scan           = False
+	reevaluate_scan           = True
 	plot_solver_evolution     = False
 	find_stddev               = False
 	plot_test_time_integrator = False
 	plot_error_propagation    = False
-	plot_scan_temp_dens       = True
+	plot_scan_temp_dens       = False
 	plot_scan_temp_prad_tau   = False
+	plot_scan_temp_prad_tau_noDiff = True #no diffusion
 
 	SMALL_SIZE = 10
 	MEDIUM_SIZE = 12
@@ -924,7 +1023,10 @@ if __name__ == "__main__":
 
 	solver = AtomicSolver(impurity_symbol)
 
-	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15] #m^-3 s, values to return Prad(tau) for
+	solver.Ne_tau_values = [1e30, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+	# solver.Ne_tau_values = [1e14, 1e15, 1e16, 1e17, 1e18, 1e30] #m^-3 s, values to return Prad(tau) for
+	# solver.Ne_tau_values = [1e30, 1e18, 1e17, 1e16, 1e15, 1e14] #m^-3 s, values to return Prad(tau) for
+
 	path_to_output = 'Figures/'
 	# tight_layout() can take keyword arguments of pad, w_pad and h_pad. These control the extra padding around the figure border and between subplots. The pads are specified in fraction of fontsize.
 
@@ -970,6 +1072,15 @@ if __name__ == "__main__":
 		plot_scan_temp_prad_tau.set_size_inches(6.268, 3.52575, forward=True)
 		plt.tight_layout()
 		plot_scan_temp_prad_tau.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
+
+	if plot_scan_temp_prad_tau_noDiff:
+		if not(impurity_symbol is b'c'):
+			raise NotImplementedError('Prad_tau plot comparison data is for Carbon. Will need to add data for species {}'.format(str(impurity_symbol,'utf-8')))
+		plot_scan_temp_prad_tau_noDiff = plotScanTempCR_Prad_tau_noDiff(solver, grid="major")
+
+		plot_scan_temp_prad_tau_noDiff.set_size_inches(6.268, 3.52575, forward=True)
+		plt.tight_layout()
+		plot_scan_temp_prad_tau_noDiff.savefig(path_to_output+"plot_scan_temp_prad_tau.pdf",bbox_inches = 'tight',pad_inches = 0.03,transparent=True)
 
 	plt.show()
 	
